@@ -1,4 +1,4 @@
-import axios from "axios"
+import { api } from "@/lib/api"
 import { AI_REPORTS_API_BASE_URL } from "@/config/baseUrls"
 
 export { AI_REPORTS_API_BASE_URL }
@@ -25,35 +25,31 @@ export type SavedReportDetail = SavedReportSummary & {
   errors: string[]
 }
 
-export const aiReportsApi = axios.create({
-  baseURL: AI_REPORTS_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-
-aiReportsApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("geolens_access_token")
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
-
 export async function listAIReports(projectId: string) {
-  const response = await aiReportsApi.get<SavedReportSummary[]>("/reports", {
+  const response = await api.get<SavedReportSummary[]>("/reports", {
     params: { project_id: projectId },
   })
   return response.data
 }
 
 export async function getAIReport(reportId: string) {
-  const response = await aiReportsApi.get<SavedReportDetail>(`/reports/${reportId}`)
+  const response = await api.get<SavedReportDetail>(`/reports/${reportId}`)
   return response.data
 }
 
 export async function generateAIReport(projectId: string, periodType: ReportPeriod) {
-  const response = await aiReportsApi.post<Record<string, unknown>>("/reports/generate", {
-    project_id: projectId,
-    period_type: periodType,
-  })
+  const response = await api.post<Record<string, unknown>>(
+    "/reports/generate",
+    {
+      project_id: projectId,
+      period_type: periodType,
+    },
+    {
+      headers: {
+        "Idempotency-Key": `ai-report-${projectId}-${periodType}-${Date.now()}`,
+      },
+    },
+  )
+  window.dispatchEvent(new Event("credits:changed"))
   return response.data
 }

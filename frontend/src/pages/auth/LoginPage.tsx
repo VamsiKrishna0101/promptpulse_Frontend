@@ -51,10 +51,10 @@ export function LoginPage() {
     return (
         <AuthShell
             title="Login"
-            subtitle="Use your email and password to access RefractOne."
+            subtitle="Use your email and password to access PromptPulse."
             footer={
                 <p className="text-sm text-ink-500">
-                    New to RefractOne?{" "}
+                    New to PromptPulse?{" "}
                     <Link to="/signup" className="font-semibold text-ink-900 underline underline-offset-2 hover:text-black">
                         Sign up
                     </Link>
@@ -69,6 +69,8 @@ export function LoginPage() {
                         { name: "ChatGPT", slug: "chatgpt" },
                         { name: "Perplexity", slug: "perplexity" },
                         { name: "Gemini", slug: "gemini" },
+                        { name: "Google AI Mode", slug: "google_ai_mode" },
+                        { name: "Copilot", slug: "copilot" },
                     ]}
                     features={[
                         {
@@ -87,7 +89,7 @@ export function LoginPage() {
                             icon: Target
                         }
                     ]}
-                    footNote="Trusted by leading marketing teams for accurate AI visibility tracking."
+                    footNote="Source-backed visibility tracking across the AI engines buyers use."
                 />
             }
         >

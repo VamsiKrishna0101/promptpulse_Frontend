@@ -6,6 +6,7 @@ type User = {
   email: string
   account_type: "SINGLE" | "AGENCY"
   plan: "FREE" | "STARTER" | "GROWTH" | "PRO"
+  effective_plan?: "FREE" | "STARTER" | "GROWTH" | "PRO"
   role?: "USER" | "ADMIN"
   is_verified?: boolean
 }
@@ -14,6 +15,8 @@ type AuthContextValue = {
   user: User | null
   token: string | null
   isAuthenticated: boolean
+  register: (input: { email: string; password: string; account_type?: "SINGLE" | "AGENCY" }) => Promise<void>
+  verifyEmailOtp: (email: string, otp: string) => Promise<void>
   login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
@@ -21,26 +24,40 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("geolens_access_token"))
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("promptpulse_access_token"))
   const [user, setUser] = useState<User | null>(() => {
-    const raw = localStorage.getItem("geolens_user")
+    const raw = localStorage.getItem("promptpulse_user")
     return raw ? JSON.parse(raw) as User : null
   })
 
   useEffect(() => {
-    if (token) localStorage.setItem("geolens_access_token", token)
-    else localStorage.removeItem("geolens_access_token")
+    if (token) localStorage.setItem("promptpulse_access_token", token)
+    else localStorage.removeItem("promptpulse_access_token")
   }, [token])
 
   useEffect(() => {
-    if (user) localStorage.setItem("geolens_user", JSON.stringify(user))
-    else localStorage.removeItem("geolens_user")
+    if (user) localStorage.setItem("promptpulse_user", JSON.stringify(user))
+    else localStorage.removeItem("promptpulse_user")
   }, [user])
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
     token,
     isAuthenticated: Boolean(token),
+    async register(input) {
+      await api.post("/auth/register", {
+        email: input.email,
+        password: input.password,
+        account_type: input.account_type ?? "SINGLE",
+      })
+    },
+    async verifyEmailOtp(email: string, otp: string) {
+      const response = await api.post("/auth/verify", { email, otp })
+      const accessToken = response.data.access_token ?? response.data.accessToken
+      if (!accessToken) throw new Error("Email verified but no access token was returned")
+      setToken(accessToken)
+      setUser(response.data.user)
+    },
     async login(email: string, password: string) {
       const response = await api.post("/auth/login", { email, password })
       const accessToken = response.data.access_token ?? response.data.accessToken
@@ -51,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout() {
       setToken(null)
       setUser(null)
-      localStorage.removeItem("geolens_selected_project_id")
+      localStorage.removeItem("promptpulse_selected_project_id")
     },
   }), [token, user])
 

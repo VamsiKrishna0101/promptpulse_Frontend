@@ -38,17 +38,17 @@ function formatStatus(status?: string) {
 
 function BrandLogo({ domain, name, size = "md" }: { domain?: string | null; name: string; size?: "md" | "lg" }) {
   const [failed, setFailed] = useState(false)
-  const logoDomain = domain?.trim() || "refractone.com"
+  const logoDomain = domain?.trim() || "promptpulse.com"
   const logoSrc = failed ? "/favicon.svg" : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logoDomain)}&sz=64`
-  const shellClass = size === "lg" ? "h-16 w-16 rounded-2xl" : "h-10 w-10 rounded-xl"
-  const imageClass = size === "lg" ? "h-10 w-10" : "h-6 w-6"
+  const shellClass = size === "lg" ? "h-14 w-14 rounded-xl" : "h-10 w-10 rounded-[10px]"
+  const imageClass = size === "lg" ? "h-8 w-8" : "h-5 w-5"
 
   useEffect(() => {
     setFailed(false)
   }, [logoDomain])
 
   return (
-    <div className={`flex flex-shrink-0 items-center justify-center border border-[#E2E5EA] bg-white shadow-[0_8px_20px_-12px_rgba(37,99,235,0.45)] ${shellClass}`}>
+    <div className={`flex flex-shrink-0 items-center justify-center border border-[#E2E5EA] bg-white ${shellClass}`}>
       <img
         src={logoSrc}
         alt={`${name} logo`}
@@ -63,28 +63,20 @@ function StatCard({
   label,
   value,
   caption,
-  tone,
+  icon,
 }: {
   label: string
   value: string | number
   caption: string
-  tone: "blue" | "green" | "amber" | "slate"
+  icon: React.ReactNode
 }) {
-  // Solid dot colors — distinct from the pale badge tints so the dot is actually visible.
-  const dotClass = {
-    blue: "bg-[#2563EB]",
-    green: "bg-[#12B76A]",
-    amber: "bg-[#F79009]",
-    slate: "bg-[#98A2B3]",
-  }[tone]
-
   return (
-    <div className="rounded-2xl border border-[#E2E5EA] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#98A2B3]">{label}</p>
-        <span className={`h-2 w-2 rounded-full ${dotClass}`} />
+    <div className="profile-stat-card rounded-lg border border-[#E2E5EA] bg-white p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8A94A6]">{label}</p>
+        <span className="text-[#B4BBC7]">{icon}</span>
       </div>
-      <p className="mt-4 text-[28px] font-semibold leading-none tracking-[-0.02em] text-[#0F172A]">{value}</p>
+      <p className="mt-3 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#101828]">{value}</p>
       <p className="mt-2 text-[12.5px] font-medium leading-5 text-[#667085]">{caption}</p>
     </div>
   )
@@ -92,23 +84,33 @@ function StatCard({
 
 function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#EEF0F3] py-3 last:border-b-0">
+    <div className="flex items-center justify-between gap-4 border-b border-[#EEF0F3] py-3.5 last:border-b-0">
       <div className="flex items-center gap-2.5 text-[13px] font-medium text-[#667085]">
         <span className="text-[#98A2B3]">{icon}</span>
         {label}
       </div>
-      <p className="max-w-[55%] truncate text-right text-[13px] font-semibold text-[#0F172A]">{value}</p>
+      <p className="max-w-[55%] truncate text-right text-[13px] font-semibold text-[#101828]">{value}</p>
     </div>
   )
 }
 
 export function ProfileTab() {
   const { data, isLoading, error, refresh } = useProfile()
+  const [refreshing, setRefreshing] = useState(false)
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    try {
+      await refresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   if (isLoading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
-        <div className="flex items-center gap-2 rounded-xl border border-[#E2E5EA] bg-white px-4 py-3 text-[12.5px] font-medium text-[#667085] shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="flex items-center gap-2 rounded-lg border border-[#E2E5EA] bg-white px-4 py-3 text-[12.5px] font-medium text-[#667085]">
           <Loader2 size={16} className="animate-spin" />
           Loading profile…
         </div>
@@ -118,70 +120,103 @@ export function ProfileTab() {
 
   if (error || !data) {
     return (
-      <div className="rounded-2xl border border-[#FDA29B] bg-[#FEF3F2] p-5 text-[13px] font-semibold text-[#B42318]">
+      <div className="rounded-lg border border-[#FDA29B] bg-[#FEF3F2] p-5 text-[13px] font-semibold text-[#B42318]">
         {error ?? "Profile data is unavailable."}
       </div>
     )
   }
 
   const subscription = data.subscription
-  const activePlan = subscription?.plan ?? data.user.plan ?? "FREE"
-  const status = subscription?.status ?? "FREE"
+  const activePlan = data.trial.trial_active ? "FREE TRIAL" : data.user.plan ?? "FREE"
+  const status = data.trial.trial_active
+    ? `${data.user.effective_plan ?? "GROWTH"} preview - ${data.trial.trial_days_left}d left`
+    : data.trial.trial_starts_at && !data.trial.trial_active && data.user.plan === "FREE"
+      ? "Trial ended"
+      : subscription?.status ?? "FREE"
   const primaryProject = data.projects[0]
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_18%_0%,rgba(37,99,235,0.08),transparent_22rem)]" />
-        <div className="relative flex flex-wrap items-center justify-between gap-5">
-          <div className="flex min-w-0 items-center gap-4">
-            <BrandLogo domain={primaryProject?.brand_url} name={primaryProject?.brand_name ?? "Refractone"} size="lg" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-[24px] font-semibold tracking-[-0.02em] text-[#0F172A]">Profile</h1>
-                {data.user.is_verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[#B7EFCF] bg-[#ECFDF3] px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
-                    <BadgeCheck size={12} />
-                    Verified
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 truncate text-[13px] font-medium text-[#667085]">{data.user.email}</p>
-            </div>
-          </div>
+    <div className="space-y-5">
+      <style>{`
+        .profile-stat-card {
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .profile-stat-card:hover {
+          border-color: #C9CEDA;
+          box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+        }
+        .profile-refresh-btn {
+          transition: background 0.12s ease, border-color 0.12s ease;
+        }
+        .profile-plan-pill {
+          border: 1px solid #C7D2FE;
+          background: #EEF2FF;
+          color: #3730A3;
+        }
+        .profile-project-row {
+          transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .profile-project-row:hover {
+          border-color: #C9CEDA;
+          background: #FAFBFC;
+        }
+      `}</style>
 
-          <button
-            type="button"
-            onClick={() => void refresh()}
-            className="flex h-9 items-center gap-2 rounded-lg border border-[#E2E5EA] bg-white px-3 text-[12px] font-semibold text-[#475467] shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition hover:bg-[#F7F8FA]"
-          >
-            <RefreshCcw size={14} />
-            Refresh
-          </button>
+      {/* ── Header ── */}
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[#E2E5EA] bg-white px-6 py-5">
+        <div className="flex min-w-0 items-center gap-4">
+          <BrandLogo domain={primaryProject?.brand_url} name={primaryProject?.brand_name ?? "PromptPulse"} size="lg" />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate text-[20px] font-semibold tracking-[-0.01em] text-[#101828]">Profile</h1>
+              {data.user.is_verified && (
+                <span className="inline-flex items-center gap-1 rounded-md border border-[#B7EFCF] bg-[#ECFDF3] px-2 py-0.5 text-[11px] font-semibold text-[#067647]">
+                  <BadgeCheck size={12} />
+                  Verified
+                </span>
+              )}
+              <span className="profile-plan-pill inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                {activePlan}
+              </span>
+            </div>
+            <p className="mt-1 truncate text-[13px] font-medium text-[#667085]">{data.user.email}</p>
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => void handleRefresh()}
+          disabled={refreshing}
+          className="profile-refresh-btn flex h-9 items-center gap-2 rounded-md border border-[#D0D5DD] bg-white px-3.5 text-[12.5px] font-semibold text-[#344054] hover:bg-[#F9FAFB] disabled:opacity-60"
+        >
+          <RefreshCcw size={14} className={refreshing ? "animate-spin" : ""} />
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
       </section>
 
+      {/* ── Stats ── */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Current plan" value={activePlan} caption={formatStatus(status)} tone="blue" />
+        <StatCard icon={<CreditCard size={15} />} label="Current plan" value={activePlan} caption={formatStatus(status)} />
         <StatCard
+          icon={<CalendarDays size={15} />}
           label="Trial"
           value={data.trial.trial_active ? `${data.trial.trial_days_left}d` : "Ended"}
-          caption={`Ends ${formatDate(data.trial.trial_ends_at)}`}
-          tone={data.trial.trial_active ? "green" : "slate"}
+          caption={data.trial.trial_active ? `Ends ${formatDate(data.trial.trial_ends_at)}` : `Started ${formatDate(data.trial.trial_starts_at)}`}
         />
-        <StatCard label="Projects" value={data.usage.project_count} caption={`${data.projects.length} workspace records`} tone="amber" />
-        <StatCard label="Prompts" value={data.usage.prompt_count} caption="Tracked prompts in this period" tone="slate" />
+        <StatCard icon={<FolderKanban size={15} />} label="Projects" value={data.usage.project_count} caption={`${data.projects.length} workspace records`} />
+        <StatCard icon={<Sparkles size={15} />} label="Prompts" value={data.usage.prompt_count} caption="Tracked prompts in this period" />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1fr_1.1fr]">
-        <div className="rounded-2xl border border-[#E2E5EA] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-          <div className="mb-4 flex items-center justify-between">
+      {/* ── Details + Workspaces ── */}
+      <section className="grid gap-4 xl:grid-cols-[1fr_1.1fr]">
+        <div className="rounded-lg border border-[#E2E5EA] bg-white p-5">
+          <div className="mb-1 flex items-center justify-between">
             <div>
-              <p className="text-[15px] font-semibold tracking-[-0.01em] text-[#0F172A]">Account details</p>
-              <p className="mt-1 text-[12px] font-medium text-[#98A2B3]">Identity and billing status</p>
+              <p className="text-[14px] font-semibold tracking-[-0.005em] text-[#101828]">Account details</p>
+              <p className="mt-0.5 text-[12px] font-medium text-[#98A2B3]">Identity and billing status</p>
             </div>
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F7F8FA] text-[#667085]">
-              <UserRound size={16} />
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F9FAFB] text-[#667085]">
+              <UserRound size={15} />
             </span>
           </div>
 
@@ -192,37 +227,37 @@ export function ProfileTab() {
           <DetailRow icon={<Sparkles size={14} />} label="Trial started" value={formatDate(data.trial.trial_starts_at)} />
         </div>
 
-        <div className="rounded-2xl border border-[#E2E5EA] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="rounded-lg border border-[#E2E5EA] bg-white p-5">
+          <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-[15px] font-semibold tracking-[-0.01em] text-[#0F172A]">Brand workspaces</p>
-              <p className="mt-1 text-[12px] font-medium text-[#98A2B3]">Projects attached to this profile</p>
+              <p className="text-[14px] font-semibold tracking-[-0.005em] text-[#101828]">Brand workspaces</p>
+              <p className="mt-0.5 text-[12px] font-medium text-[#98A2B3]">Projects attached to this profile</p>
             </div>
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
-              <FolderKanban size={16} />
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F9FAFB] text-[#667085]">
+              <FolderKanban size={15} />
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {data.projects.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-[#E2E5EA] bg-[#F7F8FA] px-4 py-8 text-center">
+              <div className="rounded-md border border-dashed border-[#E2E5EA] bg-[#FAFBFC] px-4 py-8 text-center">
                 <p className="text-[13px] font-semibold text-[#344054]">No projects yet</p>
                 <p className="mt-1 text-[12px] text-[#98A2B3]">Create a brand workspace to start tracking visibility.</p>
               </div>
             ) : (
               data.projects.map((project) => (
-                <div key={project.id} className="flex items-center justify-between gap-4 rounded-xl border border-[#E2E5EA] bg-[#F7F8FA] px-4 py-3">
+                <div key={project.id} className="profile-project-row flex items-center justify-between gap-4 rounded-md border border-[#E2E5EA] bg-white px-4 py-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <BrandLogo domain={project.brand_url} name={project.brand_name} />
                     <div className="min-w-0">
-                      <p className="truncate text-[13.5px] font-semibold text-[#0F172A]">{project.brand_name}</p>
-                      <div className="mt-1 flex min-w-0 items-center gap-2 text-[12px] font-medium text-[#667085]">
-                        <Globe2 size={13} className="flex-shrink-0 text-[#98A2B3]" />
+                      <p className="truncate text-[13.5px] font-semibold text-[#101828]">{project.brand_name}</p>
+                      <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] font-medium text-[#667085]">
+                        <Globe2 size={12} className="flex-shrink-0 text-[#98A2B3]" />
                         <span className="truncate">{project.brand_url}</span>
                       </div>
                     </div>
                   </div>
-                  <span className="flex-shrink-0 rounded-full border border-[#E2E5EA] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#667085]">
+                  <span className="flex-shrink-0 rounded-md border border-[#E2E5EA] bg-[#FAFBFC] px-2 py-1 text-[11px] font-semibold text-[#667085]">
                     {project.brand_location}
                   </span>
                 </div>

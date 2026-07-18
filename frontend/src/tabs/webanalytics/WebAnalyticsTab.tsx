@@ -409,7 +409,7 @@ export function WebAnalyticsTab() {
   return (
     <div data-product-tour-id="analytics-shell" className="flex flex-col gap-4 pb-10">
       <section className="dashboard-card">
-        <div className="dashboard-card-header h-[58px]">
+        <div className="dashboard-card-header min-h-[58px] flex-wrap">
           <div className="flex min-w-0 items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-white">
               <Globe2 size={15} />
@@ -419,7 +419,7 @@ export function WebAnalyticsTab() {
               <p className="dashboard-card-subtitle mt-0.5 truncate">{analytics.selectedSite?.domain ?? "Website traffic and conversion analytics"}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
             {analytics.sites.length > 1 && (
               <select value={analytics.selectedSite?.id ?? ""} onChange={(event) => analytics.selectSite(event.target.value)} className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-[12px] font-semibold text-zinc-700 outline-none">
                 {analytics.sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}
@@ -434,7 +434,7 @@ export function WebAnalyticsTab() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 divide-x divide-slate-200/80 bg-white/70">
+        <div className="grid divide-y divide-slate-200/80 bg-white/70 md:grid-cols-2 md:divide-x md:divide-y-0 2xl:grid-cols-4">
           {analytics.isLoading ? (
             Array.from({ length: 4 }).map((_, index) => <div key={index} className="px-4 py-4"><Sk cls="h-10 w-full" /></div>)
           ) : (
@@ -448,7 +448,7 @@ export function WebAnalyticsTab() {
         </div>
       </section>
 
-      <div className="grid grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)] gap-3">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
         <section className="dashboard-card">
           <CardTitle
             icon={<BarChart3 size={13} />}
@@ -511,7 +511,7 @@ export function WebAnalyticsTab() {
         </table>
       </section>
 
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         <BreakdownTable title="Browsers" rows={analytics.browsers} />
         <BreakdownTable title="Devices" rows={analytics.devices} />
         <BreakdownTable title="Systems" rows={analytics.systems} />

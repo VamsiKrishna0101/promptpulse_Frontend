@@ -98,7 +98,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 
 function MetricStrip() {
   return (
-    <div className="grid grid-cols-3 divide-x divide-zinc-950/[0.08] overflow-hidden rounded-2xl border border-zinc-950/[0.08] bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_1px_rgba(16,24,40,0.03)]">
+    <div className="grid grid-cols-1 divide-y divide-zinc-950/[0.08] overflow-hidden rounded-2xl border border-zinc-950/[0.08] bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_1px_rgba(16,24,40,0.03)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
       {proofRows.map((item) => (
         <div key={item.label} className="p-3.5 sm:p-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">{item.label}</p>
@@ -213,7 +213,7 @@ export function FinalCTA() {
       <div className="border-y border-zinc-950/[0.08] py-9">
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <div>
-            <SectionLabel>Built from what RefractOne already tracks</SectionLabel>
+            <SectionLabel>Built from what PromptPulse already tracks</SectionLabel>
             <h2 className="mt-5 max-w-4xl text-[32px] font-semibold leading-[1.06] tracking-[-0.04em] text-zinc-950 sm:text-[42px] lg:text-[52px]">
               Turn AI visibility into actions your team can ship.
             </h2>
@@ -243,7 +243,7 @@ export function FinalCTA() {
               Ready to see what AI says about your brand?
             </h3>
             <div className="mt-3 grid gap-1.5 text-[13px] font-medium text-zinc-600 sm:grid-cols-3">
-              {["7-day trial", "Setup in minutes", "No fake dashboards"].map((item) => (
+              {["14-day trial", "Setup in minutes", "No fake dashboards"].map((item) => (
                 <div key={item} className="flex items-center gap-1.5">
                   <Check size={14} strokeWidth={2.5} className="text-zinc-950" />
                   {item}

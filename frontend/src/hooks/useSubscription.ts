@@ -6,14 +6,16 @@ export type PlanName = "FREE" | "STARTER" | "GROWTH" | "PRO"
 export type PlanLimits = {
   projects: number
   prompts: number
-  competitors: number
+  competitors: number | "unlimited"
   refreshes_per_week: number | "daily"
   sara: "none" | "basic" | "full" | "advanced"
   exports: "none" | "basic" | "full"
+  credits: number
 }
 
 export type MyPlanResponse = {
   plan: PlanName
+  effective_plan: PlanName
   status: string
   subscription: {
     id: string
@@ -25,12 +27,21 @@ export type MyPlanResponse = {
     trial_starts_at: string | null
     trial_ends_at: string | null
   } | null
+  trial: {
+    active: boolean
+    expired: boolean
+    starts_at: string | null
+    ends_at: string | null
+    days_left: number
+  }
   limits: PlanLimits
   usage: {
     prompt_count: number
     project_count: number
     competitor_count: number
     monthly_runs_used: number
+    credits_used: number
+    credits_remaining: number
     period_start: string | null
     period_end: string | null
   }
@@ -70,6 +81,13 @@ export function useSubscription() {
 
   useEffect(() => {
     void refresh()
+
+    function handleCreditsChanged() {
+      void refresh()
+    }
+
+    window.addEventListener("credits:changed", handleCreditsChanged)
+    return () => window.removeEventListener("credits:changed", handleCreditsChanged)
   }, [])
 
   return {

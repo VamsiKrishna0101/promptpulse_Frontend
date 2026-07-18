@@ -1,129 +1,77 @@
 import type { PromptInsight } from "../utils/reportMapper"
-import {
-  MessageSquareQuote,
-  Target,
-  Zap,
-  Activity,
-} from "lucide-react"
+import { MessageSquareQuote, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { DataTable } from "./ReportVisuals"
 
-function deltaTone(value?: number, positiveWhenDown = false) {
-  if (value === undefined) return "text-[#18181b]"
+function deltaCell(value?: number, positiveWhenDown = false) {
+  if (value === undefined) return <span className="text-[11px] text-zinc-300">—</span>
   const good = positiveWhenDown ? value <= 0 : value >= 0
-  return good ? "text-emerald-700" : "text-red-700"
+  const neutral = value === 0
+  const Icon = neutral ? Minus : good ? TrendingUp : TrendingDown
+
+  return (
+    <span className={`flex items-center justify-end gap-1 text-[12.5px] font-semibold tabular-nums ${neutral ? "text-zinc-400" : good ? "text-emerald-700" : "text-red-700"}`}>
+      <Icon size={11} />
+      {value > 0 ? "+" : ""}
+      {value}
+      {!positiveWhenDown && value !== 0 ? "%" : ""}
+    </span>
+  )
 }
 
 export function PromptTable({ prompts }: { prompts: PromptInsight[] }) {
   if (!prompts || !prompts.length) {
-    return (
-      <p className="text-[13px] font-medium text-[#71717a]">
-        No prompt movement available.
-      </p>
-    )
+    return <p className="text-[13px] font-medium text-zinc-500">No prompt movement available.</p>
   }
 
   return (
-    <div className="grid gap-2.5 xl:grid-cols-2">
+    <DataTable
+      columns={[
+        { label: "Prompt" },
+        { label: "Intent" },
+        { label: "Volume", align: "right" },
+        { label: "Rate delta", align: "right" },
+        { label: "Pos change", align: "right" },
+        { label: "Top rival", align: "right" },
+      ]}
+    >
       {prompts.map((prompt, idx) => (
         <div
           key={idx}
-          className="flex flex-col gap-2.5 rounded-xl border border-[#e4e4e7] bg-white p-3 shadow-[0_1px_2px_rgba(9,9,11,0.04)] transition-all hover:-translate-y-0.5 hover:border-[#d4d4d8] hover:shadow-[0_10px_28px_-24px_rgba(9,9,11,0.35)]"
+          className="grid items-center gap-3 px-4 py-3 transition hover:bg-zinc-50"
+          style={{ gridTemplateColumns: "minmax(160px,2fr) repeat(5, minmax(70px,1fr))" }}
         >
-          {/* Header */}
-          <div className="flex items-start gap-2.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#e4e4e7] bg-[#fafafa] shadow-sm">
-              <MessageSquareQuote size={13} className="text-[#71717a]" />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+              <MessageSquareQuote size={13} className="text-zinc-500" />
             </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 text-[12.5px] font-semibold leading-5 text-[#18181b]">
-                {prompt.prompt}
-              </p>
-
-              {prompt.intent && (
-                <span className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-[#e4e4e7] bg-[#fafafa] px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[#71717a]">
-                  <Target size={10} />
-                  {prompt.intent}
-                </span>
-              )}
-            </div>
+            <p className="truncate text-[12.5px] font-semibold text-zinc-950" title={prompt.prompt}>
+              {prompt.prompt}
+            </p>
           </div>
 
-          {/* Metrics */}
-          {(prompt.volume_score !== undefined ||
-            prompt.mention_rate_delta !== undefined ||
-            prompt.position_delta !== undefined) && (
-              <div className="grid grid-cols-3 gap-2 border-y border-[#e4e4e7] py-2.5">
-                {prompt.volume_score !== undefined && (
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-[9px] font-semibold uppercase text-[#a1a1aa]">
-                      <Activity size={10} /> Volume
-                    </div>
+          <span className="w-fit rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.06em] text-zinc-600">
+            {prompt.intent || "—"}
+          </span>
 
-                    <span className="text-[12.5px] font-semibold text-[#18181b]">
-                      {prompt.volume_score}
-                    </span>
-                  </div>
-                )}
+          <span className="text-right text-[12.5px] font-semibold tabular-nums text-zinc-950">
+            {prompt.volume_score !== undefined ? prompt.volume_score : "—"}
+          </span>
 
-                {prompt.mention_rate_delta !== undefined && (
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-[9px] font-semibold uppercase text-[#a1a1aa]">
-                      <Zap size={10} /> Delta
-                    </div>
+          <span className="text-right">{deltaCell(prompt.mention_rate_delta)}</span>
+          <span className="text-right">{deltaCell(prompt.position_delta, true)}</span>
 
-                    <span
-                      className={`flex items-center gap-1 text-[12.5px] font-semibold ${deltaTone(prompt.mention_rate_delta)}`}
-                    >
-                      {prompt.mention_rate_delta > 0 ? "+" : ""}
-                      {prompt.mention_rate_delta}%
-                    </span>
-                  </div>
-                )}
-
-                {prompt.position_delta !== undefined && (
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1 text-[9px] font-semibold uppercase text-[#a1a1aa]">
-                      <Target size={10} /> Pos Change
-                    </div>
-
-                    <span
-                      className={`flex items-center gap-1 text-[12.5px] font-semibold ${deltaTone(prompt.position_delta, true)}`}
-                    >
-                      {prompt.position_delta > 0 ? "+" : ""}
-                      {prompt.position_delta}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-          {/* Top Competitor */}
-          {prompt.top_competitor && (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50/70 px-3 py-2">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-red-700">
-                Competitor Threat
+          <span className="flex items-center justify-end gap-1.5 text-right">
+            {prompt.top_competitor ? (
+              <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10.5px] font-semibold text-red-700">
+                <span className="truncate max-w-[70px]">{prompt.top_competitor.name}</span>
+                <span className="shrink-0">{prompt.top_competitor.mention_rate}%</span>
               </span>
-
-              <div className="flex items-center gap-2">
-                <span className="max-w-[140px] truncate text-[12px] font-semibold text-red-950">
-                  {prompt.top_competitor.name}
-                </span>
-
-                <span className="rounded-md border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
-                  {prompt.top_competitor.mention_rate}%
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Summary */}
-          {prompt.summary && (
-            <p className="line-clamp-2 text-[12.5px] font-medium leading-5 text-[#52525b]">
-              {prompt.summary}
-            </p>
-          )}
+            ) : (
+              <span className="text-[11px] text-zinc-300">—</span>
+            )}
+          </span>
         </div>
       ))}
-    </div>
+    </DataTable>
   )
 }

@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import type { ProductTourPlacement, ProductTourStep } from "./productTour.types"
 
 type Rect = Pick<DOMRect, "top" | "left" | "width" | "height" | "right" | "bottom">
-const TOUR_STEP_STORAGE_KEY = "geolens_product_tour_step"
+const TOUR_STEP_STORAGE_KEY = "promptpulse_product_tour_step"
 
 function getTarget(step: ProductTourStep) {
   if (!step.targetId) return null

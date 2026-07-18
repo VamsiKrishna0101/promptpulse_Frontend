@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react"
 import { useCompetitors, type DiscoveredCompetitor, type TrackedCompetitor } from "@/hooks/useCompetitors"
 import { useProjects } from "@/hooks/useProjects"
+import { useSubscription } from "@/hooks/useSubscription"
+import { useToast } from "@/components/ui/Toast"
 import { Avatar, Sk } from "@/tabs/overview/overview"
 
 type TabKey = "tracked" | "discovered" | "ignored"
@@ -85,6 +87,19 @@ function MentionDots({ count }: { count: number }) {
       ))}
     </div>
   )
+}
+
+function hasCompetitorCapacity(limit: number | "unlimited", used: number) {
+  return limit === "unlimited" || used < limit
+}
+
+function formatCompetitorLimit(limit: number | "unlimited") {
+  return limit === "unlimited" ? "unlimited" : `${limit}`
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  const maybe = error as { response?: { data?: { error?: string; message?: string } }; message?: string }
+  return maybe.response?.data?.error ?? maybe.response?.data?.message ?? maybe.message ?? fallback
 }
 
 function AddCompetitorDrawer({
@@ -282,6 +297,8 @@ function CompetitorDetailsDrawer({
 
 export function CompetitorsTab() {
   const { selectedProject } = useProjects()
+  const { data: subscription, refresh: refreshSubscription } = useSubscription()
+  const { toast } = useToast()
   const projectId = selectedProject?.id ?? null
   const {
     tracked,
@@ -320,22 +337,51 @@ export function CompetitorsTab() {
   }, [ignored, reviewableDiscovered, searchNeedle, tab, tracked])
 
   const mentionedThisPeriod = discovered.filter((row) => row.mention_count > 0).length
-  const avgVisibility = tracked.length ? tracked.reduce((sum, row) => sum + row.visibility, 0) / tracked.length : 0
+  const competitorLimit = subscription?.limits.competitors ?? 0
+  const competitorUsage = subscription?.usage.competitor_count ?? tracked.length
+  const canAddMoreCompetitors = hasCompetitorCapacity(competitorLimit, competitorUsage)
+  const competitorLimitLabel = formatCompetitorLimit(competitorLimit)
+
+  function showLimitToast() {
+    toast({
+      title: "Competitor limit reached",
+      description: competitorLimit === "unlimited"
+        ? "You can add more competitors on this plan."
+        : `Your ${subscription?.plan ?? "current"} plan includes ${competitorLimitLabel} tracked competitor${competitorLimit === 1 ? "" : "s"}. Upgrade or remove one before adding another.`,
+      type: "warning",
+    })
+  }
 
   async function confirmPendingAction() {
     if (!confirmAction) return
 
-    if (confirmAction.type === "remove") {
-      await removeCompetitor(confirmAction.row.id)
-    } else if (confirmAction.type === "track") {
-      await addCompetitor({ name: confirmAction.row.brand_name })
-      setTab("tracked")
-    } else {
-      await addCompetitor({ name: confirmAction.name, url: confirmAction.url })
-      setTab("tracked")
+    if (confirmAction.type !== "remove" && !canAddMoreCompetitors) {
+      showLimitToast()
+      setConfirmAction(null)
+      return
     }
 
-    setConfirmAction(null)
+    try {
+      if (confirmAction.type === "remove") {
+        await removeCompetitor(confirmAction.row.id)
+        void refreshSubscription()
+      } else if (confirmAction.type === "track") {
+        await addCompetitor({ name: confirmAction.row.brand_name })
+        void refreshSubscription()
+        setTab("tracked")
+      } else {
+        await addCompetitor({ name: confirmAction.name, url: confirmAction.url })
+        void refreshSubscription()
+        setTab("tracked")
+      }
+      setConfirmAction(null)
+    } catch (error) {
+      toast({
+        title: "Could not update competitors",
+        description: getApiErrorMessage(error, "Please try again in a moment."),
+        type: "warning",
+      })
+    }
   }
 
   return (
@@ -346,7 +392,10 @@ export function CompetitorsTab() {
             <h1 className="dashboard-card-title">Competitors</h1>
             <p className="dashboard-card-subtitle mt-0.5">Manage brands tracked across AI answers for {ownBrand}</p>
           </div>
-          <button onClick={() => setAddOpen(true)} className="h-8 rounded-lg bg-slate-950 px-3 text-[11.5px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800">
+          <button
+            onClick={() => canAddMoreCompetitors ? setAddOpen(true) : showLimitToast()}
+            className="h-8 rounded-lg bg-slate-950 px-3 text-[11.5px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800"
+          >
             + Add competitor
           </button>
         </div>
@@ -355,7 +404,7 @@ export function CompetitorsTab() {
           <MetricChip label="Tracked" value={tracked.length} />
           <MetricChip label="Discovered" value={reviewableDiscovered.length} />
           <MetricChip label="Mentioned" value={mentionedThisPeriod} />
-          <MetricChip label="Avg visibility" value={`${avgVisibility.toFixed(0)}%`} />
+          <MetricChip label="Plan limit" value={`${competitorUsage}/${competitorLimitLabel}`} />
         </div>
 
         <div className="flex h-[52px] items-center justify-between border-b border-slate-200/80 px-4">
@@ -440,7 +489,7 @@ export function CompetitorsTab() {
                         )}
                         {tab === "discovered" && "brand_name" in row && (
                           <>
-                            <button onClick={() => setConfirmAction({ type: "track", row })} className="h-6 rounded-md bg-zinc-900 px-2 text-[11px] font-semibold text-white hover:bg-zinc-800">Track</button>
+                            <button onClick={() => canAddMoreCompetitors ? setConfirmAction({ type: "track", row }) : showLimitToast()} className="h-6 rounded-md bg-zinc-900 px-2 text-[11px] font-semibold text-white hover:bg-zinc-800">Track</button>
                             <button onClick={() => ignoreCompetitor(row)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-500 hover:bg-zinc-50">Ignore</button>
                           </>
                         )}

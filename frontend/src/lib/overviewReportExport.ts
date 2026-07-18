@@ -193,7 +193,7 @@ export async function exportOverviewPdf(project: Project | null, queryString: st
     doc.text(`Confidential — Generated for ${project.brand_name}`, margin, doc.internal.pageSize.getHeight() - 16)
     
     doc.setFont("helvetica", "bold")
-    doc.text("GeoLens AI", W / 2, doc.internal.pageSize.getHeight() - 16, { align: "center" })
+    doc.text("PromptPulse", W / 2, doc.internal.pageSize.getHeight() - 16, { align: "center" })
     
     doc.setFont("helvetica", "normal")
     doc.text(`Page ${i} of ${totalPages}`, W - margin, doc.internal.pageSize.getHeight() - 16, { align: "right" })
@@ -225,7 +225,7 @@ export async function exportOverviewCsv(project: Project | null, queryString: st
   const brandRows = buildBrandRows(project, report)
   
   const wb = new ExcelJS.Workbook()
-  wb.creator = "GeoLens AI"
+  wb.creator = "PromptPulse"
   
   // Data Sheet
   const ws = wb.addWorksheet("Data", { properties: { tabColor: { argb: XL.navy } } })
@@ -268,7 +268,7 @@ export async function exportOverviewCsv(project: Project | null, queryString: st
     ["Brand", project.brand_name],
     ["Report Type", "AI Visibility Overview"],
     ["Filters", queryString || "All time, all models, all topics"],
-    ["Powered by", "GeoLens AI"],
+    ["Powered by", "PromptPulse"],
   ]
   
   metaRows.forEach(([k, v], i) => {

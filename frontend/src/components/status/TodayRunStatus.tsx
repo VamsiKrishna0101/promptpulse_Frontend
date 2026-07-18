@@ -41,18 +41,27 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
 }
 
+const SUPPORTED_TODAY_RUN_ENGINES = new Set([
+  "CHATGPT",
+  "GEMINI",
+  "PERPLEXITY",
+  "GOOGLE_AI_MODE",
+  "COPILOT",
+])
+
 export function TodayRunStatus({ project }: { project: Project | null }) {
   const [open, setOpen] = useState(false)
 
   const run = project?.runs?.[0]
-  const jobs = run?.scrape_jobs ?? []
+  const jobs = (run?.scrape_jobs ?? []).filter((job) => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine))
 
   const succeeded = jobs.filter((job) => job.status === "SUCCESS").length
-  const failed = jobs.filter((job) => job.status === "FAILED" || job.error_reason).length
+  const failed = jobs.filter((job) => job.status === "FAILED" || (job.status !== "SUCCESS" && job.error_reason)).length
   const running = run?.status === "RUNNING" || run?.status === "QUEUED"
   const ranToday = sameLocalDay(run?.ran_at)
-  const completeToday =
-    ranToday && (run?.status === "SUCCESS" || run?.status === "PARTIAL_SUCCESS")
+  const supportedJobsComplete = jobs.length > 0 && jobs.every((job) => job.status === "SUCCESS")
+  const completeToday = ranToday && supportedJobsComplete && failed === 0
+  const needsReview = ranToday && failed > 0
 
   const progress = jobs.length
     ? Math.round(((succeeded + failed) / jobs.length) * 100)
@@ -60,28 +69,32 @@ export function TodayRunStatus({ project }: { project: Project | null }) {
 
   const label = !run
     ? "No run"
-    : completeToday
-      ? "Complete"
-      : running
+    : needsReview
+      ? "Review"
+      : completeToday
+        ? "Complete"
+        : running
         ? "Running"
         : ranToday
           ? "Review"
           : "Not run"
 
-  const tone = completeToday
-    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-    : running
+  const tone = needsReview
+    ? "border-red-200 bg-red-50 text-red-700"
+    : completeToday
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : running
       ? "border-amber-200 bg-amber-50 text-amber-700"
       : failed > 0
         ? "border-red-200 bg-red-50 text-red-700"
         : "border-[#e4e4e7] bg-white text-[#52525b]"
 
-  const icon = completeToday ? (
+  const icon = needsReview ? (
+    <AlertTriangle size={13} strokeWidth={2.15} />
+  ) : completeToday ? (
     <CheckCircle2 size={13} strokeWidth={2.15} />
   ) : running ? (
     <Clock3 size={13} strokeWidth={2.15} />
-  ) : failed > 0 ? (
-    <AlertTriangle size={13} strokeWidth={2.15} />
   ) : (
     <PlayCircle size={13} strokeWidth={2.15} />
   )

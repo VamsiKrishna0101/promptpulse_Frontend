@@ -9,6 +9,7 @@ export type ProfileResponse = {
     is_verified: boolean
     account_type: "SINGLE" | "AGENCY"
     plan: PlanName
+    effective_plan?: PlanName
     created_at: string
   }
   projects: {

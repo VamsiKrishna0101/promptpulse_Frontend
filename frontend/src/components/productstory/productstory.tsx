@@ -64,7 +64,7 @@ export function ProductStory() {
                         From AI answer chaos to a clear growth plan.
                     </h2>
                     <p className="mt-5 max-w-lg text-[15px] leading-7 text-zinc-600">
-                        RefractOne is not only a chart dashboard. It shows what models say, why competitors are winning, which sources influence answers, and what action Sara recommends next.
+                        PromptPulse is not only a chart dashboard. It shows what models say, why competitors are winning, which sources influence answers, and what action Sara recommends next.
                     </p>
 
                     <div className="mt-7 grid max-w-lg grid-cols-3 gap-3">

@@ -6,8 +6,9 @@ import { useProjects } from "@/hooks/useProjects"
 import { useChatsPage } from "@/hooks/useRecentChats"
 import type { RecentChat } from "@/hooks/useRecentChats"
 import { Avatar, EngIcon, Fav, Sk, timeAgo } from "@/tabs/overview/overview"
+import { formatModelName } from "@/lib/aiModels"
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 10
 
 function metricValue(value: number | null, suffix = "") {
     if (value == null) return "-"
@@ -40,9 +41,9 @@ function ChatRow({ chat, index, onOpen }: { chat: RecentChat; index: number; onO
             className={`grid w-full grid-cols-[170px_minmax(240px,1.15fr)_minmax(260px,1.4fr)_180px_120px] items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-blue-50/70 ${index % 2 === 0 ? "premium-row-even" : "premium-row-odd"}`}
         >
             <div className="flex min-w-0 items-center gap-2">
-                <div className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-semibold capitalize text-zinc-800 shadow-[0_1px_1px_rgba(0,0,0,0.03)]">
+                <div className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-semibold text-zinc-800 shadow-[0_1px_1px_rgba(0,0,0,0.03)]">
                     <EngIcon model={chat.ai_model} />
-                    {chat.ai_model}
+                    {formatModelName(chat.ai_model)}
                 </div>
                 <span className="text-[11px] font-medium text-zinc-400">{timeAgo(chat.ran_at)}</span>
             </div>
@@ -129,7 +130,7 @@ export function ChatHistoryPage() {
                             <p className="dashboard-card-subtitle">All model responses for {selectedProject?.brand_name ?? "your brand"}, filtered by the controls above.</p>
                         </div>
                     </div>
-                    <div className="relative w-full md:w-[360px]">
+                    <div className="relative w-full xl:w-[360px]">
                         <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                         <input
                             value={search}
@@ -151,7 +152,7 @@ export function ChatHistoryPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <div className="min-w-[1040px]">
+                    <div className="min-w-[980px] xl:min-w-[1040px]">
                         <div className="grid grid-cols-[170px_minmax(240px,1.15fr)_minmax(260px,1.4fr)_180px_120px] gap-4 border-b border-slate-200/80 bg-slate-50/80 px-4 py-2.5">
                             <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Model / Time</span>
                             <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Prompt</span>

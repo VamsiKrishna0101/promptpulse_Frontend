@@ -55,7 +55,7 @@ function drawPageChrome(doc: jsPDF, state: PdfState, heading?: string) {
   doc.circle(188, -4, 24, "F")
 
   setFont(doc, "bold", 6.8, C.faint)
-  doc.text("REFRACTONE AI VISIBILITY REPORT", PAGE.x, 11)
+  doc.text("PROMPTPULSE AI VISIBILITY REPORT", PAGE.x, 11)
   doc.text(state.period, PAGE.w - PAGE.x, 11, { align: "right" })
 
   if (heading) {
@@ -64,7 +64,7 @@ function drawPageChrome(doc: jsPDF, state: PdfState, heading?: string) {
   }
 
   setFont(doc, "bold", 6.8, C.faint)
-  doc.text("RefractOne", PAGE.x, PAGE.h - 8)
+  doc.text("PromptPulse", PAGE.x, PAGE.h - 8)
   doc.text(String(doc.getNumberOfPages()), PAGE.w - PAGE.x, PAGE.h - 8, { align: "right" })
 }
 
@@ -236,6 +236,7 @@ function cover(doc: jsPDF, report: ReportViewModel, state: PdfState) {
   doc.roundedRect(16, 24, 178, 64, 4, 4, "F")
   doc.setFillColor(C.dark2)
   doc.circle(179, 27, 26, "F")
+
   label(doc, "AI Visibility Report", 26, 40, "#d7e4e1")
   setFont(doc, "bold", 24, "#ffffff")
   doc.text(data.title, 26, 56, { maxWidth: 118 })
@@ -250,7 +251,7 @@ function cover(doc: jsPDF, report: ReportViewModel, state: PdfState) {
   doc.text(data.period, 157, 69, { maxWidth: 18 })
 
   data.metrics.slice(0, 4).forEach((item, index) => {
-    metric(doc, 16 + index * 46, 103, 40, item.label, item.value)
+    metric(doc, 16 + index * 46, 121, 40, item.label, item.value)
   })
 
   state.y = 140
@@ -298,7 +299,7 @@ function modelAnalysis(doc: jsPDF, report: ReportViewModel, state: PdfState) {
     addCard(
       doc,
       state,
-      `${model.model || "Model"} - ${model.status || "Readout"}`,
+      `${model.model_label || model.model || "Model"} - ${model.status || "Readout"}`,
       model.summary,
       [
         model.mention_rate !== undefined ? `Mention rate: ${model.mention_rate}%` : "",
@@ -394,7 +395,7 @@ function sourcesAndSentiment(doc: jsPDF, report: ReportViewModel, state: PdfStat
         title: `#${entry.rank} ${entry.name}`,
         body: `${entry.mention_rate}% mention rate`,
         details: [`Type: ${entry.type}`, `Delta: ${entry.delta >= 0 ? "+" : ""}${entry.delta}`],
-        tone: entry.type === "brand" ? "good" : "neutral",
+        tone: entry.type === "brand" || entry.type === "own_brand" ? "good" : "neutral",
       })),
       "Sources, Citations & Sentiment",
     )
@@ -457,8 +458,8 @@ export function exportReportPdf(report: ReportViewModel) {
   doc.setProperties({
     title: data.title,
     subject: data.subtitle,
-    author: "RefractOne",
-    creator: "RefractOne",
+    author: "PromptPulse",
+    creator: "PromptPulse",
   })
   doc.save(`${data.fileName}.pdf`)
 }

@@ -32,7 +32,7 @@ const posts = [
 export function BlogPage() {
   return (
     <ResourceShell
-      eyebrow="RefractOne Blog"
+      eyebrow="PromptPulse Blog"
       title={<>Practical playbooks for winning in AI search.</>}
       description="Short, useful guides for founders and marketers tracking how AI engines describe their brand, competitors, sources, and category."
     >

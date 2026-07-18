@@ -8,6 +8,7 @@ import type { RecentChat } from "@/hooks/useRecentChats"
 import { ChatModal } from "@/components/chat/ChatModal"
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import { engineKey, modelIconUrl } from "@/lib/aiModels"
 
 /* ─── type label/color config ──────────────────────────────── */
 const TCFG: Record<string, { label: string; color: string; tw: string }> = {
@@ -27,6 +28,7 @@ const ENGINE_COLORS: Record<string, string> = {
     gemini: "#4285f4",
     google: "#4285f4",
     perplexity: "#6c47ff",
+    copilot: "#0078d4",
     claude: "#d97706",
     default: "#71717a",
 }
@@ -81,16 +83,6 @@ export function timeAgo(iso: string) {
     return `${Math.floor(h / 24)} d ago`
 }
 
-export function engineKey(m: string) {
-    const l = m.toLowerCase()
-    if (l.includes("gpt") || l.includes("openai") || l.includes("chatgpt")) return "chatgpt"
-    if (l.includes("google_ai") || l.includes("ai overview") || l.includes("ai mode")) return "google"
-    if (l.includes("gemini") || l.includes("google")) return "gemini"
-    if (l.includes("perplexity")) return "perplexity"
-    if (l.includes("claude")) return "claude"
-    return "default"
-}
-
 function brandDomain(name?: string | null) {
     return name ? `${name.toLowerCase().replace(/[^a-z0-9]/g, "")}.com` : undefined
 }
@@ -99,16 +91,11 @@ export function EngIcon({ model }: { model: string }) {
     const k = engineKey(model)
     const color = ENGINE_COLORS[k]
     
-    let domain = ""
-    if (k === "chatgpt") domain = "chatgpt.com"
-    else if (k === "gemini") domain = "gemini.google.com"
-    else if (k === "google") domain = "google.com"
-    else if (k === "perplexity") domain = "perplexity.ai"
-    else if (k === "claude") domain = "claude.ai"
+    const iconUrl = modelIconUrl(model, 64)
 
-    if (domain) {
+    if (iconUrl) {
         return (
-            <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`} 
+            <img src={iconUrl}
                 alt={model} width={18} height={18} 
                 className="flex-shrink-0 rounded-[4px] object-contain"
                 onError={e => { (e.target as HTMLImageElement).style.display = "none" }}
@@ -315,7 +302,7 @@ export function OverviewTab() {
 
     return (
         <div className="flex flex-col gap-4">
-            <div data-product-tour-id="overview-scorecards" className="grid grid-cols-4 gap-4">
+            <div data-product-tour-id="overview-scorecards" className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
                 <MetricCard
                     label="Visibility"
                     value={`${ownBrand.vis.toFixed(0)}%`}
@@ -350,7 +337,7 @@ export function OverviewTab() {
             </div>
 
             {/* ── Row 1: chart 50% | brands 50% ── */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 xl:grid-cols-2">
 
                 {/* chart card */}
                 <div data-product-tour-id="overview-visibility-chart" className="dashboard-card">
@@ -384,9 +371,9 @@ export function OverviewTab() {
                             {[...Array(5)].map((_, i) => <div key={i} className="flex items-center gap-2"><Sk cls="h-3 w-4"/><Sk cls="h-[18px] w-[18px] rounded-[3px]"/><Sk cls="h-3 flex-1"/><Sk cls="h-3 w-8"/></div>)}
                         </div>
                     ) : (
-                        <div className="peec-grid-table">
+                        <div className="peec-grid-table overflow-x-auto">
                             {/* header row */}
-                            <div className="peec-grid-header grid h-10 items-center bg-slate-50/90" style={{ gridTemplateColumns: "44px 42px minmax(150px,1fr) 112px 112px 104px" }}>
+                            <div className="peec-grid-header grid h-10 min-w-[564px] items-center bg-slate-50/90" style={{ gridTemplateColumns: "44px 42px minmax(150px,1fr) 112px 112px 104px" }}>
                                 <span className="justify-center text-[10px] font-semibold uppercase tracking-wide text-zinc-400">#</span>
                                 <span/>
                                 <span className="px-3 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Brand</span>
@@ -394,7 +381,7 @@ export function OverviewTab() {
                                 <span className="justify-center px-3 text-center text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Sentiment</span>
                                 <span className="justify-center px-3 text-center text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Position</span>
                             </div>
-                            <div className="max-h-[288px] overflow-y-auto overscroll-contain">
+                            <div className="max-h-[288px] min-w-[564px] overflow-y-auto overscroll-contain">
                             {/* data rows */}
                             {allBrands.map((b, i) => (
                                 <div key={b.name}
@@ -451,10 +438,10 @@ export function OverviewTab() {
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
                     </Link>
                 </div>
-                <div className="flex divide-x divide-zinc-100">
+                <div className="flex flex-col divide-y divide-zinc-100 xl:flex-row xl:divide-x xl:divide-y-0">
 
                     {/* donut side */}
-                    <div className="flex-shrink-0 w-[230px]">
+                    <div className="w-full flex-shrink-0 xl:w-[230px]">
                         <p className="px-4 pt-3 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Sources Type</p>
                         {isLoading
                             ? <div className="flex justify-center py-8"><Sk cls="h-[132px] w-[132px] rounded-full"/></div>
@@ -525,13 +512,13 @@ export function OverviewTab() {
                     <span className="dashboard-card-subtitle">Chats that mentioned {selectedProject?.brand_name ?? "your brand"}</span>
                 </div>
                 {chLoad ? (
-                    <div className="grid grid-cols-3 gap-3 p-4">
+                    <div className="grid gap-3 p-4 md:grid-cols-2 2xl:grid-cols-3">
                         {[...Array(6)].map((_, i) => <Sk key={i} cls="h-36 rounded-xl"/>)}
                     </div>
                 ) : chats.length === 0 ? (
                     <p className="flex items-center justify-center py-12 text-[12px] text-zinc-400">No chat data yet</p>
                 ) : (
-                    <div className="grid grid-cols-3 gap-3 p-4">
+                    <div className="grid gap-3 p-4 md:grid-cols-2 2xl:grid-cols-3">
                         {chats.map(c => <ChatCard key={c.id} chat={c} onClick={() => setSelectedChat(c)} />)}
                     </div>
                 )}

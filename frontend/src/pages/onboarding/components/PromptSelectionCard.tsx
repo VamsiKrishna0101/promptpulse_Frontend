@@ -11,6 +11,8 @@ export function PromptSelectionCard({
   selected,
   limit,
   plan,
+  totalLimit,
+  usedAcrossProjects,
   onToggle,
   customPromptText,
   onCustomPromptTextChange,
@@ -21,6 +23,8 @@ export function PromptSelectionCard({
   selected: Set<number>
   limit: number
   plan: string
+  totalLimit?: number
+  usedAcrossProjects?: number
   onToggle: (index: number) => void
   customPromptText: string
   onCustomPromptTextChange: (value: string) => void
@@ -40,7 +44,7 @@ export function PromptSelectionCard({
   }
 
   function selectFirstLimit() {
-    // First remove existing selections, then select first available prompts up to the plan limit.
+    // First remove existing selections, then select first available prompts up to the remaining account limit.
     Array.from(selected).forEach((index) => onToggle(index))
 
     prompts.slice(0, limit).forEach((_, index) => {
@@ -92,12 +96,18 @@ export function PromptSelectionCard({
 
           <div className="rounded-xl border border-[#e4e4e7] bg-white px-4 py-2 text-right">
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-[#a1a1aa]">
-              {plan} plan
+              {plan} pool
             </p>
 
             <p className="mt-0.5 text-[22px] font-semibold tracking-[-0.04em] text-[#18181b]">
               {selectedCount} / {limit}
             </p>
+
+            {typeof totalLimit === "number" && typeof usedAcrossProjects === "number" && (
+              <p className="mt-1 text-[10.5px] font-medium text-[#71717a]">
+                {usedAcrossProjects} / {totalLimit} used
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -133,7 +143,7 @@ export function PromptSelectionCard({
 
         {selectedCount >= limit && (
           <p className="mt-2 text-[11px] font-medium text-[#71717a]">
-            You have reached your {plan} plan limit. Deselect or remove a prompt to add another.
+            You have used the remaining prompts in your shared {plan} pool. Deselect or remove one to add another.
           </p>
         )}
       </form>

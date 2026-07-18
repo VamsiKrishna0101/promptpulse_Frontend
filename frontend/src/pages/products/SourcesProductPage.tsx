@@ -210,7 +210,40 @@ export function SourcesProductPage() {
             </div>
           </div>
 
-          <div className="w-full overflow-x-auto">
+          <div className="space-y-2 px-4 pb-4 md:hidden">
+            {domainRows.map((row, i) => (
+              <div key={row.domain} className="rounded-2xl border border-zinc-100 bg-white p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <Favicon domain={row.domain} />
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-black text-zinc-950">{row.domain}</p>
+                      <p className="text-[11px] font-bold text-zinc-400">#{i + 1} source</p>
+                    </div>
+                  </div>
+                  <span className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[10.5px] font-black ${typePillClasses[row.type]}`}>
+                    {row.type}
+                  </span>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-[11.5px]">
+                  <div className="rounded-xl bg-zinc-50 p-2">
+                    <p className="font-black uppercase tracking-[0.12em] text-zinc-400">Used</p>
+                    <p className="mt-1 font-black text-zinc-950">{row.used}</p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 p-2">
+                    <p className="font-black uppercase tracking-[0.12em] text-zinc-400">Cites</p>
+                    <p className="mt-1 font-bold text-zinc-700">{row.citations}</p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 p-2">
+                    <p className="font-black uppercase tracking-[0.12em] text-zinc-400">URLs</p>
+                    <p className="mt-1 font-bold text-zinc-700">{row.urls}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden w-full overflow-hidden md:block">
             <table className="w-full min-w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-zinc-100 bg-zinc-50/70 text-[9px] font-black uppercase tracking-[0.1em] text-zinc-400">

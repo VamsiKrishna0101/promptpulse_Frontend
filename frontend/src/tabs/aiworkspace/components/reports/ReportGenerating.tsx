@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 import { Sparkles } from "lucide-react"
+import { faviconUrl } from "@/lib/aiModels"
 
 const STEPS = [
   { label: "Scanning ChatGPT", domain: "openai.com" },
   { label: "Scanning Gemini", domain: "gemini.google.com" },
-  { label: "Scanning Claude", domain: "claude.ai" },
   { label: "Scanning Perplexity", domain: "perplexity.ai" },
+  { label: "Scanning Google AI", domain: "google.com" },
+  { label: "Scanning Copilot", domain: "copilot.microsoft.com" },
   { label: "Compiling visibility report", domain: null },
 ]
 
@@ -127,7 +129,7 @@ export function ReportGenerating({ brandName }: { brandName: string }) {
           Sara is building your report
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-[14px] leading-6 text-zinc-500">
-          Analyzing ChatGPT, Gemini, Claude and Perplexity signals for{" "}
+          Analyzing ChatGPT, Gemini, Perplexity, Google AI, and Copilot signals for{" "}
           <span className="font-semibold text-zinc-800">{brandName}</span>.
         </p>
 
@@ -148,7 +150,7 @@ export function ReportGenerating({ brandName }: { brandName: string }) {
                   }`}
               >
                 <img
-                  src={`https://www.google.com/s2/favicons?domain=${step.domain}&sz=64`}
+                  src={faviconUrl(step.domain, 64) ?? ""}
                   alt={step.label}
                   className="h-full w-full object-cover"
                 />

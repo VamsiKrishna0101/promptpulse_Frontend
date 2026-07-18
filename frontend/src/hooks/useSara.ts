@@ -27,7 +27,22 @@ export type SaraMessage = {
     citations?: { evidence_id: string; title: string; reason: string }[] | null
     suggested_actions: string[]
     confidence?: string | null
+    debug?: SaraDebugTrace | null
     created_at: string
+}
+
+export type SaraDebugTrace = {
+    internal_mcp: {
+        used: boolean
+        tool_names: string[]
+        section_titles: string[]
+    }
+    rag: {
+        used: boolean
+        result_count: number
+        document_types: string[]
+        top_titles: string[]
+    }
 }
 
 export type SaraChatResponse = {
@@ -37,6 +52,7 @@ export type SaraChatResponse = {
     citations: { evidence_id: string; title: string; reason: string }[]
     suggested_actions: string[]
     confidence: "low" | "medium" | "high"
+    debug?: SaraDebugTrace
 }
 
 export function useSara(projectId: string | null) {
@@ -147,7 +163,8 @@ export function useSara(projectId: string | null) {
                         answer: streamedAnswer,
                         citations: payload.citations,
                         suggested_actions: payload.suggested_actions,
-                        confidence: payload.confidence
+                        confidence: payload.confidence,
+                        debug: payload.debug
                     }
                     setActiveConversationId(payload.conversation_id)
                     setMessages(prev => prev.map(message => (
@@ -159,7 +176,8 @@ export function useSara(projectId: string | null) {
                                 content: streamedAnswer,
                                 citations: payload.citations,
                                 suggested_actions: payload.suggested_actions,
-                                confidence: payload.confidence
+                                confidence: payload.confidence,
+                                debug: payload.debug
                             }
                             : message.id === userMessage.id
                                 ? { ...message, conversation_id: payload.conversation_id }
@@ -229,6 +247,7 @@ type SaraStreamDonePayload = {
     citations: { evidence_id: string; title: string; reason: string }[]
     suggested_actions: string[]
     confidence: "low" | "medium" | "high"
+    debug?: SaraDebugTrace
 }
 
 type SaraStreamHandlers = {
@@ -243,7 +262,7 @@ function buildStreamHeaders() {
         "Content-Type": "application/json",
         "Accept": "text/event-stream",
     }
-    const token = localStorage.getItem("geolens_access_token")
+    const token = localStorage.getItem("promptpulse_access_token")
     if (token) headers.Authorization = `Bearer ${token}`
     return headers
 }

@@ -13,13 +13,16 @@ export type RecentChat = {
     prompt_text: string
     excerpt: string
     raw_response?: string
+    display_response?: string | null
     answer_blocks?: AnswerBlock[] | null
     brand_mentioned: boolean
     brand_position: number | null
     sentiment_score: number | null
     brands: string[]
-    brand_details?: { brand_name: string, sentiment_score: number | null, position: number | null }[]
+    brand_details?: { brand_name: string, domain?: string | null, sentiment_score: number | null, position: number | null }[]
     sources?: { url: string, domain: string, title: string | null }[]
+    screenshot_path?: string | null
+    has_screenshot?: boolean
     ran_at: string
 }
 

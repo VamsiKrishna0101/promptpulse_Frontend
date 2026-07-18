@@ -93,7 +93,7 @@ export function Hero() {
                 className="pointer-events-none absolute bottom-0 inset-x-0 h-20 -z-10 bg-gradient-to-t from-white to-transparent"
             />
 
-            <section className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-6 pt-14 pb-16 text-center">
+            <section className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-4 pb-12 pt-10 text-center sm:px-6 sm:pb-16 sm:pt-14">
 
                 <div className="fade-up-1 mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/90 px-3 py-1 shadow-[0_1px_3px_rgba(0,0,0,0.06)] backdrop-blur">
                     <span className="relative flex h-1.5 w-1.5">
@@ -103,7 +103,7 @@ export function Hero() {
                     <span className="text-[12px] font-medium text-zinc-500">Now in Beta - Free to start</span>
                 </div>
 
-                <h1 className="fade-up-2 max-w-2xl text-balance text-[40px] font-extrabold leading-[1.07] tracking-[-0.05em] text-zinc-950 md:text-[52px]">
+                <h1 className="fade-up-2 max-w-2xl text-balance text-[38px] font-extrabold leading-[1.04] tracking-[-0.055em] text-zinc-950 sm:text-[44px] md:text-[52px]">
                     Your competitors are in{" "}
                     <span className="relative inline-block">
                         <span className="relative z-10 bg-gradient-to-b from-zinc-500 to-zinc-400 bg-clip-text text-transparent">
@@ -119,14 +119,14 @@ export function Hero() {
                     Are you?
                 </h1>
 
-                <p className="fade-up-3 mt-4 max-w-lg text-balance text-[15px] font-normal leading-[1.65] text-zinc-500">
+                <p className="fade-up-3 mt-4 max-w-lg text-balance text-[14.5px] font-normal leading-[1.65] text-zinc-500 sm:text-[15px]">
                     Track your brand across every major AI model. See who gets recommended, who gets missed, and exactly what to fix.
                 </p>
 
-                <div className="fade-up-4 mt-6 flex items-center gap-3">
+                <div className="fade-up-4 mt-6 flex w-full max-w-sm flex-col items-stretch gap-3 sm:w-auto sm:max-w-none sm:flex-row sm:items-center">
                     <Link
                         to="/signup"
-                        className="group inline-flex h-10 items-center gap-2 rounded-lg bg-black px-5 text-[13.5px] font-bold text-white shadow-[0_12px_28px_-18px_rgba(0,0,0,0.75)] ring-1 ring-black/5 transition-all hover:bg-zinc-800 hover:shadow-[0_16px_36px_-16px_rgba(0,0,0,0.85)] active:scale-[0.98]"
+                        className="group inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-black px-5 text-[13.5px] font-bold text-white shadow-[0_12px_28px_-18px_rgba(0,0,0,0.75)] ring-1 ring-black/5 transition-all hover:bg-zinc-800 hover:shadow-[0_16px_36px_-16px_rgba(0,0,0,0.85)] active:scale-[0.98] sm:h-10"
                     >
                         Start tracking free
                         <span className="transition-transform duration-200 group-hover:translate-x-0.5">
@@ -135,7 +135,7 @@ export function Hero() {
                     </Link>
                     <Link
                         to="/demo"
-                        className="inline-flex h-10 items-center rounded-lg border border-zinc-200 bg-white px-5 text-[13.5px] font-medium text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:border-zinc-300 hover:bg-zinc-50"
+                        className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 text-[13.5px] font-medium text-zinc-600 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition hover:border-zinc-300 hover:bg-zinc-50 sm:h-10"
                     >
                         Book a demo
                     </Link>

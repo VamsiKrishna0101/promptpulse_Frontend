@@ -240,7 +240,7 @@ export function BookDemoPage() {
                         <div className="mb-8 text-center">
                             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Book a demo</h1>
                             <p className="mt-1.5 text-sm text-zinc-500">
-                                Schedule a personalized walkthrough of RefractOne.
+                                Schedule a personalized walkthrough of PromptPulse.
                             </p>
                         </div>
 
@@ -252,7 +252,7 @@ export function BookDemoPage() {
                                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-sm ring-4 ring-zinc-50">
                                             <Logomark className="h-4 w-4" />
                                         </div>
-                                        <p className="mt-4 text-xs font-medium text-zinc-500">RefractOne</p>
+                                        <p className="mt-4 text-xs font-medium text-zinc-500">PromptPulse</p>
                                         <h2 className="mt-1 text-lg font-semibold text-zinc-900">Product demo call</h2>
                                         <p className="mt-2 text-[13px] leading-5 text-zinc-500">
                                             A quick walkthrough of the platform. We'll answer questions along the way.

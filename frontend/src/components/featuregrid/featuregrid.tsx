@@ -17,7 +17,7 @@ function PromptMockup() {
             </div>
             <div style={{ fontSize: 10.5, color: "#52525b", lineHeight: 1.6 }}>
                 For B2B SaaS teams,{" "}
-                <span style={{ background: "rgba(34,197,94,0.12)", color: "#15803d", borderBottom: "1.5px solid rgba(34,197,94,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>RefractOne</span>
+                <span style={{ background: "rgba(34,197,94,0.12)", color: "#15803d", borderBottom: "1.5px solid rgba(34,197,94,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>PromptPulse</span>
                 {" "}should appear alongside category leaders like{" "}
                 <span style={{ background: "rgba(234,179,8,0.12)", color: "#a16207", borderBottom: "1.5px solid rgba(234,179,8,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>PromptWatch</span>
                 {" "}when source evidence is strong.
@@ -34,7 +34,7 @@ function PromptMockup() {
 
 function CompetitorMockup() {
     const rows = [
-        { name: "RefractOne", vis: 65, color: "#2563eb", you: true },
+        { name: "PromptPulse", vis: 65, color: "#2563eb", you: true },
         { name: "Peec AI", vis: 46, color: "#22c55e", you: false },
         { name: "PromptWatch", vis: 38, color: "#f59e0b", you: false },
         { name: "Profound", vis: 29, color: "#a855f7", you: false },
@@ -218,6 +218,7 @@ function ModelsMockup() {
 function FeatureCard({ title, desc, children, wide }: { title: string; desc: string; children: React.ReactNode; wide?: boolean }) {
     return (
         <div
+            className={wide ? "pp-feature-card pp-feature-card-wide" : "pp-feature-card"}
             style={{
                 background: "#fafafa",
                 border: "1px solid #e4e4e7",
@@ -255,15 +256,36 @@ function FeatureCard({ title, desc, children, wide }: { title: string; desc: str
 // ── main export ───────────────────────────────────────────────────────────────
 export function FeaturesGrid() {
     return (
-        <section style={{ padding: "80px 24px", position: "relative", overflow: "hidden", background: "#fff" }}>
+        <section className="pp-features-grid-section" style={{ padding: "80px 24px", position: "relative", overflow: "hidden", background: "#fff" }}>
+            <style>{`
+                @media (max-width: 760px) {
+                    .pp-features-grid-section {
+                        padding: 64px 16px !important;
+                    }
+                    .pp-features-grid-header {
+                        margin-bottom: 28px !important;
+                    }
+                    .pp-features-grid-title {
+                        font-size: 28px !important;
+                        line-height: 1.08 !important;
+                    }
+                    .pp-features-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .pp-feature-card,
+                    .pp-feature-card-wide {
+                        grid-column: auto !important;
+                    }
+                }
+            `}</style>
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 10 }}>
 
                 {/* header */}
-                <div style={{ marginBottom: 44 }}>
+                <div className="pp-features-grid-header" style={{ marginBottom: 44 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "#2563eb", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>
                         Everything you need
                     </p>
-                    <h2 style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 10px", maxWidth: 520 }}>
+                    <h2 className="pp-features-grid-title" style={{ fontSize: 30, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 10px", maxWidth: 520 }}>
                         Win in AI search with the right data
                     </h2>
                     <p style={{ fontSize: 14.5, color: "#64748b", margin: 0, maxWidth: 480 }}>
@@ -272,7 +294,7 @@ export function FeaturesGrid() {
                 </div>
 
                 {/* grid — 3 cols, rows auto */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                <div className="pp-features-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
 
                     <FeatureCard title="Prompt Tracking" desc="Track real user prompts and see when AI mentions your brand in its responses.">
                         <PromptMockup />

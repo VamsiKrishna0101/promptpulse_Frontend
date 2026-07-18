@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 
-const RefractOneMark = () => (
+const PromptPulseMark = () => (
     <div className="flex h-8 w-7 items-center justify-center">
         <div className="flex h-6 items-end gap-[3px]">
             {[15, 20, 25].map((height) => (
@@ -75,9 +75,9 @@ export function Footer() {
             <div className="mx-auto max-w-7xl px-6 py-14">
                 <div className="grid gap-10 lg:grid-cols-[1.4fr_2fr]">
                     <div>
-                        <Link to="/" className="inline-flex items-center gap-2.5" aria-label="RefractOne home">
-                            <RefractOneMark />
-                            <span className="text-[19px] font-black tracking-[-0.04em] text-zinc-950">RefractOne</span>
+                        <Link to="/" className="inline-flex items-center gap-2.5" aria-label="PromptPulse home">
+                            <PromptPulseMark />
+                            <span className="text-[19px] font-black tracking-[-0.04em] text-zinc-950">PromptPulse</span>
                         </Link>
                         <p className="mt-4 max-w-sm text-[14px] leading-6 text-zinc-500">
                             AI visibility analytics for brands that need to know how ChatGPT, Gemini, and Perplexity describe them.
@@ -125,7 +125,7 @@ export function Footer() {
 
                 <div className="mt-12 flex flex-col gap-4 border-t border-zinc-200 pt-6 text-[13px] font-medium text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-wrap items-center gap-4">
-                        <p>&copy; {new Date().getFullYear()} RefractOne. All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} PromptPulse. All rights reserved.</p>
                         <span className="hidden h-3 w-px bg-zinc-200 sm:inline-block" />
                         <span className="inline-flex items-center gap-1.5 text-[12px] text-zinc-400">
                             <span className="relative flex h-1.5 w-1.5">

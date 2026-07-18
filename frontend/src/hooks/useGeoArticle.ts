@@ -148,7 +148,11 @@ export function useGeoArticles(projectId: string | null, queryString = "") {
         total_opportunities: number
         current_offset: number
         generation_error?: string
-      }>(url)
+      }>(url, {
+        headers: {
+          "Idempotency-Key": `geoarticle-${projectId}-${offset}-${generateFlag}-${Date.now()}`,
+        },
+      })
 
       const data = res.data
       setTotal(data.total_opportunities)
@@ -196,7 +200,7 @@ export function useGeoArticles(projectId: string | null, queryString = "") {
       nextOffset.current = offset + 1
 
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to load GEO article"
+      const msg = readApiError(err, "Failed to load GEO article")
       setError(msg)
     } finally {
       setIsLoading(false)
@@ -224,7 +228,11 @@ export function useGeoArticles(projectId: string | null, queryString = "") {
         total_opportunities: number
         current_offset: number
         generation_error?: string
-      }>(url)
+      }>(url, {
+        headers: {
+          "Idempotency-Key": `geoarticle-${projectId}-${offset}-article-${Date.now()}`,
+        },
+      })
 
       const data = res.data
       setItems(prev => prev.map(i =>
@@ -254,7 +262,7 @@ export function useGeoArticles(projectId: string | null, queryString = "") {
         return [nextItem, ...prev]
       })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to generate article"
+      const msg = readApiError(err, "Failed to generate article")
       setError(msg)
     } finally {
       setIsLoading(false)
@@ -273,4 +281,18 @@ export function useGeoArticles(projectId: string | null, queryString = "") {
     generateArticle,
     canGenerateMore,
   }
+}
+
+function readApiError(error: unknown, fallback: string) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: { data?: { error?: unknown } } }).response?.data?.error === "string"
+  ) {
+    return (error as { response: { data: { error: string } } }).response.data.error
+  }
+
+  if (error instanceof Error) return error.message
+  return fallback
 }

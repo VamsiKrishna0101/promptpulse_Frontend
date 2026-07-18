@@ -1,6 +1,21 @@
-import { ChevronRight, FileText } from "lucide-react"
+import { CalendarDays, CheckCircle2, ChevronRight, Clock3, FileText, Gauge, Sparkles } from "lucide-react"
 import type { SavedReportSummary } from "@/lib/aiReportsApi"
-import { asRecord, dateLabel, metric, periodLabel, text } from "./utils/reportHelpers"
+import { asRecord, dateLabel, periodLabel, text } from "./utils/reportHelpers"
+import { ScoreRing, toFiniteNumber } from "./components/ReportVisuals"
+
+function statusStyle(status: string) {
+  const normalized = status.toLowerCase()
+  if (normalized === "done" || normalized === "completed") return "border-emerald-200 bg-emerald-50 text-emerald-700"
+  if (normalized === "failed") return "border-red-200 bg-red-50 text-red-700"
+  return "border-amber-200 bg-amber-50 text-amber-700"
+}
+
+function reportHeadline(summary: Record<string, unknown>) {
+  return text(
+    summary.headline,
+    text(summary.summary, "Open the report to review visibility movement, competitor pressure, source gaps, and recommended actions."),
+  )
+}
 
 export function ReportsList({
   reports,
@@ -12,96 +27,118 @@ export function ReportsList({
   onOpen: (id: string) => void
 }) {
   if (isLoading) {
-    return <div style={{ borderRadius: 16, border: "1px solid #e2e8f0", background: "#ffffff", padding: 32, fontSize: 14, color: "#64748b", textAlign: "center" }}>Loading reports...</div>
+    return (
+      <div className="grid min-h-[220px] place-items-center rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.03)]">
+        <div className="text-center">
+          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-zinc-950 text-white">
+            <Clock3 size={18} />
+          </div>
+          <p className="text-[13px] font-semibold text-zinc-800">Loading reports...</p>
+          <p className="mt-1 text-[12px] font-medium text-zinc-500">Pulling your saved visibility snapshots.</p>
+        </div>
+      </div>
+    )
   }
 
   if (!reports.length) {
-    return <div style={{ borderRadius: 16, border: "1px dashed #cbd5e1", background: "#f8fafc", padding: 40, fontSize: 14, color: "#64748b", textAlign: "center" }}>No reports yet. Generate your first AI visibility report.</div>
+    return (
+      <div className="relative overflow-hidden rounded-3xl border border-dashed border-zinc-300 bg-white p-9 text-center shadow-[0_1px_3px_rgba(15,23,42,0.03)]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(24,24,27,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(24,24,27,0.05) 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+            maskImage: "radial-gradient(circle at 50% 0%, black 0%, transparent 72%)",
+            WebkitMaskImage: "radial-gradient(circle at 50% 0%, black 0%, transparent 72%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-amber-300/20 blur-[80px]"
+        />
+        <div className="relative mx-auto max-w-md">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-zinc-950 text-white shadow-[0_18px_38px_-24px_rgba(9,9,11,0.75)]">
+            <Sparkles size={20} />
+          </div>
+          <h3 className="text-[18px] font-bold tracking-tight text-zinc-950">No reports yet</h3>
+          <p className="mt-2 text-[13px] font-medium leading-6 text-zinc-500">
+            Generate your first AI visibility report to get an executive summary, score breakdown, source intelligence, and next-step recommendations.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="grid gap-3">
       {reports.map((report) => {
         const summary = asRecord(report.summary)
         const brandName = report.brand_name || text(summary.brand_name, "Brand")
-        const isDone = report.status?.toLowerCase() === "done"
-        
+        const score = toFiniteNumber(summary.visibility_score)
+        const mentionRate = toFiniteNumber(summary.brand_mention_rate ?? summary.mention_rate)
+        const status = report.status || "unknown"
+
         return (
           <button
             key={report.id}
             type="button"
             onClick={() => onOpen(report.id)}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0,1fr) 120px 120px 40px",
-              alignItems: "center",
-              gap: 16,
-              borderRadius: 16,
-              border: "1px solid #e2e8f0",
-              background: "#ffffff",
-              padding: "20px 24px",
-              textAlign: "left",
-              cursor: "pointer",
-              boxShadow: "0 1px 3px rgba(15,23,42,0.02)",
-              transition: "all 150ms ease"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#cbd5e1"
-              e.currentTarget.style.transform = "translateY(-1px)"
-              e.currentTarget.style.boxShadow = "0 4px 12px -4px rgba(15,23,42,0.08)"
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#e2e8f0"
-              e.currentTarget.style.transform = "none"
-              e.currentTarget.style.boxShadow = "0 1px 3px rgba(15,23,42,0.02)"
-            }}
+            className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-[0_1px_3px_rgba(15,23,42,0.035)] transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_18px_48px_-34px_rgba(9,9,11,0.45)]"
           >
-            <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <FileText size={20} color="#64748b" />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: "#0f172a", margin: "0 0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {brandName}
-                </p>
-                <p style={{ fontSize: 13, fontWeight: 500, color: "#64748b", margin: 0 }}>
-                  {periodLabel(report.period_type)} · Generated {dateLabel(report.created_at)}
-                </p>
-              </div>
-            </div>
+            <div className="absolute inset-y-0 left-0 w-1 bg-amber-500 opacity-0 transition-opacity group-hover:opacity-100" />
 
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8", margin: "0 0 6px" }}>Status</p>
-              <div style={{ 
-                display: "inline-flex", 
-                alignItems: "center", 
-                padding: "4px 10px", 
-                borderRadius: 20, 
-                fontSize: 12, 
-                fontWeight: 600, 
-                background: isDone ? "#dcfce7" : "#f1f5f9", 
-                color: isDone ? "#166534" : "#475569",
-                textTransform: "capitalize"
-              }}>
-                {report.status}
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px_auto] lg:items-center">
+              <div className="flex min-w-0 items-start gap-4">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-100">
+                  <FileText size={18} />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.09em] ${statusStyle(status)}`}>
+                      <CheckCircle2 size={11} />
+                      {status}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10.5px] font-semibold text-zinc-500">
+                      <CalendarDays size={11} />
+                      {periodLabel(report.period_type)}
+                    </span>
+                  </div>
+
+                  <h3 className="truncate text-[16px] font-bold tracking-tight text-zinc-950">{brandName} visibility report</h3>
+                  <p className="mt-1 line-clamp-2 max-w-3xl text-[12.5px] font-medium leading-5 text-zinc-500">{reportHeadline(summary)}</p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-zinc-400">Generated {dateLabel(report.created_at)}</p>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8", margin: "0 0 6px" }}>Score</p>
-              <p style={{ fontSize: 22, fontWeight: 700, lineHeight: 1, color: "#0f172a", margin: 0 }}>
-                {metric(summary.visibility_score)}
-              </p>
-            </div>
+              {/* Single score block — ring plus ONE supporting stat (mentions), no duplicate visibility number */}
+              <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5">
+                <ScoreRing value={score} label="" size="sm" />
+                <div className="min-w-0 border-l border-zinc-200 pl-3">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-zinc-400">Mentions</p>
+                  <p className="mt-0.5 text-[17px] font-semibold tracking-[-0.03em] tabular-nums text-zinc-950">
+                    {mentionRate ?? "NA"}
+                    {mentionRate !== null ? "%" : ""}
+                  </p>
+                </div>
+              </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "50%", background: "#f8fafc", color: "#64748b" }}>
-                <ChevronRight size={16} />
+              <div className="hidden justify-self-end lg:block">
+                <span className="grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-500 transition-all group-hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white">
+                  <ChevronRight size={17} />
+                </span>
               </div>
             </div>
           </button>
         )
       })}
+
+      <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-[12px] font-medium text-zinc-500">
+        <Gauge size={14} className="text-amber-600" />
+        Reports are snapshots. Use them to compare movement, explain change, and decide the next action cycle.
+      </div>
     </div>
   )
 }

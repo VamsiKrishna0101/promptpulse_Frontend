@@ -22,7 +22,7 @@ export function GeoGuidePage() {
     <ResourceShell
       eyebrow="GEO Guide"
       title={<>A clear guide to AI visibility and GEO.</>}
-      description="Understand how generative engines choose brands, sources, and recommendations, then use RefractOne to improve the answers buyers see."
+      description="Understand how generative engines choose brands, sources, and recommendations, then use PromptPulse to improve the answers buyers see."
     >
       <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <ResourceCard className="p-6">
@@ -38,7 +38,7 @@ export function GeoGuidePage() {
         </ResourceCard>
 
         <ResourceCard className="p-6">
-          <SectionTitle eyebrow="Workflow" title="How RefractOne approaches GEO" description="A simple loop: track answers, understand evidence, fix what is missing, and report movement." />
+          <SectionTitle eyebrow="Workflow" title="How PromptPulse approaches GEO" description="A simple loop: track answers, understand evidence, fix what is missing, and report movement." />
           <div className="space-y-3">
             {steps.map(([title, body], index) => (
               <div key={title} className="grid grid-cols-[42px_1fr] gap-4 rounded-2xl border border-zinc-200 bg-white p-4">

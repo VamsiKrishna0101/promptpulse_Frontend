@@ -96,7 +96,7 @@ const gaps = [
         score: 39,
         category: "Category landing page",
         recommendation:
-            "Which sources influence ChatGPT answers for AI visibility software: a practical guide from RefractOne",
+            "Which sources influence ChatGPT answers for AI visibility software: a practical guide from PromptPulse",
         proof:
             "PromptMonitor has stronger AI-answer evidence for this intent. Sources like linkedin.com and peec.ai are reinforcing competitor answers.",
         intent: "Which sources influence ChatGPT answers for AI visibility software?",
@@ -109,7 +109,7 @@ const gaps = [
         score: 39,
         category: "Best tools / category list",
         recommendation:
-            "Best tools to monitor competitor visibility across AI answer engines: where RefractOne fits",
+            "Best tools to monitor competitor visibility across AI answer engines: where PromptPulse fits",
         proof:
             "AthenaHQ has stronger AI-answer evidence for this intent. Sources like g2.com and reddit.com are reinforcing competitor answers.",
         intent: "Best tools to monitor competitor visibility across AI answer engines",
@@ -137,7 +137,7 @@ function Sidebar() {
                         <span className="text-[10px] font-bold leading-none">R</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[12px] font-semibold leading-snug tracking-[-0.01em] text-white">RefractOne</p>
+                        <p className="truncate text-[12px] font-semibold leading-snug tracking-[-0.01em] text-white">PromptPulse</p>
                         <p className="truncate text-[10px] leading-tight text-[#8A8D99]">United States</p>
                     </div>
                     <ChevronDown size={13} className="text-[#8A8D99]" />
@@ -259,13 +259,44 @@ function GapCard({ gap }: { gap: (typeof gaps)[number] }) {
 export default function GeoOpportunitiesMock() {
     return (
         <section className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-6 py-12">
+            <style>{`
+                @media (max-width: 767px) {
+                    .pp-opportunity-demo-shell {
+                        border-radius: 18px !important;
+                    }
+                    .pp-opportunity-demo-inner {
+                        min-width: 0 !important;
+                        border-radius: 14px !important;
+                    }
+                    .pp-opportunity-demo-tabs {
+                        width: 100% !important;
+                        overflow-x: auto !important;
+                        scrollbar-width: none;
+                    }
+                    .pp-opportunity-demo-tabs::-webkit-scrollbar {
+                        display: none;
+                    }
+                    .pp-opportunity-demo-hero {
+                        align-items: stretch !important;
+                    }
+                    .pp-opportunity-demo-actions {
+                        width: 100% !important;
+                        justify-content: space-between !important;
+                    }
+                    .pp-opportunity-demo-filter {
+                        flex: 1 1 auto !important;
+                        min-width: 0 !important;
+                        justify-content: center !important;
+                    }
+                }
+            `}</style>
             <div className="mb-8 max-w-3xl text-center">
                 <Pill className="border-blue-100 bg-white/80 text-blue-700 shadow-sm">Opportunity engine</Pill>
                 <h2 className="mt-4 text-balance text-[34px] font-extrabold leading-[1.08] tracking-[-0.045em] text-zinc-950 md:text-[46px]">
                     Know exactly what to fix next.
                 </h2>
                 <p className="mx-auto mt-4 max-w-2xl text-balance text-[15px] leading-[1.7] text-zinc-500">
-                    RefractOne turns AI answer evidence into prioritized opportunities, so your team can see which prompts, sources, competitors, and content gaps deserve attention first.
+                    PromptPulse turns AI answer evidence into prioritized opportunities, so your team can see which prompts, sources, competitors, and content gaps deserve attention first.
                 </p>
             </div>
 
@@ -276,24 +307,24 @@ export default function GeoOpportunitiesMock() {
                     style={{ background: "radial-gradient(circle at center, rgba(37,99,235,0.13), rgba(148,163,184,0.10) 42%, transparent 72%)" }}
                 />
 
-                <div className="relative rounded-[24px] border border-[#E2E5EA] bg-white/95 p-2 shadow-[0_34px_110px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.72)_inset] backdrop-blur">
-                    <div className="overflow-hidden rounded-[18px] border border-[#E2E5EA] bg-white text-left">
+                <div className="pp-opportunity-demo-shell relative overflow-hidden rounded-[20px] border border-[#E2E5EA] bg-white/95 p-1.5 shadow-[0_34px_110px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.72)_inset] backdrop-blur sm:rounded-[24px] sm:p-2">
+                    <div className="pp-opportunity-demo-inner w-full overflow-hidden rounded-[16px] border border-[#E2E5EA] bg-white text-left md:rounded-[18px]">
                     <div className="flex min-h-[520px]">
                         <Sidebar />
 
                         <main className="min-w-0 flex-1 bg-white">
                             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EEF0F3] bg-white px-5 py-2">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <button className="inline-flex h-6 items-center rounded-lg bg-[#15161B] px-2.5 text-[11.5px] font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.3)]">RefractOne</button>
-                                    <TopFilter>All time</TopFilter>
-                                    <TopFilter>All Topics</TopFilter>
-                                    <TopFilter>All Models</TopFilter>
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                    <button className="inline-flex h-6 items-center rounded-lg bg-[#15161B] px-2.5 text-[11.5px] font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.3)]">PromptPulse</button>
+                                    <span className="pp-opportunity-demo-filter"><TopFilter>All time</TopFilter></span>
+                                    <span className="pp-opportunity-demo-filter"><TopFilter>All Topics</TopFilter></span>
+                                    <span className="pp-opportunity-demo-filter"><TopFilter>All Models</TopFilter></span>
                                 </div>
                             </div>
 
                             <div className="bg-gradient-to-br from-white via-[#F8FAFC] to-[#EEF8F5] p-2.5">
                                 <section className="rounded-2xl border border-[#E2E5EA] bg-white/95 px-4 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <div className="pp-opportunity-demo-hero flex flex-wrap items-center justify-between gap-4">
                                         <div>
                                             <Pill className="border-blue-100 bg-white/80 text-blue-700 shadow-sm">GEO opportunity intelligence</Pill>
                                             <h2 className="mt-2 text-[22px] font-bold tracking-tight text-[#0F172A]">
@@ -303,7 +334,7 @@ export default function GeoOpportunitiesMock() {
                                                 Prioritized content gaps from competitor rank, visibility, sentiment, and source evidence.
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2 rounded-xl border border-[#E2E5EA] bg-white p-1 shadow-sm">
+                                        <div className="pp-opportunity-demo-actions flex items-center gap-2 rounded-xl border border-[#E2E5EA] bg-white p-1 shadow-sm">
                                             <button className="rounded-lg bg-[#15161B] px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-white">
                                                 Create Pages
                                                 <span className="block text-xl leading-none">0</span>
@@ -323,20 +354,20 @@ export default function GeoOpportunitiesMock() {
                                             <Filter size={14} className="mt-0.5 text-[#98A2B3]" />
                                             <div>
                                                 <h3 className="text-[12.5px] font-semibold text-[#0F172A]">Prioritized content gaps</h3>
-                                                <p className="text-[10.5px] text-[#98A2B3]">Filtered by the controls above for RefractOne.</p>
+                                                <p className="text-[10.5px] text-[#98A2B3]">Filtered by the controls above for PromptPulse.</p>
                                             </div>
                                         </div>
-                                        <div className="relative">
+                                        <div className="relative w-full sm:w-auto">
                                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
                                             <input
-                                                className="h-8 w-[270px] rounded-lg border border-[#E2E5EA] bg-white pl-9 pr-3 text-xs outline-none placeholder:text-[#98A2B3] focus:border-blue-300"
+                                                className="h-8 w-full rounded-lg border border-[#E2E5EA] bg-white pl-9 pr-3 text-xs outline-none placeholder:text-[#98A2B3] focus:border-blue-300 sm:w-[270px]"
                                                 placeholder="Search content gap, source, competitor"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EEF0F3] bg-[#F7F8FA] px-4 py-2.5">
-                                        <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-semibold text-[#667085]">
+                                        <div className="pp-opportunity-demo-tabs flex gap-1 rounded-lg bg-slate-100 p-1 text-xs font-semibold text-[#667085]">
                                             {['All', 'Create', 'Outranked', 'Sources', 'Sentiment'].map((tab) => (
                                                 <button key={tab} className={`rounded-md px-3 py-1.5 ${tab === 'All' ? 'bg-white text-[#0F172A] shadow-sm' : ''}`}>{tab}</button>
                                             ))}

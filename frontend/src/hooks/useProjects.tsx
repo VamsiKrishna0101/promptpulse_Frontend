@@ -19,7 +19,7 @@ export type ProjectRun = {
   completed_at: string | null
   scrape_jobs: {
     id: string
-    engine: "CHATGPT" | "GEMINI" | "PERPLEXITY"
+    engine: "CHATGPT" | "GEMINI" | "PERPLEXITY" | "GOOGLE_AI_OVERVIEW" | "GOOGLE_AI_MODE" | "COPILOT"
     status: string
     prompt_id: string
     completed_at: string | null
@@ -51,7 +51,7 @@ const ProjectsContext = createContext<ProjectsContextValue | null>(null)
 
 export function ProjectsProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(() => localStorage.getItem("geolens_selected_project_id"))
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(() => localStorage.getItem("promptpulse_selected_project_id"))
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -61,10 +61,10 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.get<Project[]>("/projects")
       setProjects(response.data)
-      const remembered = localStorage.getItem("geolens_selected_project_id")
+      const remembered = localStorage.getItem("promptpulse_selected_project_id")
       const nextId = response.data.find((project) => project.id === remembered)?.id ?? response.data[0]?.id ?? null
       setSelectedProjectId(nextId)
-      if (nextId) localStorage.setItem("geolens_selected_project_id", nextId)
+      if (nextId) localStorage.setItem("promptpulse_selected_project_id", nextId)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load projects")
     } finally {
@@ -82,7 +82,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     selectedProjectId,
     selectProject(projectId: string) {
       setSelectedProjectId(projectId)
-      localStorage.setItem("geolens_selected_project_id", projectId)
+      localStorage.setItem("promptpulse_selected_project_id", projectId)
     },
     isLoading,
     error,

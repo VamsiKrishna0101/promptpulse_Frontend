@@ -19,6 +19,7 @@ const TCFG: Record<string, { label: string; color: string; tw: string }> = {
 }
 
 const SOURCE_LINE_COLORS = ["#2563EB", "#10B981", "#F59E0B", "#7C3AED", "#EF4444", "#0891B2"]
+const SOURCES_PAGE_SIZE = 20
 
 const SortIcon = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-300">
@@ -96,6 +97,59 @@ function SegmentButton({ active, children, onClick }: { active: boolean; childre
   )
 }
 
+function PaginationFooter({
+  page,
+  totalPages,
+  totalRows,
+  firstItem,
+  lastItem,
+  isLoading,
+  onPageChange,
+}: {
+  page: number
+  totalPages: number
+  totalRows: number
+  firstItem: number
+  lastItem: number
+  isLoading: boolean
+  onPageChange: (page: number) => void
+}) {
+  if (totalRows === 0) return null
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3">
+      <p className="text-[12px] font-medium text-zinc-500">
+        Showing <span className="font-semibold text-zinc-800">{firstItem}-{lastItem}</span> of{" "}
+        <span className="font-semibold text-zinc-800">{totalRows}</span>
+      </p>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={page <= 1 || isLoading}
+          className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-zinc-600 shadow-[0_1px_1px_rgba(0,0,0,0.04)] transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          Previous
+        </button>
+
+        <span className="min-w-[62px] rounded-md bg-zinc-100 px-2.5 py-1.5 text-center text-[12px] font-bold tabular-nums text-zinc-700">
+          {page} / {totalPages}
+        </span>
+
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages || isLoading}
+          className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-zinc-600 shadow-[0_1px_1px_rgba(0,0,0,0.04)] transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function brandDomainForLogo(name: string) {
   const key = name.toLowerCase().replace(/[^a-z0-9]/g, "")
   const known: Record<string, string> = {
@@ -119,7 +173,7 @@ function brandDomainForLogo(name: string) {
     peopledataLabs: "peopledatalabs.com",
     peopledatalabs: "peopledatalabs.com",
     pitchbook: "pitchbook.com",
-    refractone: "refractone.com",
+    promptpulse: "promptpulse.com",
     zoominfo: "zoominfo.com",
   }
   return known[key] ?? `${key}.com`
@@ -458,7 +512,7 @@ function DomainDetailHeader({
             </div>
           </div>
 
-          <div className="grid min-w-[520px] flex-1 grid-cols-4 gap-3">
+          <div className="grid flex-1 gap-3 md:grid-cols-2 2xl:grid-cols-4">
             <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
               <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Used</p>
               <p className="mt-2 text-[24px] font-semibold tracking-[-0.04em] text-slate-950">{sourcePct(row).toFixed(0)}%</p>
@@ -561,153 +615,240 @@ function SourceDetailsDrawer({
   }, [onClose])
 
   const mentions = [...new Set([...rowMentions(row), ...contentMentions(content)])]
-  const ownMentioned = hasOwnBrand(row, ownBrand)
+  const ownMentioned = mentions.some((name) => name.toLowerCase() === ownBrand.toLowerCase())
   const usedTotal = row.retrievals ?? 0
   const citations = row.citations ?? ("citation_rate" in row ? row.citation_rate ?? 0 : 0)
   const updatedAt = ("content_updated_at" in row ? row.content_updated_at : null) ?? content?.content_updated_at ?? null
   const suggestion = "suggested_action" in row ? row.suggested_action : null
   const gapScore = "gap_score" in row ? row.gap_score : null
+  const fetchStatus = content?.fetch_status ?? ("fetch_status" in row ? row.fetch_status : null)
+  const errorReason = content?.error_reason ?? ("error_reason" in row ? row.error_reason : null)
+  const contentLength = content?.content_length ?? ("content_length" in row ? row.content_length : undefined)
   const bodyText = content?.content || content?.snippet || ("snippet" in row ? row.snippet : null)
+  const hasFullContent = Boolean(content?.content)
+  const readableContentLength = typeof contentLength === "number" && contentLength > 0
+    ? new Intl.NumberFormat().format(contentLength)
+    : null
+  const sourceKind = row.url_type || row.source_type || content?.url_type || content?.source_type
+  const platformLabel = row.platform || content?.platform
+  const subredditLabel = row.subreddit || content?.subreddit
+  const statusLabel = contentLoading
+    ? "Loading enriched page"
+    : fetchStatus || (hasFullContent ? "Enriched" : bodyText ? "Preview" : "Metadata only")
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/25 backdrop-blur-[2px]" onClick={onClose}>
-      <aside
-        className="flex h-full w-full max-w-[520px] flex-col border-l border-zinc-200 bg-[#f7f7f8] shadow-[-18px_0_45px_rgba(15,23,42,0.16)]"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/35 px-4 py-6 backdrop-blur-[3px]" onClick={onClose}>
+      <section
+        className="flex max-h-[92vh] w-full max-w-[1080px] flex-col overflow-hidden rounded-[28px] border border-white/70 bg-[#f6f7fb] shadow-[0_30px_90px_rgba(15,23,42,0.32)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5">
-          <div className="flex min-w-0 items-center gap-2">
-            <Fav domain={row.domain} />
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold text-zinc-900">Source details</p>
-              <p className="truncate text-[11px] font-medium text-zinc-400">{row.domain}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          <div className="rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="border-b border-zinc-100 px-4 py-4">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="line-clamp-2 text-[16px] font-semibold leading-snug text-zinc-900">
-                    {sourceTitle(row, content)}
-                  </h2>
-                  <p className="mt-1 line-clamp-1 text-[11.5px] font-medium text-zinc-400">{cleanUrl(row.url)}</p>
-                </div>
-                <a
-                  href={row.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 text-[12px] font-semibold text-zinc-700 shadow-[0_1px_1px_rgba(0,0,0,0.04)] hover:bg-zinc-50"
-                >
-                  Open <ExternalIcon />
-                </a>
+        <div className="shrink-0 border-b border-zinc-200 bg-white/95 px-6 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                <Fav domain={row.domain} />
               </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge type={row.url_type || row.source_type || content?.url_type || content?.source_type} />
-                {row.platform && <span className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-[2px] text-[10.5px] font-semibold text-zinc-500">{row.platform}</span>}
-                {row.subreddit && <span className="rounded border border-zinc-200 bg-zinc-50 px-1.5 py-[2px] text-[10.5px] font-semibold text-zinc-500">r/{row.subreddit}</span>}
-                {updatedAt && <span className="text-[11px] font-medium text-zinc-400">Updated {timeAgo(updatedAt)}</span>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 divide-x divide-zinc-100 border-b border-zinc-100">
-              <div className="px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Used total</p>
-                <p className="mt-1 text-[18px] font-bold tabular-nums text-zinc-900">{usedTotal}</p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Citations</p>
-                <p className="mt-1 text-[18px] font-bold tabular-nums text-zinc-900">{citations.toFixed(1)}</p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">{ownBrand}</p>
-                <span className={`mt-1 inline-flex rounded-md px-2 py-1 text-[11px] font-semibold ${ownMentioned ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
-                  {ownMentioned ? "Mentioned" : "Not mentioned"}
-                </span>
-              </div>
-            </div>
-
-            <div className="px-4 py-4">
-              <p className="mb-2 text-[12px] font-semibold text-zinc-800">Brand mentions</p>
-              {mentions.length ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {mentions.map((name) => (
-                    <span key={name} className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11.5px] font-semibold text-zinc-700">
-                      <MentionChip name={name} />
-                      {name}
+              <div className="min-w-0">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <p className="truncate text-[13px] font-semibold text-zinc-900">Source details</p>
+                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-500">
+                    {statusLabel}
+                  </span>
+                  {readableContentLength && (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                      {readableContentLength} chars
                     </span>
-                  ))}
+                  )}
                 </div>
-              ) : (
-                <p className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-3 py-3 text-[12px] font-medium text-zinc-400">
-                  No brand mentions were captured for this URL.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {(suggestion || gapScore !== null) && (
-            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-[12px] font-semibold text-amber-900">Gap analysis</p>
-                {gapScore !== null && <span className="rounded-md bg-white px-2 py-1 text-[11px] font-bold tabular-nums text-amber-700">Score {gapScore}</span>}
+                <h2 className="line-clamp-2 text-[20px] font-semibold leading-snug text-zinc-950">
+                  {sourceTitle(row, content)}
+                </h2>
+                <p className="mt-1 truncate text-[12px] font-medium text-zinc-400">{cleanUrl(row.url)}</p>
               </div>
-              <p className="text-[12.5px] font-medium leading-relaxed text-amber-900/80">
-                {suggestion || "This source is useful for AI answers and should be reviewed for brand visibility opportunities."}
-              </p>
             </div>
-          )}
-
-          <div className="mt-3 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <p className="text-[12px] font-semibold text-zinc-800">Related prompts</p>
-              {"prompts" in row && row.prompts?.length ? <span className="text-[11px] font-semibold text-zinc-400">{row.prompts.length}</span> : null}
+            <div className="flex shrink-0 items-center gap-2">
+              <a
+                href={row.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 text-[12px] font-semibold text-zinc-700 shadow-[0_1px_1px_rgba(0,0,0,0.04)] transition hover:bg-zinc-50"
+              >
+                Open <ExternalIcon />
+              </a>
+              <button
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-400 shadow-[0_1px_1px_rgba(0,0,0,0.04)] transition-colors hover:bg-zinc-50 hover:text-zinc-700"
+                aria-label="Close source details"
+              >
+                <CloseIcon />
+              </button>
             </div>
-            {"prompts" in row && row.prompts?.length ? (
-              <div className="divide-y divide-zinc-100">
-                {row.prompts.slice(0, 6).map((prompt) => (
-                  <div key={prompt} className="px-4 py-3 text-[12.5px] font-medium leading-relaxed text-zinc-700">
-                    {prompt}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="px-4 py-6 text-center text-[12px] font-medium text-zinc-400">No prompt list available for this source.</p>
-            )}
-          </div>
-
-          <div className="mt-3 rounded-xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-              <p className="text-[12px] font-semibold text-zinc-800">Page content</p>
-              {content?.fetch_status && <span className="rounded bg-zinc-100 px-1.5 py-[2px] text-[10px] font-bold text-zinc-500">{content.fetch_status}</span>}
-            </div>
-            {contentLoading ? (
-              <div className="space-y-2 p-4">
-                <Sk cls="h-3 w-full" />
-                <Sk cls="h-3 w-11/12" />
-                <Sk cls="h-3 w-4/5" />
-              </div>
-            ) : bodyText ? (
-              <p className="max-h-[280px] overflow-y-auto whitespace-pre-wrap px-4 py-3 text-[12.5px] font-medium leading-relaxed text-zinc-600">
-                {bodyText}
-              </p>
-            ) : (
-              <p className="px-4 py-6 text-center text-[12px] font-medium text-zinc-400">
-                Full content is not available yet. The table metadata is still shown above.
-              </p>
-            )}
           </div>
         </div>
-      </aside>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="flex flex-wrap items-center gap-2 border-b border-zinc-100 px-5 py-4">
+                  <Badge type={sourceKind} />
+                  {platformLabel && <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11px] font-semibold text-zinc-500">{platformLabel}</span>}
+                  {subredditLabel && <span className="rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-1 text-[11px] font-semibold text-zinc-500">r/{subredditLabel}</span>}
+                  {updatedAt && <span className="text-[11px] font-medium text-zinc-400">Updated {timeAgo(updatedAt)}</span>}
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-zinc-100">
+                  <div className="px-5 py-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Used total</p>
+                    <p className="mt-1 text-[22px] font-bold tabular-nums text-zinc-900">{usedTotal}</p>
+                  </div>
+                  <div className="px-5 py-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Citations</p>
+                    <p className="mt-1 text-[22px] font-bold tabular-nums text-zinc-900">{citations.toFixed(1)}</p>
+                  </div>
+                  <div className="px-5 py-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">{ownBrand}</p>
+                    <span className={`mt-2 inline-flex rounded-lg px-2.5 py-1.5 text-[11px] font-semibold ${ownMentioned ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
+                      {ownMentioned ? "Mentioned" : "Not mentioned"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+                  <div>
+                    <p className="text-[13px] font-semibold text-zinc-900">Page content</p>
+                    <p className="mt-0.5 text-[11px] font-medium text-zinc-400">
+                      {hasFullContent ? "Full enriched page text" : bodyText ? "Showing available preview while enrichment metadata is used above" : "No page text captured yet"}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500">
+                    {statusLabel}
+                  </span>
+                </div>
+                {contentLoading && (
+                  <div className="border-b border-sky-100 bg-sky-50/70 px-5 py-3 text-[12px] font-semibold text-sky-700">
+                    Pulling the latest enriched content for this exact URL...
+                  </div>
+                )}
+                {bodyText ? (
+                  <div className="max-h-[460px] overflow-y-auto border-t border-zinc-100 bg-white">
+                    <div className="space-y-3 px-6 py-5 text-[13.5px] leading-[1.75] text-zinc-700">
+                      {(() => {
+                        // Split into paragraphs on double-newlines (new enriched content)
+                        // or fall back to splitting by sentence for old wall-of-text content
+                        const raw = bodyText as string
+                        const hasParagraphs = /\n\n/.test(raw)
+                        const paragraphs = hasParagraphs
+                          ? raw.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+                          : raw
+                              // Auto-split old one-liner content at sentence boundaries
+                              .split(/(?<=[\.\!\?])\s+(?=[A-Z])/)
+                              .reduce<string[]>((acc, sentence, i) => {
+                                // Group every ~3 sentences into a paragraph
+                                if (i % 3 === 0) acc.push(sentence)
+                                else acc[acc.length - 1] += " " + sentence
+                                return acc
+                              }, [])
+
+                        return paragraphs.map((para, i) => {
+                          // Bullet list lines
+                          if (para.startsWith("•")) {
+                            const items = para.split("\n").filter(Boolean)
+                            return (
+                              <ul key={i} className="ml-4 space-y-1 list-none">
+                                {items.map((item, j) => (
+                                  <li key={j} className="flex gap-2">
+                                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" />
+                                    <span>{item.replace(/^•\s*/, "")}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )
+                          }
+                          // Regular paragraph — render inline line breaks within it
+                          const lines = para.split("\n")
+                          return (
+                            <p key={i} className="text-zinc-700">
+                              {lines.map((line, j) => (
+                                <span key={j}>
+                                  {line}
+                                  {j < lines.length - 1 && <br />}
+                                </span>
+                              ))}
+                            </p>
+                          )
+                        })
+                      })()}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-5 py-10 text-center">
+                    <p className="text-[13px] font-semibold text-zinc-500">Full content is not available yet.</p>
+                    {errorReason ? (
+                      <p className="mx-auto mt-2 max-w-md text-[12px] font-medium leading-relaxed text-zinc-400">{errorReason}</p>
+                    ) : (
+                      <p className="mx-auto mt-2 max-w-md text-[12px] font-medium leading-relaxed text-zinc-400">
+                        We still show citation, prompt, and brand metadata for this source. Run source enrichment again if you want the full page text.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <p className="mb-3 text-[13px] font-semibold text-zinc-900">Brand mentions</p>
+                {mentions.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {mentions.map((name) => (
+                      <span key={name} className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-[12px] font-semibold text-zinc-700">
+                        <MentionChip name={name} />
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-3 py-4 text-[12px] font-medium text-zinc-400">
+                    No brand mentions were captured for this URL.
+                  </p>
+                )}
+              </div>
+
+              {(suggestion || gapScore !== null) && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-[13px] font-semibold text-amber-950">Gap analysis</p>
+                    {gapScore !== null && <span className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-bold tabular-nums text-amber-700">Score {gapScore}</span>}
+                  </div>
+                  <p className="text-[12.5px] font-medium leading-relaxed text-amber-900/80">
+                    {suggestion || "This source is useful for AI answers and should be reviewed for brand visibility opportunities."}
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+                  <p className="text-[13px] font-semibold text-zinc-900">Related prompts</p>
+                  {"prompts" in row && row.prompts?.length ? <span className="text-[11px] font-semibold text-zinc-400">{row.prompts.length}</span> : null}
+                </div>
+                {"prompts" in row && row.prompts?.length ? (
+                  <div className="divide-y divide-zinc-100">
+                    {row.prompts.slice(0, 8).map((prompt) => (
+                      <div key={prompt} className="px-5 py-3 text-[12.5px] font-medium leading-relaxed text-zinc-700">
+                        {prompt}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="px-5 py-8 text-center text-[12px] font-medium text-zinc-400">No prompt list available for this source.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
@@ -724,8 +865,9 @@ export function SourcesTab() {
   const [selectedSource, setSelectedSource] = useState<UrlSourceRow | SourceGapRow | null>(null)
   const [sourceContent, setSourceContent] = useState<SourceContent | null>(null)
   const [sourceContentLoading, setSourceContentLoading] = useState(false)
+  const [page, setPage] = useState(1)
 
-  const ownBrand = selectedProject?.brand_name ?? "Refractone"
+  const ownBrand = selectedProject?.brand_name ?? "PromptPulse"
   const domainRows: DomainSourceRow[] = domains.length ? domains : top.map((row) => ({
     domain: row.domain,
     source_type: row.source_type,
@@ -752,6 +894,18 @@ export function SourcesTab() {
       return domainMatch && (!searchNeedle || text.includes(searchNeedle))
     })
   }, [gapAnalysis, gaps, searchNeedle, selectedDomain, urls])
+
+  const activeRowCount = mode === "domains" ? filteredDomains.length : filteredUrls.length
+  const totalPages = Math.max(1, Math.ceil(activeRowCount / SOURCES_PAGE_SIZE))
+  const pageStart = (page - 1) * SOURCES_PAGE_SIZE
+  const firstItem = activeRowCount === 0 ? 0 : pageStart + 1
+  const lastItem = Math.min(page * SOURCES_PAGE_SIZE, activeRowCount)
+  const paginatedDomains = useMemo(() => {
+    return filteredDomains.slice(pageStart, pageStart + SOURCES_PAGE_SIZE)
+  }, [filteredDomains, pageStart])
+  const paginatedUrls = useMemo(() => {
+    return filteredUrls.slice(pageStart, pageStart + SOURCES_PAGE_SIZE)
+  }, [filteredUrls, pageStart])
 
   const visibleGapCount = useMemo(() => {
     return gaps.filter((row) => !selectedDomain || row.domain === selectedDomain).length
@@ -798,6 +952,14 @@ export function SourcesTab() {
       cancelled = true
     }
   }, [projectId, selectedSource])
+
+  useEffect(() => {
+    setPage(1)
+  }, [gapAnalysis, mode, searchNeedle, selectedDomain])
+
+  useEffect(() => {
+    setPage((currentPage) => Math.min(currentPage, totalPages))
+  }, [totalPages])
 
   return (
     <div className="flex flex-col gap-4 pb-10">
@@ -848,7 +1010,7 @@ export function SourcesTab() {
           }}
         />
       ) : (
-        <div data-product-tour-id="sources-overview" className="grid grid-cols-[minmax(0,1fr)_350px] gap-3">
+        <div data-product-tour-id="sources-overview" className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px] 2xl:grid-cols-[minmax(0,1fr)_350px]">
           <section className="dashboard-card">
             <div className="dashboard-card-header justify-start">
               <div className="flex items-center gap-2">
@@ -868,7 +1030,7 @@ export function SourcesTab() {
       )}
 
       <section data-product-tour-id="sources-table" className="dashboard-card">
-        <div className="dashboard-card-header min-h-[64px]">
+        <div className="dashboard-card-header min-h-[64px] flex-wrap">
           <div className="flex min-w-0 items-center gap-3 [&>span.text-zinc-400]:hidden">
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-[0_14px_28px_-20px_rgba(15,23,42,0.78)]">
               <GlobeIcon />
@@ -887,7 +1049,7 @@ export function SourcesTab() {
               <span className="text-zinc-400">ⓘ</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
             {mode === "urls" && (
               <div className="mr-1 inline-flex rounded-lg border border-slate-200 bg-slate-100/80 p-1">
                 <button
@@ -912,7 +1074,7 @@ export function SourcesTab() {
                 </button>
               </div>
             )}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400">
                 <SearchIcon />
               </span>
@@ -920,7 +1082,7 @@ export function SourcesTab() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={mode === "domains" ? "Search domains" : "Search URLs"}
-                className="h-8 w-56 rounded-md border border-zinc-200 bg-white pl-8 pr-3 text-[12px] outline-none placeholder:text-zinc-400 focus:border-zinc-300"
+                className="h-8 w-full rounded-md border border-zinc-200 bg-white pl-8 pr-3 text-[12px] outline-none placeholder:text-zinc-400 focus:border-zinc-300 sm:w-56"
               />
             </div>
             <button
@@ -953,7 +1115,7 @@ export function SourcesTab() {
               <tbody>
                 {isLoading && Array.from({ length: 7 }).map((_, index) => <RowSkeleton key={index} cols={6} />)}
 
-                {!isLoading && filteredDomains.map((row, index) => (
+                {!isLoading && paginatedDomains.map((row, index) => (
                   <tr
                     key={row.domain}
                     onClick={() => {
@@ -962,7 +1124,7 @@ export function SourcesTab() {
                     }}
                     className={`h-[46px] cursor-pointer transition-colors hover:bg-blue-50/70 ${index % 2 === 0 ? "premium-row-even" : "premium-row-odd"}`}
                   >
-                    <td className="px-4 py-2.5 text-[12px] font-semibold tabular-nums text-zinc-700">{index + 1}</td>
+                    <td className="px-4 py-2.5 text-[12px] font-semibold tabular-nums text-zinc-700">{firstItem + index}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <Fav domain={row.domain} />
@@ -983,6 +1145,15 @@ export function SourcesTab() {
                 )}
               </tbody>
             </table>
+            <PaginationFooter
+              page={page}
+              totalPages={totalPages}
+              totalRows={activeRowCount}
+              firstItem={firstItem}
+              lastItem={lastItem}
+              isLoading={isLoading}
+              onPageChange={setPage}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1006,14 +1177,14 @@ export function SourcesTab() {
               <tbody>
                 {isLoading && Array.from({ length: 8 }).map((_, index) => <RowSkeleton key={index} cols={8} />)}
 
-                {!isLoading && filteredUrls.map((row, index) => {
+                {!isLoading && paginatedUrls.map((row, index) => {
                   const mentions = rowMentions(row)
                   const updatedAt = "content_updated_at" in row ? row.content_updated_at : null
                   const usedTotal = row.retrievals ?? 0
                   const avgCitations = row.citations ?? ("citation_rate" in row ? row.citation_rate ?? 0 : 0)
 
                   return (
-                    <tr key={`${row.url}-${index}`} className={`h-[52px] transition-colors hover:bg-blue-50/70 ${index % 2 === 0 ? "premium-row-even" : "premium-row-odd"}`}>
+                    <tr key={`${row.url}-${firstItem + index}`} className={`h-[52px] transition-colors hover:bg-blue-50/70 ${index % 2 === 0 ? "premium-row-even" : "premium-row-odd"}`}>
                       <td className="px-4 py-2.5">
                         <div className="flex min-w-0 items-start gap-2">
                           <Fav domain={row.domain} />
@@ -1059,6 +1230,15 @@ export function SourcesTab() {
                 )}
               </tbody>
             </table>
+            <PaginationFooter
+              page={page}
+              totalPages={totalPages}
+              totalRows={activeRowCount}
+              firstItem={firstItem}
+              lastItem={lastItem}
+              isLoading={isLoading}
+              onPageChange={setPage}
+            />
           </div>
         )}
       </section>

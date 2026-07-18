@@ -1,3 +1,4 @@
+import { useState } from "react"
 import type { ReactNode, SVGProps } from "react"
 import { Link } from "react-router-dom"
 import {
@@ -19,12 +20,6 @@ interface NavItem {
     href: string
 }
 
-interface ResourceItem {
-    icon: ReactNode
-    label: string
-    href: string
-}
-
 const ArrowRight = (props: IconProps) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" {...props}>
         <line x1="5" y1="12" x2="19" y2="12" />
@@ -32,7 +27,7 @@ const ArrowRight = (props: IconProps) => (
     </svg>
 )
 
-const RefractOneMark = () => (
+const PromptPulseMark = () => (
     <div className="flex h-8 w-7 items-center justify-center">
         <div className="flex h-6 items-end gap-[3px]">
             {[15, 20, 25].map((height) => (
@@ -95,27 +90,6 @@ const BlogIcon = (props: IconProps) => (
     </svg>
 )
 
-const DocsIcon = (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" {...props}>
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    </svg>
-)
-
-const GeoIcon = (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" {...props}>
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-    </svg>
-)
-
-const ChangelogIcon = (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" {...props}>
-        <path d="M12 8v5l3 2" />
-        <circle cx="12" cy="12" r="10" />
-    </svg>
-)
-
 const productItems: NavItem[] = [
     {
         icon: <AnalyticsIcon />,
@@ -155,13 +129,6 @@ const productItems: NavItem[] = [
     },
 ]
 
-const resourceItems: ResourceItem[] = [
-    { icon: <BlogIcon />, label: "Blog", href: "/blog" },
-    { icon: <GeoIcon />, label: "GEO Guide", href: "/geo-guide" },
-    { icon: <DocsIcon />, label: "Help Center", href: "/help-center" },
-    { icon: <ChangelogIcon />, label: "Changelog", href: "/changelog" },
-]
-
 export function Navbar() {
     return (
         <>
@@ -173,11 +140,13 @@ export function Navbar() {
 
 /** Standalone nav header — used on pages like /pricing that render their own body */
 export function NavHeader() {
+    const [mobileOpen, setMobileOpen] = useState(false)
+
     return (
         <header className="sticky top-0 z-50 w-full">
-            <div className="border-b border-black bg-black px-4 py-2 text-center text-[13px] font-bold text-white">
+            <div className="border-b border-black bg-black px-3 py-2 text-center text-[12px] font-bold leading-snug text-white sm:text-[13px]">
                 <a href="/signup" className="flex items-center justify-center gap-1.5 text-white no-underline transition hover:text-zinc-200">
-                    Track your brand across ChatGPT & Gemini - free for 7 days<ArrowRight className="h-3.5 w-3.5" />
+                    Track your brand across AI search - free for 14 days<ArrowRight className="h-3.5 w-3.5" />
                 </a>
             </div>
 
@@ -186,18 +155,18 @@ export function NavHeader() {
                 aria-label="Main navigation"
                 className="border-b border-ink-200 bg-white/90 backdrop-blur"
             >
-                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
-                    <Link to="/" aria-label="RefractOne home" className="flex shrink-0 items-center gap-2.5">
-                        <RefractOneMark />
+                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+                    <Link to="/" aria-label="PromptPulse home" className="flex shrink-0 items-center gap-2.5">
+                        <PromptPulseMark />
                         <span className="text-[18px] font-black tracking-[-0.035em] text-ink-900">
-                            RefractOne
+                            PromptPulse
                         </span>
                     </Link>
 
                     <NavigationMenu className="hidden md:flex">
-                        <NavigationMenuList className="m-0 flex list-none items-center gap-0 p-0">
+                        <NavigationMenuList className="m-0 flex list-none items-center gap-3 p-0">
                             <NavigationMenuItem>
-                                <NavigationMenuTrigger className="rounded-md bg-transparent px-3 py-2 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:text-ink-900 data-[state=open]:bg-ink-100 data-[state=open]:text-ink-900">
+                                <NavigationMenuTrigger className="rounded-md bg-transparent px-4 py-2 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:text-ink-900 data-[state=open]:bg-ink-100 data-[state=open]:text-ink-900">
                                     Product
                                 </NavigationMenuTrigger>
                                 <NavigationMenuContent>
@@ -232,35 +201,11 @@ export function NavHeader() {
                                 <NavigationMenuLink asChild>
                                     <Link
                                         to="/pricing"
-                                        className="inline-flex h-10 items-center rounded-md px-3 text-sm font-semibold text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                                        className="inline-flex h-10 items-center rounded-md px-4 text-sm font-semibold text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
                                     >
                                         Pricing
                                     </Link>
                                 </NavigationMenuLink>
-                            </NavigationMenuItem>
-
-                            <NavigationMenuItem>
-                                <NavigationMenuTrigger className="rounded-md bg-transparent px-3 py-2 text-sm font-semibold text-ink-600 hover:bg-ink-100 hover:text-ink-900 data-[state=open]:bg-ink-100 data-[state=open]:text-ink-900">
-                                    Resources
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <div className="w-56 rounded-xl border border-ink-200 bg-white p-2 shadow-xl shadow-ink-900/5">
-                                        {resourceItems.map((item, i) => (
-                                            <div key={item.label}>
-                                                <NavigationMenuLink asChild>
-                                                    <Link
-                                                        to={item.href}
-                                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-ink-700 transition-colors hover:bg-zinc-50 hover:text-ink-900 [&_svg]:text-ink-400 hover:[&_svg]:text-zinc-950"
-                                                    >
-                                                        {item.icon}
-                                                        {item.label}
-                                                    </Link>
-                                                </NavigationMenuLink>
-                                                {i === 1 && <div className="my-1.5 h-px bg-ink-200" />}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </NavigationMenuContent>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -283,12 +228,47 @@ export function NavHeader() {
 
                     <button
                         type="button"
-                        aria-label="Open menu"
+                        aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                        aria-expanded={mobileOpen}
+                        onClick={() => setMobileOpen((value) => !value)}
                         className="inline-flex items-center justify-center rounded-md p-2 text-ink-600 hover:bg-ink-100 md:hidden"
                     >
                         <MenuIcon />
                     </button>
                 </div>
+
+                {mobileOpen && (
+                    <div className="border-t border-zinc-200 bg-white px-4 py-4 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.65)] md:hidden">
+                        <div className="grid gap-4">
+                            <div>
+                                <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-400">Product</p>
+                                <div className="grid gap-1">
+                                    {productItems.slice(0, 5).map((item) => (
+                                        <Link
+                                            key={item.title}
+                                            to={item.href}
+                                            onClick={() => setMobileOpen(false)}
+                                            className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5"
+                                        >
+                                            <span className="block text-[13px] font-bold text-zinc-950">{item.title}</span>
+                                            <span className="mt-0.5 block text-[11.5px] leading-4 text-zinc-500">{item.desc}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <Link onClick={() => setMobileOpen(false)} to="/pricing" className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-center text-[13px] font-bold text-zinc-800">Pricing</Link>
+                                <Link onClick={() => setMobileOpen(false)} to="/book-demo" className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-center text-[13px] font-bold text-zinc-800">Book Demo</Link>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <Link onClick={() => setMobileOpen(false)} to="/login" className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-center text-[13px] font-black text-zinc-800">Login</Link>
+                                <Link onClick={() => setMobileOpen(false)} to="/signup" className="rounded-xl bg-black px-4 py-3 text-center text-[13px] font-black text-white">Start Free</Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </nav>
         </header>
     )

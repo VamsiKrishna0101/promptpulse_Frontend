@@ -8,7 +8,7 @@ import {
 import { ProductPageShell } from "./ProductShared"
 
 const brandRows = [
-  { name: "Northstar", domain: "refractone.com", visibility: "96%", vDelta: "+9.0", sentiment: "72", sDelta: "+3.3", position: "#4.1", pDelta: "+0.2", isYou: true },
+  { name: "Northstar", domain: "promptpulse.com", visibility: "96%", vDelta: "+9.0", sentiment: "72", sDelta: "+3.3", position: "#4.1", pDelta: "+0.2", isYou: true },
   { name: "PromptWatch", domain: "promptwatch.com", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "+0.8", position: "#3.1", pDelta: "-0.1" },
   { name: "Peec AI", domain: "peec.ai", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "-0.2", position: "#3.0", pDelta: "0" },
   { name: "PromptMonitor", domain: "promptmonitor.ai", visibility: "60%", vDelta: "+0.5", sentiment: "65", sDelta: "+0.1", position: "#3.0", pDelta: "0" },
@@ -16,7 +16,7 @@ const brandRows = [
 ]
 
 const sources = [
-  { domain: "refractone.com", used: "48%", citations: "0.8", type: "Owned" },
+  { domain: "promptpulse.com", used: "48%", citations: "0.8", type: "Owned" },
   { domain: "g2.com", used: "38%", citations: "0.7", type: "Review" },
   { domain: "reddit.com", used: "31%", citations: "0.5", type: "Community" },
 ]

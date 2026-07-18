@@ -29,6 +29,9 @@ export type UrlSourceRow = {
   mentioned_brands?: string[]
   snippet?: string | null
   content_updated_at?: string | null
+  content_length?: number
+  fetch_status?: string | null
+  error_reason?: string | null
 }
 
 export type SourceGapRow = {
@@ -46,6 +49,10 @@ export type SourceGapRow = {
   tracked_competitors?: string[]
   gap_score?: number
   suggested_action?: string | null
+  content_updated_at?: string | null
+  content_length?: number
+  fetch_status?: string | null
+  error_reason?: string | null
 }
 
 export type TopSourceRow = {

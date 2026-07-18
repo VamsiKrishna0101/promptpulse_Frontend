@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import {
     ArrowUp,
     Expand,
@@ -59,7 +61,20 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
     const sara = useSara(selectedProjectId)
     const [input, setInput] = useState("")
     const [historyOpen, setHistoryOpen] = useState(mode === "page")
+    const panelBodyRef = useRef<HTMLDivElement | null>(null)
+    const pageBodyRef = useRef<HTMLDivElement | null>(null)
     const pageContext = pageLabels[location.pathname] ?? "Dashboard"
+    const lastMessage = sara.messages[sara.messages.length - 1]
+
+    useEffect(() => {
+        const container = mode === "panel" ? panelBodyRef.current : pageBodyRef.current
+        if (!container) return
+
+        container.scrollTo({
+            top: container.scrollHeight,
+            behavior: sara.isSending ? "auto" : "smooth",
+        })
+    }, [mode, sara.messages.length, lastMessage?.content, sara.isSending])
 
     const hasStarted = sara.messages.length > 0
     const recommendations = useMemo(() => {
@@ -101,7 +116,7 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
                     <LockedState readiness={sara.readiness} compact />
                 ) : (
                     <>
-                        <div className="sara-body flex-1 overflow-y-auto px-4 py-5">
+                        <div ref={panelBodyRef} className="sara-body flex-1 overflow-y-auto px-4 py-5">
                             <SaraBody
                                 isLoading={sara.isLoading}
                                 isSending={sara.isSending}
@@ -194,7 +209,7 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
                     <LockedState readiness={sara.readiness} />
                 ) : (
                     <>
-                        <div className="sara-body flex-1 overflow-y-auto px-6 py-6">
+                        <div ref={pageBodyRef} className="sara-body flex-1 overflow-y-auto px-6 py-6">
                             <SaraBody
                                 isLoading={sara.isLoading}
                                 isSending={sara.isSending}
@@ -276,7 +291,7 @@ function LockedState({
                     <SaraAvatar size={compact ? 40 : 46} />
                 </div>
                 <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#0F172A]">
-                    Sara unlocks after 7 days
+                    Sara unlocks after 1 day
                 </h3>
                 <p className="mt-2 text-[13px] leading-6 text-[#667085]">
                     This project has{" "}
@@ -431,7 +446,11 @@ function MessageBubble({ message }: { message: SaraMessage }) {
                         : "sara-assistant-bubble max-w-[82%] rounded-[20px] px-4 py-3.5 text-[13px] leading-6 text-[#1D2939]",
                 ].join(" ")}
             >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                {isUser ? (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                    <SaraMarkdown content={message.content} />
+                )}
                 {!isUser && citations.length > 0 && (
                     <div className="mt-3 grid gap-1.5 border-t border-slate-200/80 pt-3">
                         {citations.slice(0, 3).map((citation) => (
@@ -466,4 +485,65 @@ function MessageBubble({ message }: { message: SaraMessage }) {
             </div>
         </div>
     )
+}
+
+function SaraMarkdown({ content }: { content: string }) {
+    const normalized = normalizeSaraMarkdown(content)
+
+    return (
+        <div className="sara-markdown">
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    table: ({ children }) => (
+                        <div className="my-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                            <table className="w-full border-collapse text-left text-[12px] leading-5">
+                                {children}
+                            </table>
+                        </div>
+                    ),
+                    thead: ({ children }) => <thead className="bg-slate-50 text-slate-500">{children}</thead>,
+                    th: ({ children }) => <th className="border-b border-slate-200 px-3 py-2 font-bold">{children}</th>,
+                    td: ({ children }) => <td className="border-b border-slate-100 px-3 py-2 align-top text-slate-700">{children}</td>,
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>,
+                    ol: ({ children }) => <ol className="my-2 list-decimal space-y-1 pl-5">{children}</ol>,
+                    li: ({ children }) => <li>{children}</li>,
+                    strong: ({ children }) => <strong className="font-bold text-slate-900">{children}</strong>,
+                    code: ({ children }) => <code className="rounded bg-slate-100 px-1 py-0.5 text-[12px] font-semibold text-slate-800">{children}</code>,
+                }}
+            >
+                {normalized}
+            </ReactMarkdown>
+        </div>
+    )
+}
+
+function normalizeSaraMarkdown(content: string) {
+    const lines = content.split("\n")
+    const normalizedLines = lines.flatMap(line => normalizeCompactMarkdownTableLine(line))
+    return normalizedLines.join("\n")
+}
+
+function normalizeCompactMarkdownTableLine(line: string) {
+    const trimmed = line.trim()
+    if (!looksLikeCompactMarkdownTable(trimmed)) return [line]
+
+    const prefix = line.slice(0, line.indexOf("|")).trim()
+    const tableText = line.slice(line.indexOf("|")).trim()
+    const rows = tableText
+        .split(/\s+\|\s+(?=\|)/g)
+        .map(row => row.trim())
+        .filter(Boolean)
+        .map(row => row.startsWith("|") ? row : `| ${row}`)
+
+    if (rows.length < 2) return [line]
+    return [prefix, "", ...rows, ""].filter((item, index) => item || index > 0)
+}
+
+function looksLikeCompactMarkdownTable(value: string) {
+    if (!value.includes("|")) return false
+    if (!/\|\s*:?-{3,}:?\s*\|/.test(value)) return false
+    const pipeCount = (value.match(/\|/g) ?? []).length
+    return pipeCount >= 8
 }

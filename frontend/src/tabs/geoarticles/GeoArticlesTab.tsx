@@ -26,7 +26,7 @@ import {
 } from "@/hooks/useGeoArticle"
 import { useProjects } from "@/hooks/useProjects"
 import { Fav, Sk } from "@/tabs/overview/overview"
-import { generateGeoArticlePdf } from "@/lib/geoArticlePdf"
+import { downloadGeoArticlePdf } from "@/lib/exportDownload"
 import { MyArticlesView } from "./MyArticlesView"
 
 type Action = GeoArticleBrief["recommended_article"]["action"]
@@ -49,9 +49,9 @@ function displayBrandName(name?: string | null) {
 
 function cleanDemoText(text: string, brandName: string) {
   return text
-    .replace(/RefractOne/gi, brandName)
-    .replace(/Refractone/gi, brandName)
-    .replace(/refractone\.com/gi, "yourbrand.com")
+    .replace(/PromptPulse/gi, brandName)
+    .replace(/PromptPulse/gi, brandName)
+    .replace(/promptpulse\.com/gi, "yourbrand.com")
 }
 
 function ActionBadge({ action }: { action: Action }) {
@@ -398,11 +398,11 @@ function ArticlePreviewPage({
     brandName,
   )
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     setIsExportingPdf(true)
 
     try {
-      generateGeoArticlePdf(projectId, brief, {
+      await downloadGeoArticlePdf(projectId, brief, {
         ...article,
         article_markdown: articleText,
         title: articleTitle,
@@ -879,7 +879,7 @@ export function GeoArticlesTab() {
         <MyArticlesView
           items={allArticles}
           brandName={brandName}
-          projectId={brandName}
+          projectId={selectedProject?.id ?? ""}
           onBack={() => setPageMode("brief")}
         />
       ) : isLoading && items.length === 0 ? (
@@ -895,7 +895,7 @@ export function GeoArticlesTab() {
           <ArticlePreviewPage
             item={activeItem}
             brandName={brandName}
-            projectId={brandName}
+            projectId={selectedProject?.id ?? ""}
             isLoading={isLoading || articleLoadingOffset === activeItem.offset}
             onBack={() => setPageMode("brief")}
             onRewrite={() => void handleRewriteArticle(activeItem)}

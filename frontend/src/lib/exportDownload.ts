@@ -23,15 +23,21 @@ export async function downloadCsvExport(
 
   // "csv" requests are routed to .xlsx for professional Excel output
   const ext = format === "pdf" ? "pdf" : "xlsx"
-  const token = localStorage.getItem("geolens_access_token")
+  const token = localStorage.getItem("promptpulse_access_token")
+  const idempotencyKey = `export-${projectId}-${resource}-${format}-${Date.now()}`
 
   const response = await fetch(
     `${API_BASE_URL}/exports/${projectId}/${resource}.${ext}${queryString}`,
-    { headers: token ? { Authorization: `Bearer ${token}` } : undefined },
+    {
+      headers: {
+        "Idempotency-Key": idempotencyKey,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    },
   )
 
   if (!response.ok) {
-    throw new Error("Export failed")
+    throw new Error(await readError(response, "Export failed"))
   }
 
   const blob     = await response.blob()
@@ -46,6 +52,7 @@ export async function downloadCsvExport(
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+  window.dispatchEvent(new Event("credits:changed"))
 }
 
 function readFilename(disposition: string | null): string | null {
@@ -62,7 +69,8 @@ export async function downloadGeoArticlePdf(
   brief: any,
   article: any,
 ) {
-  const token = localStorage.getItem("geolens_access_token")
+  const token = localStorage.getItem("promptpulse_access_token")
+  const idempotencyKey = `geoarticle-pdf-${projectId}-${Date.now()}`
 
   const response = await fetch(
     `${API_BASE_URL}/exports/${projectId}/geoarticle-pdf`,
@@ -70,6 +78,7 @@ export async function downloadGeoArticlePdf(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Idempotency-Key": idempotencyKey,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
       body: JSON.stringify({ brief, article })
@@ -77,7 +86,7 @@ export async function downloadGeoArticlePdf(
   )
 
   if (!response.ok) {
-    throw new Error("PDF Export failed")
+    throw new Error(await readError(response, "PDF Export failed"))
   }
 
   const blob = await response.blob()
@@ -92,4 +101,15 @@ export async function downloadGeoArticlePdf(
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+  window.dispatchEvent(new Event("credits:changed"))
+}
+
+async function readError(response: Response, fallback: string) {
+  try {
+    const data = await response.clone().json()
+    if (typeof data?.error === "string") return data.error
+  } catch {
+    // Keep the original fallback for binary/non-JSON error responses.
+  }
+  return fallback
 }

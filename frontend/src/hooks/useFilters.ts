@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 import { useProjects } from "@/hooks/useProjects"
+import { MODEL_FILTER_OPTIONS } from "@/lib/aiModels"
 
 export type FilterOptions = {
     topics: string[]
@@ -15,12 +16,7 @@ export const DAYS_OPTIONS = [
     { label: "All time",     value: ""   },
 ]
 
-export const MODEL_OPTIONS = [
-    { label: "All Models",  value: "" },
-    { label: "ChatGPT",     value: "chatgpt" },
-    { label: "Gemini",      value: "gemini" },
-    { label: "Perplexity",  value: "perplexity" },
-]
+export const MODEL_OPTIONS = MODEL_FILTER_OPTIONS
 
 export function useFilters() {
     const [searchParams, setSearchParams] = useSearchParams()

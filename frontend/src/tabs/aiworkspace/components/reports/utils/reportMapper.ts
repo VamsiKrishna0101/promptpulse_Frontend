@@ -11,6 +11,7 @@ export type ComponentInsight = {
 
 export type ModelInsight = {
   model: string
+  model_label?: string
   status: string
   summary: string
   strengths: string[]
@@ -148,6 +149,9 @@ export type ReportViewModel = {
     sourceInsight: string
     sentiment: string[]
     sentimentReadout: string
+    positiveShare: number
+    neutralShare: number
+    negativeShare: number
   }
   recommendations: {
     priority: string[]
@@ -167,6 +171,10 @@ function safeArray<T>(val: unknown): T[] {
 
 function safeString(val: unknown, fallback = ""): string {
   return typeof val === "string" ? val : fallback
+}
+
+function safeNumber(val: unknown): number | undefined {
+  return typeof val === "number" && Number.isFinite(val) ? val : undefined
 }
 
 export function mapReport(detail: SavedReportDetail): ReportViewModel {
@@ -227,15 +235,16 @@ export function mapReport(detail: SavedReportDetail): ReportViewModel {
     const mi = modelsInput.find(m => m.model === mo.model) || {}
     return {
       model: safeString(mo.model || mi.model),
+      model_label: safeString(mi.model_label || mo.model_label),
       status: safeString(mo.status),
       summary: safeString(mo.summary),
       strengths: safeArray<string>(mo.strengths),
       risks: safeArray<string>(mo.risks),
       recommended_action: safeString(mo.recommended_action),
-      runs: mi.runs,
-      mention_rate: mi.mention_rate,
-      mention_rate_delta: mi.mention_rate_delta,
-      average_position: mi.average_position,
+      runs: safeNumber(mi.runs),
+      mention_rate: safeNumber(mi.mention_rate),
+      mention_rate_delta: safeNumber(mi.mention_rate_delta),
+      average_position: safeNumber(mi.average_position),
       top_competitor: mi.top_competitor,
       top_sources: safeArray<any>(mi.top_sources)
     }
@@ -391,6 +400,9 @@ export function mapReport(detail: SavedReportDetail): ReportViewModel {
       sourceInsight: safeString(sources.owned_source_insight || sources.third_party_source_insight),
       sentiment: sentimentInsights,
       sentimentReadout: safeString(sentiment.sentiment_readout || sentiment.summary),
+      positiveShare: safeNumber(sentiment.positive_share) ?? safeNumber(sentiment.positiveShare) ?? 0,
+      neutralShare: safeNumber(sentiment.neutral_share) ?? safeNumber(sentiment.neutralShare) ?? 0,
+      negativeShare: safeNumber(sentiment.negative_share) ?? safeNumber(sentiment.negativeShare) ?? 0,
     },
     
     recommendations: {

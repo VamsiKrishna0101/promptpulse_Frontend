@@ -1,63 +1,84 @@
-import { Check, ChevronRight, CreditCard, Loader2, RefreshCcw, ShieldCheck, Sparkles, X } from "lucide-react"
+import { Check, ChevronRight, CreditCard, Loader2, RefreshCcw, ShieldCheck, Sparkles, X, Zap } from "lucide-react"
 import { useState } from "react"
 import { useSubscription, type PlanName } from "@/hooks/useSubscription"
 
 type PaidPlan = Exclude<PlanName, "FREE">
+type PlanFeature = { label: string; included?: boolean }
 
 const PLANS: {
   id: PaidPlan
   name: string
   price: number
+  oldPrice?: number
   tagline: string
   badge?: string
-  features: string[]
+  features: PlanFeature[]
 }[] = [
     {
       id: "STARTER",
       name: "Starter",
       price: 29,
-      tagline: "For validating one brand.",
+      oldPrice: 49,
+      tagline: "Essentials for one brand getting serious about AI visibility",
       features: [
-        "1 brand workspace",
-        "20 tracked prompts",
-        "Track 5 AI surfaces",
-        "3 competitors",
-        "2 refreshes / week",
-        "Weekly email report",
-        "Chat support",
+        { label: "1 project" },
+        { label: "20 shared prompts" },
+        { label: "Up to 480 AI responses per month" },
+        { label: "Twice a week refresh" },
+        { label: "ChatGPT, Gemini, Perplexity" },
+        { label: "5 tracked competitors" },
+        { label: "30 monthly credits for reports and premium actions" },
+        { label: "Visibility, position, sentiment" },
+        { label: "Sources, citations, and chat evidence" },
+        { label: "Weekly email report" },
+        { label: "Google AI Mode and Copilot", included: false },
+        { label: "Sara core assistant" },
+        { label: "Action queue", included: false },
+        { label: "CSV and PDF exports", included: false },
       ],
     },
     {
       id: "GROWTH",
       name: "Growth",
-      price: 39,
-      tagline: "Best for serious founders.",
-      badge: "Most popular",
+      price: 59,
+      oldPrice: 79,
+      tagline: "Perfect for growing SaaS teams that need daily monitoring",
+      badge: "79% pick this option",
       features: [
-        "2 brand workspaces",
-        "50 tracked prompts",
-        "Track 5 AI surfaces",
-        "6 competitors",
-        "Daily refresh",
-        "Full Sara assistance",
-        "CSV and PDF exports",
-        "Weekly email report",
+        { label: "2 projects" },
+        { label: "50 shared prompts" },
+        { label: "Up to 7,500 AI responses per month" },
+        { label: "Daily refresh" },
+        { label: "All Starter models + Google AI Mode and Copilot" },
+        { label: "12 tracked competitors" },
+        { label: "100 monthly credits for reports and premium actions" },
+        { label: "Source enrichment" },
+        { label: "Action queue" },
+        { label: "Sara strategy assistant" },
+        { label: "GEO article briefs" },
+        { label: "CSV and PDF exports" },
+        { label: "Weekly email report" },
       ],
     },
     {
       id: "PRO",
       name: "Pro",
-      price: 99,
-      tagline: "For more markets and teams.",
+      price: 129,
+      oldPrice: 219,
+      tagline: "For agencies and teams managing more markets and competitors",
       features: [
-        "5 brand workspaces",
-        "125 tracked prompts",
-        "Track 5 AI surfaces",
-        "15 competitors",
-        "Daily refresh",
-        "Advanced Sara strategy",
-        "Advanced exports",
-        "Priority chat support",
+        { label: "5 projects" },
+        { label: "125 shared prompts" },
+        { label: "Up to 18,750 AI responses per month" },
+        { label: "Daily refresh" },
+        { label: "All Growth AI surfaces" },
+        { label: "Unlimited tracked competitors" },
+        { label: "275 monthly credits for reports and premium actions" },
+        { label: "Advanced source and competitor intelligence" },
+        { label: "Advanced Sara strategy" },
+        { label: "Advanced GEO article briefs" },
+        { label: "Advanced exports" },
+        { label: "Priority chat support" },
       ],
     },
   ]
@@ -67,14 +88,22 @@ const COMPARISON_ROWS: {
   label: string
   values: Record<PaidPlan, string | boolean>
 }[] = [
-    { section: "Monitoring and analytics", label: "Brands / projects", values: { STARTER: "1", GROWTH: "2", PRO: "5" } },
-    { label: "Tracked prompts", values: { STARTER: "20", GROWTH: "50", PRO: "125" } },
-    { label: "Tracked AI surfaces", values: { STARTER: "5 surfaces", GROWTH: "5 surfaces", PRO: "5 surfaces" } },
-    { label: "Competitors", values: { STARTER: "3", GROWTH: "6", PRO: "15" } },
+    { section: "Monitoring and analytics", label: "Projects", values: { STARTER: "1", GROWTH: "2", PRO: "5" } },
+    { label: "Tracked prompts", values: { STARTER: "20 shared", GROWTH: "50 shared", PRO: "125 shared" } },
+    { label: "Estimated AI responses / month", values: { STARTER: "480", GROWTH: "7,500", PRO: "18,750" } },
+    { label: "Tracked AI surfaces", values: { STARTER: "3 surfaces", GROWTH: "5 surfaces", PRO: "5 surfaces" } },
+    { label: "Competitors", values: { STARTER: "5", GROWTH: "12", PRO: "Unlimited" } },
+    { label: "Monthly credits for reports, exports, briefs, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
     { label: "Refresh rate", values: { STARTER: "2x / week", GROWTH: "Daily", PRO: "Daily" } },
+    { label: "14-day free trial", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Country-level tracking", values: { STARTER: true, GROWTH: true, PRO: true } },
-    { section: "Sara and insights", label: "Sara assistant", values: { STARTER: false, GROWTH: "Full", PRO: "Advanced" } },
+    { section: "AI surfaces", label: "ChatGPT, Gemini, Perplexity", values: { STARTER: true, GROWTH: true, PRO: true } },
+    { label: "Google AI Mode", values: { STARTER: false, GROWTH: true, PRO: true } },
+    { label: "Microsoft Copilot", values: { STARTER: false, GROWTH: true, PRO: true } },
+    { section: "Sara and insights", label: "Sara assistant", values: { STARTER: "Core", GROWTH: "Strategy", PRO: "Advanced" } },
     { label: "Source opportunity recommendations", values: { STARTER: "Basic", GROWTH: true, PRO: true } },
+    { label: "Source enrichment", values: { STARTER: "Basic", GROWTH: true, PRO: "Advanced" } },
+    { label: "Action queue", values: { STARTER: false, GROWTH: true, PRO: "Advanced" } },
     { label: "Competitor movement analysis", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Prompt evidence and citations", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Advanced strategic recommendations", values: { STARTER: false, GROWTH: false, PRO: true } },
@@ -95,18 +124,39 @@ function periodDate(value: string | null) {
   return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 }
 
+function planHeadline(data: ReturnType<typeof useSubscription>["data"]) {
+  if (!data) return "FREE"
+  if (data.trial?.active) return "FREE TRIAL"
+  return data.plan
+}
+
+function planSubline(data: ReturnType<typeof useSubscription>["data"]) {
+  if (!data) return "Free"
+  if (data.trial?.active) return `Growth preview - ${data.trial.days_left} day${data.trial.days_left === 1 ? "" : "s"} left`
+  if (data.trial?.expired) return "Trial ended"
+  return formatStatus(data.status)
+}
+
+function periodLabel(data: ReturnType<typeof useSubscription>["data"]) {
+  if (!data) return "No billing period yet"
+  if (data.trial?.active || data.trial?.expired) {
+    return `${periodDate(data.trial.starts_at)} - ${periodDate(data.trial.ends_at)}`
+  }
+  return periodDate(data.subscription?.current_period_end ?? null)
+}
+
 function SegmentedControl({ value, onChange }: { value: "monthly" | "annual"; onChange: (value: "monthly" | "annual") => void }) {
   return (
-    <div className="inline-flex rounded-full border border-[#E2E5EA] bg-[#F7F8FA] p-1">
+    <div className="inline-flex rounded-md border border-[#E2E5EA] bg-[#F7F8FA] p-1">
       {(["monthly", "annual"] as const).map((option) => (
         <button
           key={option}
           type="button"
           onClick={() => onChange(option)}
           className={[
-            "rounded-full px-4 py-1.5 text-[12.5px] font-semibold capitalize transition",
+            "rounded-[6px] px-4 py-1.5 text-[12.5px] font-semibold capitalize transition",
             value === option
-              ? "bg-white text-[#0F172A] shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
+              ? "bg-white text-[#101828] shadow-[0_1px_2px_rgba(16,24,40,0.08)]"
               : "text-[#667085] hover:text-[#344054]",
           ].join(" ")}
         >
@@ -117,12 +167,42 @@ function SegmentedControl({ value, onChange }: { value: "monthly" | "annual"; on
   )
 }
 
-// Compact inline stat — used inside the status strip, not a standalone card anymore.
 function UsageStat({ label, used, limit }: { label: string; used: number; limit: number | string }) {
   return (
     <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-[13px] font-semibold text-[#0F172A]">{used}</span>
+      <span className="text-[13px] font-semibold text-[#101828]">{used}</span>
       <span className="text-[11.5px] text-[#98A2B3]">/ {limit} {label}</span>
+    </div>
+  )
+}
+
+function PromptPulseMark() {
+  return (
+    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#F9FAFB] ring-1 ring-[#EEF0F3]">
+      <div className="flex h-5 items-end gap-[3px]">
+        {[13, 18, 23].map((height) => (
+          <span key={height} className="block w-[4px] -skew-y-[28deg] rounded-[2px] bg-[#101828]" style={{ height }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FeatureRow({ feature }: { feature: PlanFeature }) {
+  const included = feature.included !== false
+  return (
+    <div className="flex items-start gap-2.5">
+      <span
+        className={[
+          "mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full",
+          included ? "bg-[#EDFAF1] text-[#067647]" : "bg-transparent text-[#C9CEDA]",
+        ].join(" ")}
+      >
+        {included ? <Check size={12} strokeWidth={3} /> : <X size={13} strokeWidth={2.6} />}
+      </span>
+      <span className={["text-[13px] leading-5", included ? "text-[#344054]" : "text-[#98A2B3] line-through"].join(" ")}>
+        {feature.label}
+      </span>
     </div>
   )
 }
@@ -143,32 +223,43 @@ function PlanCard({
   const isCurrent = currentPlan === plan.id
   const isLoading = checkoutPlan === plan.id
   const displayedPrice = billing === "annual" ? Math.round(plan.price * 0.8) : plan.price
+  const displayedOldPrice = plan.oldPrice ? (billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice) : null
   const featured = plan.id === "GROWTH"
 
   return (
     <article
       className={[
-        "relative flex flex-col rounded-2xl border bg-white p-7 transition",
-        featured
-          ? "border-[#2563EB] shadow-[0_24px_56px_-24px_rgba(37,99,235,0.32)] md:-translate-y-3"
-          : "border-[#E2E5EA] shadow-[0_1px_2px_rgba(16,24,40,0.04)]",
+        "subscription-plan-card relative flex flex-col rounded-lg border bg-white p-6 md:p-7",
+        featured ? "border-[#101828]" : "border-[#E2E5EA]",
       ].join(" ")}
     >
       {featured && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#2563EB] px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]">
-          {plan.badge}
+        <span className="absolute -top-3 left-6 rounded-full bg-[#101828] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-white">
+          Most popular
         </span>
       )}
 
-      <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#0F172A]">{plan.name}</h3>
-      <p className="mt-1.5 min-h-[36px] text-[12.5px] leading-5 text-[#667085]">{plan.tagline}</p>
+      <PromptPulseMark />
 
-      <div className="mt-6 flex items-end gap-1">
-        <span className="text-[36px] font-semibold leading-none tracking-[-0.02em] text-[#0F172A]">${displayedPrice}</span>
-        <span className="pb-1 text-[12.5px] font-medium text-[#667085]">/monthly</span>
+      <div className="mb-6 mt-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-[16px] font-semibold text-[#667085]">{plan.name}</h3>
+          {plan.badge && (
+            <span className="inline-flex items-center rounded-full border border-[#C7D2FE] bg-[#EEF2FF] px-2.5 py-0.5 text-[11px] font-semibold text-[#3730A3]">
+              {plan.badge}
+            </span>
+          )}
+        </div>
+        <p className="mt-1.5 min-h-[44px] text-[15px] leading-[1.4] text-[#344054]">{plan.tagline}</p>
       </div>
-      <p className="mt-1.5 h-4 text-[11.5px] font-semibold text-[#2563EB]">
-        {billing === "annual" ? "Billed annually · 20% off" : "\u00A0"}
+
+      <div className="flex items-end gap-2">
+        <span className="text-[36px] font-semibold leading-none tracking-[-0.03em] text-[#101828]">${displayedPrice}</span>
+        <span className="pb-1 text-[18px] font-normal text-[#667085]">/mo</span>
+        {displayedOldPrice && <span className="pb-1.5 text-[15px] font-normal text-[#98A2B3] line-through">${displayedOldPrice}/mo</span>}
+      </div>
+      <p className="mt-1.5 h-4 text-[11.5px] font-semibold text-[#98A2B3]">
+        {billing === "annual" ? "Billed annually - 20% off" : "\u00A0"}
       </p>
 
       <button
@@ -176,26 +267,17 @@ function PlanCard({
         disabled={isCurrent || isLoading}
         onClick={() => onSelect(plan.id)}
         className={[
-          "mt-4 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg text-[12.5px] font-semibold transition",
-          isCurrent
-            ? "border border-[#B7EFCF] bg-[#ECFDF3] text-[#047857]"
-            : featured
-              ? "bg-[#2563EB] text-white shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] hover:bg-[#1D4ED8]"
-              : "border border-[#E2E5EA] bg-white text-[#344054] hover:border-[#D0D5DD] hover:bg-[#F7F8FA]",
+          "subscription-cta-btn mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-md text-[13.5px] font-semibold transition disabled:cursor-not-allowed",
+          isCurrent ? "border border-[#B7EFCF] bg-[#ECFDF3] text-[#067647]" : "bg-[#101828] text-white hover:bg-[#1D2939]",
         ].join(" ")}
       >
-        {isLoading ? <Loader2 size={15} className="animate-spin" /> : isCurrent ? "Current plan" : "Get started"}
+        {isLoading ? <Loader2 size={15} className="animate-spin" /> : isCurrent ? "Current plan" : "Try free for 14 days"}
         {!isCurrent && !isLoading && <ChevronRight size={14} />}
       </button>
 
-      <div className="mt-7 space-y-3 border-t border-[#EEF0F3] pt-6">
+      <div className="mt-5 space-y-2 border-t border-[#EEF0F3] pt-5">
         {plan.features.map((feature) => (
-          <div key={feature} className="flex items-center gap-2.5 text-[13px] text-[#344054]">
-            <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
-              <Check size={10} strokeWidth={3} />
-            </span>
-            <span>{feature}</span>
-          </div>
+          <FeatureRow key={feature.label} feature={feature} />
         ))}
       </div>
     </article>
@@ -205,32 +287,38 @@ function PlanCard({
 function ValueCell({ value }: { value: string | boolean }) {
   if (value === true) {
     return (
-      <span className="mx-auto flex h-6 w-6 items-center justify-center rounded-full bg-[#ECFDF3] text-[#047857]">
-        <Check size={14} strokeWidth={2.4} />
+      <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#EDFAF1] text-[#067647]">
+        <Check size={11} strokeWidth={3} />
       </span>
     )
   }
   if (value === false) {
-    return (
-      <span className="mx-auto flex h-6 w-6 items-center justify-center rounded-full bg-[#F1F3F6] text-[#98A2B3]">
-        <X size={13} strokeWidth={2.2} />
-      </span>
-    )
+    return <span className="mx-auto text-[13px] font-medium leading-none text-[#C9CEDA]">—</span>
   }
-  return <span className="text-[13px] font-semibold text-[#0F172A]">{value}</span>
+  return <span className="text-[13px] font-semibold text-[#101828]">{value}</span>
 }
 
 export function SubscriptionTab() {
   const { data, isLoading, error, checkoutPlan, startCheckout, refresh } = useSubscription()
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly")
+  const [refreshing, setRefreshing] = useState(false)
   const currentPlan = data?.plan ?? "FREE"
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    try {
+      await refresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   if (isLoading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
-        <div className="flex items-center gap-2 rounded-xl border border-[#E2E5EA] bg-white px-4 py-3 text-[12.5px] font-medium text-[#667085] shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="flex items-center gap-2 rounded-lg border border-[#E2E5EA] bg-white px-4 py-3 text-[12.5px] font-medium text-[#667085]">
           <Loader2 size={16} className="animate-spin" />
-          Loading subscription…
+          Loading subscription...
         </div>
       </div>
     )
@@ -238,17 +326,36 @@ export function SubscriptionTab() {
 
   return (
     <div className="space-y-8">
-      {/* ── Status strip — compact, single row, doesn't compete with the headline ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#E2E5EA] bg-white px-5 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <style>{`
+        .subscription-plan-card {
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+          box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+        }
+        .subscription-plan-card:hover {
+          border-color: #C9CEDA;
+          box-shadow: 0 4px 14px -8px rgba(16,24,40,0.12);
+        }
+        .subscription-cta-btn {
+          transition: background 0.12s ease;
+        }
+        .subscription-refresh-btn {
+          transition: background 0.12s ease, border-color 0.12s ease;
+        }
+      `}</style>
+
+      {/* ── Usage bar ── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[#E2E5EA] bg-white px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#1D4ED8]">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-[#F9FAFB] text-[#344054]">
             <CreditCard size={15} />
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-[#0F172A]">
-              {currentPlan} <span className="font-medium text-[#98A2B3]">· {formatStatus(data?.status ?? "FREE")}</span>
+            <p className="text-[13px] font-semibold text-[#101828]">
+              {planHeadline(data)} <span className="font-medium text-[#98A2B3]">- {planSubline(data)}</span>
             </p>
-            <p className="text-[11.5px] text-[#98A2B3]">Period ends: {periodDate(data?.subscription?.current_period_end ?? null)}</p>
+            <p className="text-[11.5px] text-[#98A2B3]">
+              {data?.trial?.active || data?.trial?.expired ? "Trial period" : "Period ends"}: {periodLabel(data)}
+            </p>
           </div>
         </div>
 
@@ -256,37 +363,43 @@ export function SubscriptionTab() {
           <UsageStat label="brands" used={data?.usage.project_count ?? 0} limit={data?.limits.projects ?? 0} />
           <UsageStat label="prompts" used={data?.usage.prompt_count ?? 0} limit={data?.limits.prompts ?? 0} />
           <UsageStat label="competitors" used={data?.usage.competitor_count ?? 0} limit={data?.limits.competitors ?? 0} />
+          <UsageStat label="credits left" used={data?.usage.credits_remaining ?? 0} limit={data?.limits.credits ?? 0} />
           <UsageStat label="refreshes" used={data?.usage.monthly_runs_used ?? 0} limit={data?.limits.refreshes_per_week ?? 0} />
           <button
             type="button"
-            onClick={() => void refresh()}
-            className="flex h-7 items-center gap-1.5 rounded-md border border-[#E2E5EA] bg-white px-2.5 text-[11.5px] font-semibold text-[#475467] transition hover:bg-[#F7F8FA]"
+            onClick={() => void handleRefresh()}
+            disabled={refreshing}
+            className="subscription-refresh-btn flex h-7 items-center gap-1.5 rounded-md border border-[#D0D5DD] bg-white px-2.5 text-[11.5px] font-semibold text-[#344054] hover:bg-[#F9FAFB] disabled:opacity-60"
           >
-            <RefreshCcw size={12} />
-            Refresh
+            <RefreshCcw size={12} className={refreshing ? "animate-spin" : ""} />
+            {refreshing ? "Refreshing…" : "Refresh"}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-[#FDA29B] bg-[#FEF3F2] px-4 py-3 text-[12.5px] font-medium text-[#B42318]">
+        <div className="rounded-lg border border-[#FDA29B] bg-[#FEF3F2] px-4 py-3 text-[12.5px] font-medium text-[#B42318]">
           {error}
         </div>
       )}
 
-      {/* ── Headline + toggle, centered, the actual hero ── */}
-      <div className="flex flex-col items-center gap-5 text-center">
-        <h1 className="max-w-[560px] text-[30px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#0F172A]">
-          Simple plans for AI visibility monitoring.
+      {/* ── Heading ── */}
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E5EA] bg-[#F9FAFB] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#475467]">
+          <Zap size={11} />
+          14-day free trial - launch pricing
+        </div>
+        <h1 className="max-w-[680px] text-[28px] font-semibold leading-[1.2] tracking-[-0.02em] text-[#101828]">
+          Choose the plan that fits your AI visibility motion.
         </h1>
-        <p className="max-w-[540px] text-[13.5px] leading-6 text-[#667085]">
-          Track your brand across AI answers, competitor mentions, source citations, exports, weekly reports, and Sara strategy.
+        <p className="max-w-[600px] text-[13px] leading-5 text-[#667085]">
+          Prompt monitoring is included in your plan. Credits cover reports, exports, and premium actions.
         </p>
         <SegmentedControl value={billing} onChange={setBilling} />
       </div>
 
-      {/* ── Plan cards — real separated cards, featured one lifted ── */}
-      <div className="grid grid-cols-1 gap-5 pt-3 md:grid-cols-3">
+      {/* ── Plan cards ── */}
+      <div className="grid grid-cols-1 gap-4 pt-1 md:grid-cols-3">
         {PLANS.map((plan) => (
           <PlanCard
             key={plan.id}
@@ -300,17 +413,18 @@ export function SubscriptionTab() {
       </div>
 
       {/* ── Comparison table ── */}
-      <section className="overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <section className="overflow-hidden rounded-lg border border-[#E2E5EA] bg-white">
         <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-[#E7E9EC] bg-[#FBFBFC]">
           <div className="px-6 py-5">
-            <p className="text-[12.5px] font-semibold text-[#0F172A]">Features</p>
+            <p className="text-[12.5px] font-semibold text-[#101828]">Features</p>
             <p className="mt-1 text-[11.5px] text-[#98A2B3]">Compare plan capabilities</p>
           </div>
           {PLANS.map((plan) => (
             <div key={plan.id} className="px-6 py-5 text-center">
-              <p className="text-[12.5px] font-semibold text-[#0F172A]">{plan.name}</p>
+              <p className="text-[12.5px] font-semibold text-[#101828]">{plan.name}</p>
               <p className="mt-1 text-[12px] font-medium text-[#667085]">
-                ${plan.price}<span className="text-[#98A2B3]">/monthly</span>
+                {plan.oldPrice && <span className="mr-1 text-[#98A2B3] line-through">${billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice}</span>}
+                ${billing === "annual" ? Math.round(plan.price * 0.8) : plan.price}<span className="text-[#98A2B3]">/mo</span>
               </p>
             </div>
           ))}
@@ -322,16 +436,16 @@ export function SubscriptionTab() {
               <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-[#E7E9EC] bg-[#F7F8FA]">
                 <div className="flex items-center gap-2 px-6 py-4">
                   <ShieldCheck size={14} className="text-[#667085]" />
-                  <p className="text-[13px] font-semibold tracking-[-0.01em] text-[#0F172A]">{row.section}</p>
+                  <p className="text-[13px] font-semibold tracking-[-0.01em] text-[#101828]">{row.section}</p>
                 </div>
                 <div />
                 <div />
                 <div />
               </div>
             )}
-            <div className="grid min-h-[60px] grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-[#E7E9EC] last:border-b-0">
+            <div className="grid min-h-[56px] grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-[#E7E9EC] last:border-b-0">
               <div className="flex items-center px-6 text-[12.5px] font-medium text-[#667085]">
-                <span className="border-b border-dashed border-[#D0D5DD]">{row.label}</span>
+                <span>{row.label}</span>
               </div>
               {PLANS.map((plan) => (
                 <div key={plan.id} className="flex items-center justify-center px-4 text-center">
@@ -344,15 +458,16 @@ export function SubscriptionTab() {
       </section>
 
       {/* ── Footnote ── */}
-      <section className="rounded-2xl border border-[#E2E5EA] bg-white px-5 py-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <section className="rounded-lg border border-[#E2E5EA] bg-white px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#1D4ED8]">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[#F9FAFB] text-[#344054]">
             <Sparkles size={16} strokeWidth={2} />
           </div>
           <div>
-            <h3 className="text-[13px] font-semibold tracking-[-0.01em] text-[#0F172A]">No agency tier yet</h3>
+            <h3 className="text-[13px] font-semibold tracking-[-0.01em] text-[#101828]">Launch pricing with real usage limits</h3>
             <p className="mt-0.5 text-[12.5px] leading-5 text-[#667085]">
-              This stays solo-founder safe: fixed plans, no surprise usage billing, no unlimited promises.
+              We cover the core PromptPulse workflow today: monitoring, citations, source enrichment, competitors,
+              exports, reports, action queue, and Sara. Credits are separate from prompt monitoring, so daily runs do not burn report credits.
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
-const DEPLOYED_BACKEND_BASE_URL = "https://empty-backend-75341912220.asia-south1.run.app"
-const DEPLOYED_AGENTS_BASE_URL = "https://agents-75341912220.asia-south1.run.app"
+const DEPLOYED_BACKEND_BASE_URL = "https://promptpulse-backend-892724717411.us-east1.run.app"
+const DEPLOYED_AGENTS_BASE_URL = "https://promptpulse-agents-892724717411.us-east1.run.app"
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, "")

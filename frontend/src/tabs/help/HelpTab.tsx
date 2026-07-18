@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
@@ -16,19 +16,21 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useHelpCenter } from "@/hooks/useHelpCenter"
+import { useProjects } from "@/hooks/useProjects"
+import { SupportAgentChat } from "./components/SupportAgentChat"
 
 const FAQS = [
   {
-    question: "What is Refractone?",
-    answer: "Refractone helps brands monitor how they appear across AI answers, prompts, citations, competitors, and source opportunities.",
+    question: "What is PromptPulse?",
+    answer: "PromptPulse helps brands monitor how they appear across AI answers, prompts, citations, competitors, and source opportunities.",
   },
   {
     question: "How often is visibility data refreshed?",
     answer: "Refresh frequency depends on your plan. Starter has weekly refresh capacity, while Growth and Pro are designed for daily monitoring.",
   },
   {
-    question: "Why is Sara locked until 7 days of data?",
-    answer: "Sara needs enough historical context to give useful recommendations. Seven days gives it trend movement, competitor shifts, and source patterns.",
+    question: "Why does Sara need project data first?",
+    answer: "Sara needs at least 1 day of AI visibility data to ground answers in your real prompts, sources, competitors, and dashboard metrics.",
   },
   {
     question: "What are prompts?",
@@ -52,12 +54,41 @@ const FAQS = [
   },
   {
     question: "How does billing and trial work?",
-    answer: "New subscriptions start with a 7-day trial. After that, billing follows the plan selected in Stripe unless cancelled before renewal.",
+    answer: "New subscriptions start with a 14-day trial. After that, billing follows the plan selected in Stripe unless cancelled before renewal.",
   },
 ]
 
 // "agent" removed — it was a placeholder that just redirected to the same ticket form.
 type HelpSection = "faq" | "write"
+
+// One shared visual language for the three hub cards: same neutral badge,
+// same accent (blue, matching the rest of this page), same footer CTA — so the
+// row reads as one designed set instead of three cards someone assembled separately.
+const HUB_CARDS: {
+  id: "agent" | "faq" | "write"
+  icon: typeof HelpCircle
+  title: string
+  description: string
+}[] = [
+    {
+      id: "agent",
+      icon: HelpCircle,
+      title: "Open Support Agent",
+      description: "Sara-style modal for subscription, credits, reports, scraping, and ticket escalation.",
+    },
+    {
+      id: "faq",
+      icon: FileQuestion,
+      title: "Read FAQs",
+      description: "Quick product, billing, Sara, visibility, source, and setup answers.",
+    },
+    {
+      id: "write",
+      icon: Send,
+      title: "Manual ticket",
+      description: "Write a ticket yourself and track previous support queries.",
+    },
+  ]
 
 function getSection(search: string): HelpSection | null {
   const value = new URLSearchParams(search).get("section")
@@ -66,50 +97,6 @@ function getSection(search: string): HelpSection | null {
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-}
-
-function HubCard({
-  icon,
-  title,
-  description,
-  badge,
-  tone,
-  onClick,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  badge: string
-  tone: "blue" | "green"
-  onClick: () => void
-}) {
-  const iconToneClass = {
-    blue: "bg-[#EFF6FF] text-[#2563EB]",
-    green: "bg-[#ECFDF3] text-[#047857]",
-  }[tone]
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex flex-col rounded-2xl border border-[#E2E5EA] bg-white p-6 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition hover:-translate-y-1 hover:border-[#BFD4FB] hover:shadow-[0_20px_48px_-32px_rgba(37,99,235,0.4)]"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconToneClass}`}>{icon}</span>
-        <span className="rounded-full border border-[#E2E5EA] bg-[#F7F8FA] px-2.5 py-1 text-[10.5px] font-semibold text-[#667085]">
-          {badge}
-        </span>
-      </div>
-      <div className="mt-6">
-        <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-[#0F172A]">{title}</h3>
-        <p className="mt-2.5 text-[12.5px] leading-6 text-[#667085]">{description}</p>
-      </div>
-      <div className="mt-5 flex items-center gap-1.5 text-[12.5px] font-semibold text-[#2563EB]">
-        Open section
-        <ArrowRight size={14} className="transition group-hover:translate-x-1" />
-      </div>
-    </button>
-  )
 }
 
 function FaqItem({ question, answer, open, onToggle }: { question: string; answer: string; open: boolean; onToggle: () => void }) {
@@ -203,6 +190,7 @@ export function HelpTab() {
   const location = useLocation()
   const section = getSection(location.search)
   const { user } = useAuth()
+  const { selectedProject } = useProjects()
   const { tickets, isLoading, isSubmitting, error, refresh, createTicket } = useHelpCenter()
   const [openFaq, setOpenFaq] = useState(0)
   const [email, setEmail] = useState(user?.email ?? "")
@@ -210,8 +198,7 @@ export function HelpTab() {
   const [message, setMessage] = useState("")
   const [formError, setFormError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-
-  const unresolvedCount = useMemo(() => tickets.filter((ticket) => !ticket.is_resolved).length, [tickets])
+  const [supportOpen, setSupportOpen] = useState(false)
 
   function openSection(nextSection: HelpSection) {
     navigate(`/help?section=${nextSection}`)
@@ -262,67 +249,54 @@ export function HelpTab() {
 
   if (!section) {
     return (
-      <div className="space-y-6">
-        <section className="relative overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_18%_0%,rgba(37,99,235,0.10),transparent_26rem)]" />
-          <div className="relative grid gap-8 p-7 lg:grid-cols-[1fr_320px] lg:items-start">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#DCE8FD] bg-[#EFF6FF] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1D4ED8]">
-                <Sparkles size={13} />
-                Help center
-              </div>
-              <h1 className="mt-4 text-[28px] font-semibold leading-tight tracking-[-0.02em] text-[#0F172A]">
-                What do you need help with?
-              </h1>
-              <p className="mt-2.5 max-w-xl text-[13px] leading-6 text-[#667085]">
-                Choose a support path — quick answers, or write directly to us and track it here.
-              </p>
-            </div>
+      <div className="space-y-5">
+        {supportOpen && (
+          <SupportAgentChat
+            projectId={selectedProject?.id}
+            selectedProject={selectedProject}
+            onClose={() => setSupportOpen(false)}
+            onTicketCreated={() => void refresh()}
+          />
+        )}
 
-            <div className="rounded-xl border border-[#E2E5EA] bg-[#F7F8FA] p-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-white shadow-[0_6px_16px_-6px_rgba(37,99,235,0.5)]"
-                  style={{ background: "radial-gradient(120% 120% at 20% 15%, #60A5FA 0%, #2563EB 55%, #1D4ED8 100%)" }}
-                >
-                  <TicketCheck size={16} />
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-[#0F172A]">Support status</p>
-                  <p className="text-[11px] font-medium text-[#98A2B3]">Current account queue</p>
-                </div>
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2.5">
-                <div className="rounded-lg bg-white p-3">
-                  <p className="text-[20px] font-semibold tracking-[-0.02em] text-[#0F172A]">{tickets.length}</p>
-                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#98A2B3]">Queries</p>
-                </div>
-                <div className="rounded-lg bg-white p-3">
-                  <p className="text-[20px] font-semibold tracking-[-0.02em] text-[#1D4ED8]">{unresolvedCount}</p>
-                  <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#7DA2E8]">Open</p>
-                </div>
-              </div>
+        <section className="relative overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white px-7 py-6 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_0%,rgba(37,99,235,0.08),transparent_18rem)]" />
+          <div className="relative flex flex-wrap items-center gap-x-3 gap-y-1.5 max-w-3xl">
+            <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#DCE8FD] bg-[#EFF6FF] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#1D4ED8]">
+              <Sparkles size={12} />
+              Help center
             </div>
+            <h1 className="text-[19px] font-bold leading-tight tracking-[-0.02em] text-[#101828]">
+              Get help without leaving the dashboard.
+            </h1>
+            <p className="text-[13px] leading-5 text-[#667085]">
+              Open the Support Agent for account-aware answers — it'll ask before creating a ticket.
+            </p>
           </div>
         </section>
 
-        <section className="grid gap-5 md:grid-cols-2">
-          <HubCard
-            icon={<HelpCircle size={20} />}
-            title="FAQs"
-            description="Quick answers for visibility, prompts, sources, billing, Sara, and product setup."
-            badge="Instant"
-            tone="blue"
-            onClick={() => openSection("faq")}
-          />
-          <HubCard
-            icon={<Send size={20} />}
-            title="Write to us"
-            description="Open a focused ticket page with the form and your previous support queries."
-            badge="Ticket"
-            tone="green"
-            onClick={() => openSection("write")}
-          />
+        <section className="grid gap-4 md:grid-cols-3">
+          {HUB_CARDS.map((card) => {
+            const Icon = card.icon
+            return (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => (card.id === "agent" ? setSupportOpen(true) : openSection(card.id))}
+                className="group flex min-h-[188px] flex-col rounded-2xl border border-[#E2E5EA] bg-white p-5 text-left shadow-[0_1px_3px_rgba(16,24,40,0.06)] transition-all duration-200 hover:-translate-y-[3px] hover:border-[#BFDBFE] hover:shadow-[0_20px_40px_-28px_rgba(37,99,235,0.35)]"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F7F8FA] text-[#475467] ring-1 ring-inset ring-[#E2E5EA]">
+                  <Icon size={19} strokeWidth={2} />
+                </span>
+                <h3 className="mt-4 text-[15px] font-bold tracking-[-0.01em] text-[#101828]">{card.title}</h3>
+                <p className="mt-1.5 flex-1 text-[12.5px] leading-5 text-[#667085]">{card.description}</p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#2563EB]">
+                  {card.id === "agent" ? "Open" : card.id === "faq" ? "Browse" : "Write"}
+                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </button>
+            )
+          })}
         </section>
       </div>
     )

@@ -17,8 +17,8 @@ export async function exportReportPptx(report: ReportViewModel) {
   const pptx = new PptxGenJS()
 
   pptx.layout = "LAYOUT_WIDE"
-  pptx.author = "RefractOne"
-  pptx.company = "RefractOne"
+  pptx.author = "PromptPulse"
+  pptx.company = "PromptPulse"
   pptx.subject = data.subtitle
   pptx.title = data.title
   pptx.theme = {

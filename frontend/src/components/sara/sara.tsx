@@ -27,9 +27,9 @@ const conversation = [
     {
         user: "Do we have enough sentiment data for the India segment?",
         answer:
-            "Not yet. The India-tagged prompt set has only 3 days of runs, below the 7-day minimum Sara needs for a reliable sentiment read. I won't guess at a trend — add 4 more days of ChatGPT and Gemini runs for that segment and I'll flag it here automatically.",
+            "You have enough data for an initial read, but only 3 days of India-tagged runs. I can explain the current signal now and will become more confident as ChatGPT, Gemini, and other engines add more daily runs.",
         tag: "Data gap flagged",
-        confidence: "Low confidence · 3/7 days tracked",
+        confidence: "Medium confidence - 3 days tracked",
     },
 ]
 

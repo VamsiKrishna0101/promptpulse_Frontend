@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 
 const chartLines = [
-    { name: "Refractone", color: "#2563EB", points: "0,12 120,10 240,6 360,8 480,10 600,11", end: "89%", primary: true },
+    { name: "PromptPulse", color: "#2563EB", points: "0,12 120,10 240,6 360,8 480,10 600,11", end: "89%", primary: true },
     { name: "PromptWatch", color: "#12B76A", points: "0,58 120,50 240,44 360,52 480,46 600,48", end: "67%" },
     { name: "Peec AI", color: "#F79009", points: "0,48 120,54 240,58 360,50 480,56 600,54", end: "61%" },
     { name: "PromptMonitor", color: "#8B5CF6", points: "0,62 120,56 240,60 360,58 480,54 600,58", end: "56%" },
@@ -31,7 +31,7 @@ const yLabels = ["100%", "80%", "60%", "40%", "20%", "0%"]
 const xLabels = ["2 Jul", "3 Jul", "4 Jul", "5 Jul", "6 Jul", "7 Jul"]
 
 const brandRows = [
-    { rank: 1, name: "Refractone", mono: "R", monoBg: "#2563EB", visChange: "+6.3", vis: "94%", sentDot: "#12B76A", sentChange: "+3.7", sent: "71", posChange: "+0.2", pos: "4.1" },
+    { rank: 1, name: "PromptPulse", mono: "R", monoBg: "#2563EB", visChange: "+6.3", vis: "94%", sentDot: "#12B76A", sentChange: "+3.7", sent: "71", posChange: "+0.2", pos: "4.1" },
     { rank: 2, name: "PromptWatch", mono: "P", monoBg: "#2563EB", visChange: "+1.6", vis: "61%", sentDot: "#F79009", sentChange: "+0.2", sent: "65", posChange: null, pos: "3.0" },
     { rank: 3, name: "Peec AI", mono: "P", monoBg: "#15161B", visChange: "-0.9", vis: "60%", sentDot: "#F79009", sentChange: "-0.7", sent: "64", posChange: "+0.1", pos: "3.0" },
     { rank: 4, name: "Profound", mono: "P", monoBg: "#12B76A", visChange: "+1.5", vis: "60%", sentDot: "#12B76A", sentChange: "+0.6", sent: "65", posChange: null, pos: "3.0" },
@@ -40,7 +40,7 @@ const brandRows = [
 ]
 
 const sourceRows = [
-    { domain: "refractone.com", mono: "R", monoBg: "#2563EB", used: "48%", avgCit: "0.8", type: "Editorial", tone: "amber" },
+    { domain: "promptpulse.com", mono: "R", monoBg: "#2563EB", used: "48%", avgCit: "0.8", type: "Editorial", tone: "amber" },
     { domain: "brandreview.co", mono: "B", monoBg: "#98A2B3", used: "38%", avgCit: "0.7", type: "Corporate", tone: "violet" },
     { domain: "communityhub.net", mono: "C", monoBg: "#98A2B3", used: "31%", avgCit: "0.5", type: "UGC", tone: "cyan" },
     { domain: "expertinsights.com", mono: "E", monoBg: "#98A2B3", used: "29%", avgCit: "0.6", type: "Editorial", tone: "amber" },
@@ -112,7 +112,7 @@ function DonutChart() {
     let offset = 0
 
     return (
-        <div className="flex h-full items-center justify-center gap-6 px-6 py-4">
+        <div className="pp-mock-dashboard-donut flex h-full items-center justify-center gap-6 px-6 py-4">
             <svg width="128" height="128" viewBox="0 0 128 128" className="shrink-0">
                 <circle cx="64" cy="64" r={r} fill="none" stroke="#EEF1F5" strokeWidth="14" />
                 {donutSegments.map((seg) => {
@@ -202,14 +202,58 @@ function KpiCard({
 export function MockDashboard() {
     return (
         <div className="relative mx-auto mt-8 w-full max-w-[1510px] px-0 sm:px-4">
+            <style>{`
+                @media (max-width: 767px) {
+                    .pp-mock-dashboard-shell {
+                        border-radius: 18px !important;
+                    }
+                    .pp-mock-dashboard-inner {
+                        min-width: 0 !important;
+                        border-radius: 14px !important;
+                    }
+                    .pp-mock-dashboard-topbar {
+                        align-items: flex-start !important;
+                        padding: 12px !important;
+                    }
+                    .pp-mock-dashboard-filters,
+                    .pp-mock-dashboard-actions {
+                        width: 100% !important;
+                        flex-wrap: wrap !important;
+                    }
+                    .pp-mock-dashboard-filter {
+                        flex: 1 1 auto !important;
+                        justify-content: center !important;
+                        min-width: 0 !important;
+                    }
+                    .pp-mock-dashboard-kpis {
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    }
+                    .pp-mock-dashboard-split,
+                    .pp-mock-dashboard-source-split {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .pp-mock-dashboard-hide-sm {
+                        display: none !important;
+                    }
+                    .pp-mock-dashboard-donut {
+                        flex-direction: column !important;
+                        gap: 12px !important;
+                    }
+                }
+                @media (max-width: 420px) {
+                    .pp-mock-dashboard-kpis {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
+            `}</style>
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-12 top-8 h-[380px] rounded-full opacity-80 blur-3xl"
                 style={{ background: "radial-gradient(circle at center, rgba(37,99,235,0.13), rgba(148,163,184,0.10) 42%, transparent 72%)" }}
             />
 
-            <div className="relative rounded-[24px] border border-[#E2E5EA] bg-white/95 p-2 shadow-[0_34px_110px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.72)_inset] backdrop-blur">
-                <div className="overflow-hidden rounded-[18px] border border-[#E2E5EA] bg-white text-left">
+            <div className="pp-mock-dashboard-shell relative overflow-hidden rounded-[20px] border border-[#E2E5EA] bg-white/95 p-1.5 shadow-[0_34px_110px_rgba(15,23,42,0.16),0_0_0_1px_rgba(255,255,255,0.72)_inset] backdrop-blur sm:rounded-[24px] sm:p-2">
+                <div className="pp-mock-dashboard-inner w-full overflow-hidden rounded-[16px] border border-[#E2E5EA] bg-white text-left md:rounded-[18px]">
                     <div className="flex min-h-[520px]">
 
                         {/* Sidebar — matches the app's dark charcoal + blue accent */}
@@ -223,7 +267,7 @@ export function MockDashboard() {
                                         <span className="text-[10px] font-bold leading-none">R</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <div className="truncate text-[12px] font-semibold leading-snug tracking-[-0.01em] text-white">Refractone</div>
+                                        <div className="truncate text-[12px] font-semibold leading-snug tracking-[-0.01em] text-white">PromptPulse</div>
                                         <div className="truncate text-[10px] leading-tight text-[#8A8D99]">United States</div>
                                     </div>
                                 </div>
@@ -273,18 +317,18 @@ export function MockDashboard() {
 
                         {/* Main content */}
                         <section className="min-w-0 flex-1 bg-white">
-                            <div className="flex items-center justify-between border-b border-[#EEF0F3] bg-white px-5 py-2">
-                                <div className="flex items-center gap-2">
+                            <div className="pp-mock-dashboard-topbar flex flex-wrap items-center justify-between gap-2 border-b border-[#EEF0F3] bg-white px-5 py-2">
+                                <div className="pp-mock-dashboard-filters flex min-w-0 items-center gap-2">
                                     <span className="flex h-6 items-center rounded-lg bg-[#15161B] px-2.5 text-[11.5px] font-semibold text-white shadow-[0_1px_2px_rgba(15,23,42,0.3)]">
-                                        Refractone
+                                        PromptPulse
                                     </span>
                                     {["All time", "All Topics", "All Models"].map((item) => (
-                                        <span key={item} className="flex h-6 items-center rounded-lg border border-[#E2E5EA] bg-white px-2.5 text-[11.5px] font-medium text-[#475467]">
+                                        <span key={item} className="pp-mock-dashboard-filter flex h-6 items-center rounded-lg border border-[#E2E5EA] bg-white px-2.5 text-[11.5px] font-medium text-[#475467]">
                                             {item}
                                         </span>
                                     ))}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="pp-mock-dashboard-actions flex items-center gap-2">
                                     <span className="flex h-6 items-center gap-1.5 rounded-lg border border-[#E2E5EA] bg-white px-2.5 text-[11.5px] font-medium text-[#475467]">
                                         PDF
                                     </span>
@@ -295,8 +339,8 @@ export function MockDashboard() {
                             </div>
 
                             <div className="p-2.5">
-                                <div className="grid grid-cols-4 gap-2.5">
-                                    <KpiCard label="Visibility" tagLabel="Brand line" tagTone="blue" value="94%" delta="+6.3" detail="Refractone share across AI answers" />
+                                <div className="pp-mock-dashboard-kpis grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                                    <KpiCard label="Visibility" tagLabel="Brand line" tagTone="blue" value="94%" delta="+6.3" detail="PromptPulse share across AI answers" />
                                     <KpiCard label="Position" tagLabel="Rank" tagTone="plain" value="4.1" delta="+0.2" detail="Average rank when mentioned" />
                                     <KpiCard label="Sentiment" tagLabel="Tone" tagTone="green" value="71" delta="+3.7" detail="Weighted response sentiment" />
                                     <KpiCard label="Sources" tagLabel="Evidence" tagTone="slate" value="9" delta="+0.0" detail="Domains influencing answers" />
@@ -304,7 +348,7 @@ export function MockDashboard() {
 
                                 <div className="mt-2.5 overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
                                     <div
-                                        className="grid gap-0"
+                                        className="pp-mock-dashboard-split grid gap-0"
                                         style={{ gridTemplateColumns: "minmax(0, 1.15fr) minmax(430px, 0.85fr)" }}
                                     >
                                         <div className="border-b border-[#E2E5EA] lg:border-b-0 lg:border-r">
@@ -370,13 +414,13 @@ export function MockDashboard() {
                                                     <col style={{ width: 32 }} />
                                                     <col />
                                                     <col style={{ width: 96 }} />
-                                                    <col style={{ width: 96 }} />
-                                                    <col style={{ width: 78 }} />
+                                                    <col className="pp-mock-dashboard-hide-sm" style={{ width: 96 }} />
+                                                    <col className="pp-mock-dashboard-hide-sm" style={{ width: 78 }} />
                                                 </colgroup>
                                                 <thead>
                                                     <tr className="border-b border-[#EEF0F3] bg-[#F7F8FA]">
                                                         {["#", "Brand", "Visibility", "Sentiment", "Position"].map((h) => (
-                                                            <th key={h} className="px-3 py-1.5 text-left text-[9.5px] font-semibold uppercase tracking-wider text-[#98A2B3]">{h}</th>
+                                                            <th key={h} className={`px-3 py-1.5 text-left text-[9.5px] font-semibold uppercase tracking-wider text-[#98A2B3] ${h === "Sentiment" || h === "Position" ? "pp-mock-dashboard-hide-sm" : ""}`}>{h}</th>
                                                         ))}
                                                     </tr>
                                                 </thead>
@@ -396,14 +440,14 @@ export function MockDashboard() {
                                                                     <span className="font-semibold text-[#0F172A]">{row.vis}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-3 py-1.5">
+                                                            <td className="pp-mock-dashboard-hide-sm px-3 py-1.5">
                                                                 <div className="flex items-center gap-1.5 text-[11.5px]">
                                                                     <span className="h-1.5 w-1.5 rounded-full" style={{ background: row.sentDot }} />
                                                                     <DeltaPill value={row.sentChange} />
                                                                     <span className="text-[#667085]">{row.sent}</span>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-3 py-1.5">
+                                                            <td className="pp-mock-dashboard-hide-sm px-3 py-1.5">
                                                                 <div className="flex items-center gap-1.5 text-[11.5px]">
                                                                     {row.posChange && <DeltaPill value={row.posChange} />}
                                                                     <span className="text-[#667085]">#{row.pos}</span>
@@ -417,7 +461,7 @@ export function MockDashboard() {
                                     </div>
 
                                     <div
-                                        className="grid border-t border-[#E2E5EA]"
+                                        className="pp-mock-dashboard-source-split grid border-t border-[#E2E5EA]"
                                         style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(380px, 0.75fr)" }}
                                     >
                                         <div className="border-b border-[#E2E5EA] lg:border-b-0 lg:border-r">

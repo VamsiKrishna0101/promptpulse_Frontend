@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import {
     ArrowUpRight,
@@ -11,8 +11,10 @@ import {
     UserRound,
     X,
 } from "lucide-react"
+import { api } from "@/lib/api"
 import type { AnswerBlock, RecentChat } from "@/hooks/useRecentChats"
 import { Avatar, EngIcon, Fav, timeAgo } from "@/tabs/overview/overview"
+import { formatModelName } from "@/lib/aiModels"
 
 function cn(...classes: Array<string | false | null | undefined>) {
     return classes.filter(Boolean).join(" ")
@@ -48,8 +50,25 @@ function stableIndex(value: string, modulo: number) {
     return hash % modulo
 }
 
-function brandDomain(name: string) {
+function brandDomain(name: string, savedDomain?: string | null) {
+    // Use the persisted domain from DB first (e.g. peec.ai, profound.ai)
+    if (savedDomain) return savedDomain
+
     const known: Record<string, string> = {
+        "peec ai": "peec.ai",
+        peec: "peec.ai",
+        peecai: "peec.ai",
+        profound: "profound.ai",
+        airops: "airops.com",
+        "air ops": "airops.com",
+        "otterly ai": "otterly.ai",
+        otterly: "otterly.ai",
+        "scrunch ai": "scrunch.com",
+        scrunch: "scrunch.com",
+        "se ranking": "seranking.com",
+        seranking: "seranking.com",
+        "brand24": "brand24.com",
+        evertune: "evertune.ai",
         "6sense": "6sense.com",
         apollo: "apollo.io",
         "apollo.io": "apollo.io",
@@ -71,12 +90,28 @@ function cleanRawResponse(value: string) {
     let text = value
         .replace(/\n[A-Z][A-Za-z0-9 ._-]{2,40}\n\+1\n/g, "\n")
         .replace(/\n\+1\n/g, "\n")
+        .replace(/^\s*[-*_]{3,}\s*$/gm, "")
         .replace(/\n{3,}/g, "\n\n")
         .trim()
-    
-    // Ensure single newlines are converted to double newlines if they aren't already,
-    // so react-markdown parses them as distinct paragraphs instead of inline text.
-    text = text.replace(/([^\n])\n([^\n])/g, "$1\n\n$2")
+
+    return text
+}
+
+function isDividerOnly(value: string) {
+    const compact = value.replace(/\s/g, "")
+    return compact.length >= 3 && /^[-*_]+$/.test(compact)
+}
+
+function normalizeInlineMarkdown(value: string) {
+    let text = value
+        .replace(/\\([+*_`[\]()])/g, "$1")
+        .replace(/^\s*[-*]\s+/, "")
+        .replace(/\s+\+\s*\d+\s*$/g, "")
+        .trim()
+
+    // Bright Data sometimes returns list labels as "*Label: text" instead of real markdown.
+    text = text.replace(/(^|\s)\*([^*\n]{2,80}:)\s*/g, "$1**$2** ")
+
     return text
 }
 
@@ -139,15 +174,15 @@ function extractMarkdownTables(markdown: string) {
     return blocks
 }
 
-function BrandMentionBadge({ name }: { name: string }) {
+function BrandMentionBadge({ name, domain }: { name: string; domain?: string | null }) {
     const style = HIGHLIGHT_STYLES[stableIndex(name.toLowerCase(), HIGHLIGHT_STYLES.length)]
-    const domain = brandDomain(name)
+    const resolvedDomain = brandDomain(name, domain)
 
     return (
         <span className={cn("mx-0.5 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 align-middle font-semibold shadow-[0_1px_0_rgba(9,9,11,0.04)]", style)}>
             <span className="inline-flex h-4 w-4 items-center justify-center overflow-hidden rounded-full bg-white/80">
                 <img
-                    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                    src={`https://www.google.com/s2/favicons?domain=${resolvedDomain}&sz=32`}
                     alt=""
                     className="h-3 w-3 object-contain"
                     onError={event => { (event.target as HTMLImageElement).style.display = "none" }}
@@ -256,6 +291,39 @@ function DetailMetric({
     )
 }
 
+function renderFormattedText(text: string, brandNames: string[]): React.ReactNode {
+    const normalized = normalizeInlineMarkdown(text)
+    if (!normalized) return null
+
+    return (
+        <ReactMarkdown
+            components={{
+                p: ({ children }) => <>{highlightNode(children, brandNames)}</>,
+                strong: ({ children }) => (
+                    <strong className="font-semibold text-[#18181b]">
+                        {highlightNode(children, brandNames)}
+                    </strong>
+                ),
+                em: ({ children }) => (
+                    <em className="italic text-[#18181b]">
+                        {highlightNode(children, brandNames)}
+                    </em>
+                ),
+                code: ({ children }) => (
+                    <code className="rounded-md border border-[#e4e4e7] bg-[#fafafa] px-1 py-0.5 text-[0.9em] font-semibold text-[#18181b]">
+                        {children}
+                    </code>
+                ),
+                a: ({ href, children }) => (
+                    <CitationChip href={href}>{children}</CitationChip>
+                ),
+            }}
+        >
+            {normalized}
+        </ReactMarkdown>
+    )
+}
+
 function ComparisonTable({
     headers,
     rows,
@@ -304,10 +372,10 @@ function ComparisonTable({
                                                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[#e4e4e7] bg-[#f4f4f5] text-[10px] font-semibold text-[#18181b]">
                                                         {rowIndex + 1}
                                                     </span>
-                                                    <span>{highlightBrandNames(value, brandNames)}</span>
+                                                    <span>{renderFormattedText(value, brandNames)}</span>
                                                 </span>
                                             ) : (
-                                                highlightBrandNames(value, brandNames)
+                                                renderFormattedText(value, brandNames)
                                             )}
                                         </td>
                                     )
@@ -383,20 +451,28 @@ function MarkdownBlock({
 
 function RichAnswer({
     raw,
+    display,
     fallback,
     blocks,
     brandNames,
 }: {
     raw?: string | null
+    display?: string | null
     fallback: string
     blocks?: AnswerBlock[] | null
     brandNames: string[]
 }) {
+    // prefer structured blocks → LLM-cleaned display → raw scraper dump → excerpt fallback
+    const textToRender = display || raw || fallback || ""
+
     if (blocks?.length) {
         return (
             <div>
                 {blocks.map((block, index) => {
                     if (block.type === "heading") {
+                        const text = normalizeInlineMarkdown(block.text)
+                        if (!text || isDividerOnly(text)) return null
+
                         const Tag = block.level === 2 ? "h2" : "h3"
                         return (
                             <Tag
@@ -407,25 +483,34 @@ function RichAnswer({
                                         : "mb-2 mt-6 text-[16px] font-semibold tracking-[-0.02em] text-[#18181b]"
                                 )}
                             >
-                                {highlightBrandNames(block.text, brandNames)}
+                                {renderFormattedText(text, brandNames)}
                             </Tag>
                         )
                     }
 
                     if (block.type === "paragraph") {
+                        const text = normalizeInlineMarkdown(block.text)
+                        if (!text || isDividerOnly(text)) return null
+
                         return (
                             <p key={index} className="mb-4 text-[15px] font-medium leading-7 text-[#27272a] last:mb-0">
-                                {highlightBrandNames(block.text, brandNames)}
+                                {renderFormattedText(text, brandNames)}
                             </p>
                         )
                     }
 
                     if (block.type === "list") {
+                        const items = block.items
+                            .map(normalizeInlineMarkdown)
+                            .filter((item) => item && !isDividerOnly(item))
+
+                        if (items.length === 0) return null
+
                         return (
                             <ul key={index} className="mb-5 ml-5 list-disc space-y-2">
-                                {block.items.map((item, itemIndex) => (
+                                {items.map((item, itemIndex) => (
                                     <li key={itemIndex} className="pl-1 text-[15px] font-medium leading-7 text-[#27272a] marker:text-[#09090b]">
-                                        {highlightBrandNames(item, brandNames)}
+                                        {renderFormattedText(item, brandNames)}
                                     </li>
                                 ))}
                             </ul>
@@ -445,7 +530,7 @@ function RichAnswer({
         )
     }
 
-    const cleaned = cleanRawResponse(raw || fallback || "")
+    const cleaned = cleanRawResponse(textToRender)
     const fallbackBlocks = extractMarkdownTables(cleaned)
 
     if (!cleaned) {
@@ -483,6 +568,9 @@ function RichAnswer({
 }
 
 export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => void }) {
+    const [isOpeningScreenshot, setIsOpeningScreenshot] = useState(false)
+    const [screenshotError, setScreenshotError] = useState<string | null>(null)
+
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === "Escape") onClose()
@@ -510,18 +598,50 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                 ? "good"
                 : chat.sentiment_score < 40
                     ? "risk"
-                    : "neutral"
+                : "neutral"
+
+    async function openScreenshot() {
+        if (!chat.has_screenshot || isOpeningScreenshot) return
+        setIsOpeningScreenshot(true)
+        setScreenshotError(null)
+        try {
+            const response = await api.get<{ url: string }>(`/artifacts/chats/${chat.id}/screenshot-url`)
+            window.open(response.data.url, "_blank", "noopener,noreferrer")
+        } catch {
+            setScreenshotError("Screenshot is not available anymore.")
+        } finally {
+            setIsOpeningScreenshot(false)
+        }
+    }
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090b]/45 backdrop-blur-[5px]"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090b]/45"
+            style={{
+                animation: "chatModalBackdropIn 220ms ease-out forwards",
+                backdropFilter: "blur(5px)",
+                WebkitBackdropFilter: "blur(5px)",
+            }}
             onClick={onClose}
         >
             <style>{`
+        @keyframes chatModalBackdropIn {
+          from {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+          }
+          to {
+            opacity: 1;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+          }
+        }
+
         @keyframes chatModalPanelIn {
           from {
             opacity: 0;
-            transform: translateY(8px) scale(0.97);
+            transform: translateY(12px) scale(0.985);
           }
           to {
             opacity: 1;
@@ -535,7 +655,8 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                 style={{
                     width: "min(1280px, calc(100vw - 72px))",
                     height: "min(730px, calc(100vh - 105px))",
-                    animation: "chatModalPanelIn 250ms cubic-bezier(0.16,1,0.3,1) forwards",
+                    animation: "chatModalPanelIn 260ms cubic-bezier(0.16,1,0.3,1) 35ms both",
+                    willChange: "transform, opacity",
                 }}
                 onClick={(event) => event.stopPropagation()}
             >
@@ -549,7 +670,7 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#18181b]">
-                                        {chat.ai_model}
+                                        {formatModelName(chat.ai_model)}
                                     </span>
 
                                     <span className="inline-flex items-center gap-1 rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[11px] font-medium text-[#52525b]">
@@ -585,7 +706,7 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                             </div>
 
                             <div className="flex gap-4">
-                                <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e4e4e7] bg-[#09090b] text-white shadow-[0_2px_8px_rgba(9,9,11,0.18)]">
+                                <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#dbeafe] bg-white text-[#18181b] shadow-[0_2px_8px_rgba(37,99,235,0.10)]">
                                     <EngIcon model={chat.ai_model} />
                                 </div>
 
@@ -602,6 +723,7 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
 
                                     <RichAnswer
                                         raw={chat.raw_response}
+                                        display={chat.display_response}
                                         fallback={chat.excerpt}
                                         blocks={chat.answer_blocks}
                                         brandNames={brandNames}
@@ -631,6 +753,32 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                     </header>
 
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+                        {chat.has_screenshot && (
+                            <section className="mb-4 rounded-xl border border-[#dbeafe] bg-[#eff6ff] px-3 py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#1d4ed8]">
+                                            Scrape screenshot
+                                        </p>
+                                        <p className="mt-1 text-[11.5px] font-medium leading-5 text-[#475569]">
+                                            Private cloud artifact. Link expires shortly and is cached by PromptPulse.
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => void openScreenshot()}
+                                        disabled={isOpeningScreenshot}
+                                        className="shrink-0 rounded-lg bg-[#1d4ed8] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_8px_20px_-14px_rgba(29,78,216,0.8)] transition hover:bg-[#1e40af] disabled:cursor-wait disabled:opacity-60"
+                                    >
+                                        {isOpeningScreenshot ? "Opening..." : "View"}
+                                    </button>
+                                </div>
+                                {screenshotError && (
+                                    <p className="mt-2 text-[11px] font-semibold text-[#b42318]">{screenshotError}</p>
+                                )}
+                            </section>
+                        )}
+
                         {visibleSources.length > 0 && (
                             <section>
                                 <div className="mb-2.5 flex items-center justify-between">
@@ -694,7 +842,7 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                                             >
                                                 <Avatar
                                                     name={brand.brand_name}
-                                                    url={`https://${brandDomain(brand.brand_name)}`}
+                                                    url={`https://${brandDomain(brand.brand_name, brand.domain)}`}
                                                 />
                                                 <span className="max-w-[130px] truncate text-[12px] font-semibold">
                                                     {brand.brand_name}

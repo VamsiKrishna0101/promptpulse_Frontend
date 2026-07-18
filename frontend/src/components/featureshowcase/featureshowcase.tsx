@@ -7,7 +7,7 @@ const BRANDS: Record<string, {
     sentimentScore: number
     position: string
 }> = {
-    "RefractOne": { sentiment: "positive", visibility: "64%", sentimentScore: 86, position: "2.4" },
+    "PromptPulse": { sentiment: "positive", visibility: "64%", sentimentScore: 86, position: "2.4" },
     "Peec AI": { sentiment: "positive", visibility: "58%", sentimentScore: 78, position: "2.7" },
     "PromptWatch": { sentiment: "positive", visibility: "51%", sentimentScore: 74, position: "3.1" },
     "Profound": { sentiment: "neutral", visibility: "46%", sentimentScore: 68, position: "3.4" },
@@ -23,14 +23,14 @@ const SENT_COLOR = {
 
 // card → which brand tooltip to show on right panel
 const CARD_BRAND: Record<string, string> = {
-    visibility: "RefractOne",
+    visibility: "PromptPulse",
     position: "PromptWatch",
     sentiment: "Peec AI",
 }
 
 const AI_RESPONSE = `For B2B SaaS teams trying to improve visibility inside AI answer engines, the strongest tools usually split across monitoring, source intelligence, and content recommendations:
 
-RefractOne is useful when teams want one workflow for AI visibility, competitor benchmarking, source tracking, opportunity discovery, and Sara-powered recommendations.
+PromptPulse is useful when teams want one workflow for AI visibility, competitor benchmarking, source tracking, opportunity discovery, and Sara-powered recommendations.
 
 Peec AI is often mentioned for broad AI search analytics and marketing-team reporting.
 
@@ -103,7 +103,7 @@ function BrandInfoBox({ brand }: { brand: string }) {
     const label = cfg.sentiment === "positive" ? "Positive Sentiment" : cfg.sentiment === "negative" ? "Negative Sentiment" : "Neutral Sentiment"
 
     return (
-        <div style={{
+        <div className="pp-feature-showcase-brand-box" style={{
             position: "absolute", top: 20, right: 20, zIndex: 20,
             background: "#101012",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -247,15 +247,16 @@ export function FeatureShowcase() {
         timeoutsRef.current.forEach(clearTimeout)
     }, [])
 
-    const activeBrandForPanel = CARD_BRAND[activeCard] ?? "RefractOne"
+    const activeBrandForPanel = CARD_BRAND[activeCard] ?? "PromptPulse"
 
     return (
         <section
+            className="pp-feature-showcase"
             ref={sectionRef}
             style={{ padding: "88px 24px" }} // no bg — uses parent page bg
         >
             {/* header */}
-            <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <div className="pp-feature-showcase-header" style={{ textAlign: "center", marginBottom: 60 }}>
                 <div style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
                     background: "rgba(255,255,255,0.7)", border: "1px solid #e4e4e7",
@@ -265,7 +266,7 @@ export function FeatureShowcase() {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth={1.8}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
                     <span style={{ fontSize: 12, fontWeight: 600, color: "#71717a" }}>AI Search Metrics</span>
                 </div>
-                <h2 style={{ fontSize: 36, fontWeight: 700, color: "#0f0f10", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 14px" }}>
+                <h2 className="pp-feature-showcase-title" style={{ fontSize: 36, fontWeight: 700, color: "#0f0f10", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 14px" }}>
                     Understand how AI sees your brand
                 </h2>
                 <p style={{ fontSize: 15.5, color: "#71717a", margin: 0 }}>
@@ -274,16 +275,17 @@ export function FeatureShowcase() {
             </div>
 
             {/* two-col layout */}
-            <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20, maxWidth: 1040, margin: "0 auto" }}>
+            <div className="pp-feature-showcase-layout" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20, maxWidth: 1040, margin: "0 auto" }}>
 
                 {/* ── left: clickable feature cards ── */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div className="pp-feature-showcase-cards" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {FEATURES.map((f) => {
                         const isActive = activeCard === f.id
                         return (
                             <button
                                 key={f.id}
                                 onClick={() => { setActiveCard(f.id); setUserClicked(true) }}
+                                className="pp-feature-showcase-card"
                                 style={{
                                     all: "unset",
                                     flex: 1,
@@ -311,7 +313,7 @@ export function FeatureShowcase() {
                 </div>
 
                 {/* ── right: chat window ── */}
-                <div style={{
+                <div className="pp-feature-showcase-chat" style={{
                     background: "#fff",
                     border: "1px solid #e4e4e7",
                     borderRadius: 16,
@@ -336,7 +338,7 @@ export function FeatureShowcase() {
                         {/* user bubble */}
                         {showUser && (
                             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                <div style={{
+                                <div className="pp-feature-showcase-user-bubble" style={{
                                     background: "#f4f4f5", borderRadius: "18px 18px 4px 18px",
                                     padding: "10px 14px", maxWidth: "72%",
                                     fontSize: 13.5, color: "#18181b", lineHeight: 1.5, fontWeight: 500,
@@ -399,6 +401,45 @@ export function FeatureShowcase() {
                 @keyframes blink {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0; }
+                }
+                @media (max-width: 820px) {
+                    .pp-feature-showcase {
+                        padding: 64px 16px !important;
+                    }
+                    .pp-feature-showcase-header {
+                        margin-bottom: 32px !important;
+                    }
+                    .pp-feature-showcase-title {
+                        font-size: 30px !important;
+                        line-height: 1.08 !important;
+                    }
+                    .pp-feature-showcase-layout {
+                        grid-template-columns: 1fr !important;
+                        gap: 16px !important;
+                    }
+                    .pp-feature-showcase-cards {
+                        display: grid !important;
+                        grid-template-columns: 1fr !important;
+                    }
+                    .pp-feature-showcase-card {
+                        padding: 16px !important;
+                    }
+                    .pp-feature-showcase-chat {
+                        min-height: 460px !important;
+                    }
+                    .pp-feature-showcase-user-bubble {
+                        max-width: 90% !important;
+                    }
+                    .pp-feature-showcase-brand-box {
+                        position: static !important;
+                        width: auto !important;
+                        margin: 0 16px 16px !important;
+                    }
+                }
+                @media (max-width: 560px) {
+                    .pp-feature-showcase p {
+                        font-size: 14px !important;
+                    }
                 }
             `}</style>
         </section>

@@ -4,12 +4,13 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { Sidebar } from "./Sidebar"
 import { ProjectsProvider, useProjects } from "@/hooks/useProjects"
 import { DAYS_OPTIONS, MODEL_OPTIONS, useFilterOptions } from "@/hooks/useFilters"
+import { useSubscription } from "@/hooks/useSubscription"
 import { SaraFloatingAssistant } from "@/components/sara/SaraFloatingAssistant"
-import { Bot, Calendar, FolderOpen, ChevronDown, Check } from "lucide-react"
+import { Bot, Calendar, FolderOpen, ChevronDown, Check, Coins } from "lucide-react"
 import { downloadCsvExport, type ExportResource } from "@/lib/exportDownload"
-import { exportOverviewCsv, exportOverviewPdf } from "@/lib/overviewReportExport"
 import { ProductTourProvider } from "@/features/product-tour/ProductTourProvider"
 import { TodayRunStatus } from "@/components/status/TodayRunStatus"
+import { MODEL_ICON_DOMAINS, modelIconUrl } from "@/lib/aiModels"
 
 type DropdownOption = { label: string; value: string }
 
@@ -67,13 +68,6 @@ function FilterDropdown({
     setOpen(false)
   }
 
-  const MODEL_ICONS: Record<string, string> = {
-    chatgpt: "chatgpt.com",
-    gemini: "gemini.google.com",
-    perplexity: "perplexity.ai",
-    claude: "claude.ai",
-  }
-
   return (
     <div className="relative" ref={ref}>
       <button
@@ -86,8 +80,8 @@ function FilterDropdown({
         ].join(" ")}
       >
         <span className={active ? "text-zinc-300" : "text-zinc-400"}>
-          {isModelFilter && selected?.value && MODEL_ICONS[selected.value]
-            ? <img src={`https://www.google.com/s2/favicons?domain=${MODEL_ICONS[selected.value]}&sz=32`} width={13} height={13} className="rounded-[2px]" alt="" />
+          {isModelFilter && selected?.value && MODEL_ICON_DOMAINS[selected.value]
+            ? <img src={modelIconUrl(selected.value, 64) ?? ""} width={13} height={13} className="rounded-[2px]" alt="" />
             : icon}
         </span>
         {selected ? selected.label : allLabel}
@@ -109,8 +103,8 @@ function FilterDropdown({
               onClick={() => pick(opt.value)}
               className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] font-medium text-zinc-700 hover:bg-zinc-50"
             >
-              {isModelFilter && MODEL_ICONS[opt.value] && (
-                <img src={`https://www.google.com/s2/favicons?domain=${MODEL_ICONS[opt.value]}&sz=32`} width={13} height={13} className="rounded-[2px]" alt="" />
+              {isModelFilter && MODEL_ICON_DOMAINS[opt.value] && (
+                <img src={modelIconUrl(opt.value, 64) ?? ""} width={13} height={13} className="rounded-[2px]" alt="" />
               )}
               <span className="flex-1 text-left">{opt.label}</span>
               {current === opt.value && <Check size={11} className="text-zinc-800" />}
@@ -124,7 +118,7 @@ function FilterDropdown({
 
 function BrandFilterIcon({ domain, name }: { domain?: string | null; name: string }) {
   const [failed, setFailed] = useState(false)
-  const logoDomain = domain?.trim() || "refractone.com"
+  const logoDomain = domain?.trim() || "promptpulse.com"
   const logoSrc = failed ? "/favicon.svg" : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logoDomain)}&sz=32`
 
   useEffect(() => {
@@ -143,6 +137,24 @@ function BrandFilterIcon({ domain, name }: { domain?: string | null; name: strin
   )
 }
 
+function CreditsPill() {
+  const { data, isLoading } = useSubscription()
+  const remaining = data?.usage.credits_remaining ?? 0
+  const total = data?.limits.credits ?? 0
+  const plan = data?.plan ?? "FREE"
+
+  return (
+    <div
+      title={isLoading ? "Loading credits" : `${remaining} of ${total} credits remaining on ${plan}`}
+      className="flex h-8 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 text-[12px] font-semibold text-amber-900 shadow-sm"
+    >
+      <Coins size={13} className="text-amber-600" />
+      <span>{isLoading ? "Credits" : `${remaining}/${total}`}</span>
+      <span className="hidden text-amber-700 sm:inline">credits</span>
+    </div>
+  )
+}
+
 function AppShellContent({ children }: { children: ReactNode }) {
   const { projects, selectedProject, isLoading } = useProjects()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -154,6 +166,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const topicOptions: DropdownOption[] = filterOptions.topics.map(t => ({ label: t, value: t }))
   const exportResource = EXPORT_RESOURCE_BY_PATH[location.pathname]
   const filtersEnabled = FILTER_ENABLED_PATHS.has(location.pathname)
+  const showTopbar = filtersEnabled || Boolean(exportResource)
   const filterQuery = searchParams.toString() ? `?${searchParams.toString()}` : ""
   const hideSaraAssistant = ["/chat", "/settings", "/profile", "/subscription", "/help", "/ai-workspace"].includes(location.pathname) || location.pathname.startsWith("/admin")
 
@@ -178,10 +191,12 @@ function AppShellContent({ children }: { children: ReactNode }) {
       <div className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
 
         {/* Top filters */}
+        {showTopbar && (
         <div className="premium-topbar z-40 flex-shrink-0">
           {/* Filter bar */}
-          {filtersEnabled && (
-            <div data-product-tour-id="top-filters" className="premium-filterbar flex items-center gap-2 px-6 py-3">
+          <div data-product-tour-id="top-filters" className="premium-filterbar flex flex-wrap items-center gap-2 px-4 py-3 lg:px-5 xl:px-6">
+            {filtersEnabled && (
+              <>
               {/* Brand chip — static, always active */}
               <button className="flex h-7 items-center gap-1.5 rounded-lg border border-zinc-950 bg-zinc-950 px-2.5 text-[12px] font-medium text-white shadow-[0_1px_2px_rgba(0,0,0,0.12)]">
                 <BrandFilterIcon
@@ -227,23 +242,22 @@ function AppShellContent({ children }: { children: ReactNode }) {
               )}
 
               {selectedProject && (
-                <div className="ml-1">
+                <div className="order-last w-full pt-1 xl:order-none xl:w-auto xl:pt-0">
                   <TodayRunStatus project={selectedProject} />
                 </div>
               )}
 
-              <div className="ml-auto flex items-center gap-1.5">
+              </>
+            )}
+
+              <div className="flex w-full items-center justify-end gap-1.5 sm:ml-auto sm:w-auto">
+                <CreditsPill />
+
                 {/* PDF export — all resources */}
                 {exportResource && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (exportResource === "overview") {
-                        void exportOverviewPdf(selectedProject, filterQuery)
-                      } else {
-                        void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery, "pdf")
-                      }
-                    }}
+                    onClick={() => void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery, "pdf")}
                     className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500">
@@ -260,13 +274,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 {exportResource && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (exportResource === "overview") {
-                        void exportOverviewCsv(selectedProject, filterQuery)
-                        return
-                      }
-                      void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery)
-                    }}
+                    onClick={() => void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery)}
                     className="flex h-8 items-center gap-1.5 rounded-lg bg-slate-950 px-3 text-[12px] font-semibold text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.5)] transition hover:bg-slate-800"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
@@ -279,11 +287,11 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 )}
               </div>
             </div>
-          )}
         </div>
+        )}
 
         {/* Page content */}
-        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-5 xl:px-6">
           <div className="mx-auto max-w-[1440px]">
             {children}
           </div>

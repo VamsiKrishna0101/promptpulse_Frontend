@@ -1,25 +1,32 @@
 import { useMemo, useState } from "react"
 import type { FormEvent } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useToast } from "@/components/ui/Toast"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { AuthShell } from "@/components/auth/AuthShell"
 import { AuthTestimonialPanel } from "@/components/auth/AuthTestimonialPanel"
 import { Search, Activity, Target } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 export function SignupPage() {
     const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
     const [otp, setOtp] = useState("")
     const [step, setStep] = useState<"email" | "otp">("email")
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const { toast } = useToast()
+    const { register, verifyEmailOtp } = useAuth()
+    const navigate = useNavigate()
 
     const isWorkEmail = useMemo(() => {
         const normalized = email.trim().toLowerCase()
         return normalized.includes("@") && !/(gmail|yahoo|outlook|hotmail|icloud)\./.test(normalized)
     }, [email])
 
-    function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
+    const passwordIsValid = password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)
+
+    async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
 
         if (!isWorkEmail) {
@@ -31,31 +38,69 @@ export function SignupPage() {
             return
         }
 
-        setStep("otp")
-        toast({
-            title: "OTP sent",
-            description: `Check ${email.trim()} for your verification code.`,
-            type: "success",
-        })
-    }
-
-    function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault()
-
-        if (otp.trim().length < 4) {
+        if (!passwordIsValid) {
             toast({
-                title: "Enter the OTP",
-                description: "Use the code we sent to your work email.",
+                title: "Stronger password needed",
+                description: "Use at least 8 characters, one uppercase letter, and one number.",
                 type: "warning",
             })
             return
         }
 
-        toast({
-            title: "Email verified",
-            description: "Onboarding comes next.",
-            type: "success",
-        })
+        setIsSubmitting(true)
+        try {
+            await register({
+                email: email.trim().toLowerCase(),
+                password,
+                account_type: "SINGLE",
+            })
+            setStep("otp")
+            toast({
+                title: "OTP sent",
+                description: `Check ${email.trim()} for your verification code.`,
+                type: "success",
+            })
+        } catch (error: any) {
+            toast({
+                title: "Could not send OTP",
+                description: getSignupErrorMessage(error, "Please try again in a moment."),
+                type: "error",
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    async function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+
+        if (otp.trim().length !== 6) {
+            toast({
+                title: "Enter the OTP",
+                description: "Use the 6-digit code we sent to your work email.",
+                type: "warning",
+            })
+            return
+        }
+
+        setIsSubmitting(true)
+        try {
+            await verifyEmailOtp(email.trim().toLowerCase(), otp.trim())
+            toast({
+                title: "Email verified",
+                description: "Let's create your first brand workspace.",
+                type: "success",
+            })
+            navigate("/onboarding", { replace: true })
+        } catch (error: any) {
+            toast({
+                title: "Verification failed",
+                description: getSignupErrorMessage(error, "Check the code and try again."),
+                type: "error",
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -79,6 +124,8 @@ export function SignupPage() {
                         { name: "ChatGPT", slug: "chatgpt" },
                         { name: "Perplexity", slug: "perplexity" },
                         { name: "Gemini", slug: "gemini" },
+                        { name: "Google AI Mode", slug: "google_ai_mode" },
+                        { name: "Copilot", slug: "copilot" },
                     ]}
                     features={[
                         {
@@ -97,7 +144,7 @@ export function SignupPage() {
                             icon: Target
                         }
                     ]}
-                    footNote="Trusted by leading marketing teams for accurate AI visibility tracking."
+                    footNote="Source-backed visibility tracking across the AI engines buyers use."
                 />
             }
         >
@@ -113,8 +160,18 @@ export function SignupPage() {
                         hint="Please use your work email address."
                         required
                     />
+                    <Input
+                        label="Password"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Create password"
+                        autoComplete="new-password"
+                        hint="At least 8 characters, one uppercase letter, and one number."
+                        required
+                    />
 
-                    <Button type="submit" fullWidth>
+                    <Button type="submit" fullWidth isLoading={isSubmitting}>
                         Send OTP
                     </Button>
                 </form>
@@ -132,14 +189,38 @@ export function SignupPage() {
                         required
                     />
 
-                    <Button type="submit" fullWidth>
+                    <Button type="submit" fullWidth isLoading={isSubmitting}>
                         Verify email
                     </Button>
-                    <Button type="button" variant="ghost" fullWidth onClick={() => setStep("email")}>
+                    <Button type="button" variant="ghost" fullWidth onClick={() => setStep("email")} disabled={isSubmitting}>
                         Change email
                     </Button>
                 </form>
             )}
         </AuthShell>
     )
+}
+
+function getSignupErrorMessage(error: any, fallback: string) {
+    const raw = error?.response?.data?.message ?? error?.response?.data?.error ?? error?.message
+    if (!raw) return fallback
+
+    const message = String(raw)
+    if (message.includes("Brevo") || message.includes("401") || message.includes("unauthorized") || message.includes("unrecognised IP")) {
+        return "We could not send your verification code yet. Please try again, or use the dev OTP shown in the backend terminal while testing locally."
+    }
+    if (message.includes("already exists")) {
+        return "An account already exists for this email. Log in, or use another work email."
+    }
+    if (message.includes("work/business")) {
+        return "Please use your company email address to create a workspace."
+    }
+    if (message.includes("Invalid OTP")) {
+        return "That code does not match. Check the latest OTP and try again."
+    }
+    if (message.includes("expired")) {
+        return "That code expired. Go back and request a fresh OTP."
+    }
+
+    return message
 }

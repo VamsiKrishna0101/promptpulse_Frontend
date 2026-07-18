@@ -1,5 +1,32 @@
 import { api } from "@/lib/api"
-import type { BrandResearchData, BrandResearchResult, SuggestedPrompt } from "./types"
+import type { BrandResearchData, BrandResearchResult, Plan, SuggestedPrompt } from "./types"
+
+export type PlanQuota = {
+  plan: Plan
+  limits: {
+    projects: number
+    prompts: number
+    competitors: number | "unlimited"
+    refreshes_per_week: number | "daily"
+    sara: "none" | "basic" | "full" | "advanced"
+    exports: "none" | "basic" | "full"
+  }
+  usage: {
+    project_count: number
+    prompt_count: number
+    competitor_count: number
+  }
+  remaining: {
+    projects: number
+    prompts: number
+    competitors: number | "unlimited"
+  }
+}
+
+export async function getPlanQuota() {
+  const response = await api.get<PlanQuota>("/subscription/quota")
+  return response.data
+}
 
 export async function researchBrand(input: { brand_name: string; brand_url: string }) {
   const response = await api.post<BrandResearchResult>("/onboarding/research", input)

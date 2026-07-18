@@ -24,7 +24,7 @@ export function addBackground(slide: Slide) {
 }
 
 export function addFooter(slide: Slide, period: string) {
-  slide.addText("RefractOne AI Visibility Report", {
+  slide.addText("PromptPulse AI Visibility Report", {
     x: PPTX.margin,
     y: 7.08,
     w: 4,

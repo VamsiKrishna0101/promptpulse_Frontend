@@ -40,7 +40,14 @@ export type SuggestedPrompt = {
 
 export const PROMPT_LIMIT_BY_PLAN: Record<Plan, number> = {
   FREE: 5,
-  STARTER: 25,
+  STARTER: 20,
   GROWTH: 50,
-  PRO: 150,
+  PRO: 125,
+}
+
+export const PROJECT_LIMIT_BY_PLAN: Record<Plan, number> = {
+  FREE: 1,
+  STARTER: 1,
+  GROWTH: 2,
+  PRO: 5,
 }

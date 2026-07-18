@@ -5,17 +5,18 @@ import {
   Clipboard,
   Download,
   FileText,
+  Loader2,
   Search,
 } from "lucide-react"
 import type { GeoArticleItem } from "@/hooks/useGeoArticle"
 import { Fav } from "@/tabs/overview/overview"
-import { generateGeoArticlePdf } from "@/lib/geoArticlePdf"
+import { downloadGeoArticlePdf } from "@/lib/exportDownload"
 
 function cleanDemoText(text: string, brandName: string) {
   return text
-    .replace(/RefractOne/gi, brandName)
-    .replace(/Refractone/gi, brandName)
-    .replace(/refractone\.com/gi, "yourbrand.com")
+    .replace(/PromptPulse/gi, brandName)
+    .replace(/PromptPulse/gi, brandName)
+    .replace(/promptpulse\.com/gi, "yourbrand.com")
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -103,6 +104,18 @@ function ArticleReader({
   const articleText = cleanDemoText(article.article_markdown, brandName)
   const articleTitle = cleanDemoText(article.title, brandName)
   const description = cleanDemoText(article.meta_description || item.brief.recommended_article.priority_reason, brandName)
+  const [isExporting, setIsExporting] = useState(false)
+
+  async function handleExportPdf() {
+    setIsExporting(true)
+    try {
+      await downloadGeoArticlePdf(projectId, item.brief, { ...article, article_markdown: articleText, title: articleTitle })
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to export PDF.")
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <div className="space-y-2.5">
@@ -121,10 +134,11 @@ function ArticleReader({
             <CopyButton value={articleText} />
             <button
               type="button"
-              onClick={() => generateGeoArticlePdf(projectId, item.brief, { ...article, article_markdown: articleText, title: articleTitle })}
+              onClick={() => void handleExportPdf()}
+              disabled={isExporting}
               className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e4e4e7] bg-white px-3 text-[12px] font-semibold text-[#52525b] shadow-[0_1px_2px_rgba(9,9,11,0.04)] transition hover:border-[#d4d4d8] hover:text-[#18181b]"
             >
-              <Download size={14} />
+              {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               Export PDF
             </button>
           </div>

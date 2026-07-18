@@ -12,16 +12,16 @@ export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData) {
     y: 0.55,
     w: 12.25,
     h: 4.15,
-    rectRadius: 0.12,
+    rectRadius: 0.18,
     fill: { color: PPTX.colors.dark },
     line: { color: PPTX.colors.dark },
   })
-  slide.addShape("arc", {
+  slide.addShape("ellipse", {
     x: 9.9,
     y: 0.25,
     w: 3.7,
     h: 3.7,
-    fill: { color: PPTX.colors.dark2, transparency: 15 },
+    fill: { color: PPTX.colors.dark2, transparency: 12 },
     line: { color: PPTX.colors.dark2, transparency: 100 },
   })
 
@@ -44,7 +44,7 @@ export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData) {
     w: 7.5,
     h: 0.9,
     ...bodyText,
-    fontSize: 14,
+    fontSize: 13,
     color: "D7E4E1",
   })
 
@@ -52,21 +52,21 @@ export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData) {
   slide.addText("PERIOD", {
     x: 9.74,
     y: 1.46,
-    w: 2.1,
+    w: 1.3,
     h: 0.16,
     fontFace: PPTX.font,
-    fontSize: 7.5,
+    fontSize: 7,
     bold: true,
     color: "C7D6D2",
     margin: 0,
   })
   slide.addText(data.period, {
     x: 9.74,
-    y: 1.83,
-    w: 2.1,
-    h: 0.34,
+    y: 1.82,
+    w: 1.85,
+    h: 0.28,
     fontFace: PPTX.font,
-    fontSize: 17,
+    fontSize: 11,
     bold: true,
     color: PPTX.colors.white,
     margin: 0,

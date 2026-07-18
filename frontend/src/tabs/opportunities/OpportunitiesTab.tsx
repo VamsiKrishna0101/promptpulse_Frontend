@@ -5,6 +5,7 @@ import { useFilters } from "@/hooks/useFilters"
 import { useOpportunities, type OpportunityImpact, type OpportunityItem, type OpportunityType } from "@/hooks/useOpportunities"
 import { useProjects } from "@/hooks/useProjects"
 import { Fav, Sk } from "@/tabs/overview/overview"
+import type { OpportunityConfidence } from "@/hooks/useOpportunities"
 
 type Segment = "ALL" | OpportunityType
 
@@ -29,6 +30,13 @@ function impactClass(impact: OpportunityImpact) {
   if (impact === "HIGH") return "bg-[#2563EB] text-white"
   if (impact === "MEDIUM") return "bg-[#EFF6FF] text-[#1D4ED8] ring-1 ring-[#DCE8FD]"
   return "bg-[#F1F3F6] text-[#667085] ring-1 ring-[#E2E5EA]"
+}
+
+function confidenceMeta(confidence: OpportunityConfidence) {
+  if (confidence === "HIGH") return { label: "High confidence", cls: "bg-[#ECFDF3] text-[#047857] ring-[#B7EFCF]" }
+  if (confidence === "MEDIUM") return { label: "Medium confidence", cls: "bg-[#EFF6FF] text-[#1D4ED8] ring-[#DCE8FD]" }
+  if (confidence === "LOW") return { label: "Low confidence", cls: "bg-[#FFFAEB] text-[#B54708] ring-[#FEDF89]/60" }
+  return { label: "Needs review", cls: "bg-[#FFF7ED] text-[#C2410C] ring-[#FDBA74]/70" }
 }
 
 function scoreBar(score: number) {
@@ -90,6 +98,7 @@ function SegmentButton({ active, children, onClick }: { active: boolean; childre
 
 function OpportunityCard({ item }: { item: OpportunityItem }) {
   const meta = typeMeta(item.type)
+  const confidence = confidenceMeta(item.confidence)
   const actionClass = item.content_gap.action === "CREATE"
     ? "bg-black text-white"
     : item.content_gap.action === "REFRESH"
@@ -114,12 +123,15 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
             <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${actionClass}`}>
               {item.content_gap.action}
             </span>
+            <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ring-1 ${confidence.cls}`}>
+              {confidence.label}
+            </span>
           </div>
           <h3 className="mt-2.5 text-[14px] font-semibold leading-tight tracking-[-0.01em] text-[#0F172A]">{item.title}</h3>
           <p className="mt-1.5 text-[12px] leading-relaxed text-[#667085]">{item.description}</p>
         </div>
 
-        <div className="w-[80px] flex-shrink-0 text-right">
+        <div className="w-[72px] flex-shrink-0 text-right xl:w-[80px]">
           <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[#98A2B3]">Score</p>
           <p className="mt-1 text-[22px] font-semibold leading-none tracking-[-0.01em] text-[#0F172A]">{item.impact_score}</p>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#EEF1F5]">
@@ -152,9 +164,21 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10.5px] font-medium text-[#667085]">
           {item.topic && <span className="rounded-md border border-[#E2E5EA] bg-white px-1.5 py-1">{item.topic}</span>}
           <span className="rounded-md border border-[#E2E5EA] bg-white px-1.5 py-1">{item.evidence_count} answers</span>
+          <span className="rounded-md border border-[#E2E5EA] bg-white px-1.5 py-1">{item.clean_evidence_count} clean evidence</span>
           <span className="rounded-md border border-[#E2E5EA] bg-white px-1.5 py-1">{item.competitor_name}</span>
         </div>
       </div>
+
+      {(item.prompt_intent_warning || item.confidence_reasons.length > 0) && (
+        <div className="mt-3.5 rounded-xl border border-[#FEDF89] bg-[#FFFAEB] px-3 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#B54708]">Evidence check</p>
+          <div className="mt-1.5 flex flex-col gap-1">
+            {(item.confidence_reasons.length ? item.confidence_reasons : [item.prompt_intent_warning]).filter(Boolean).map((reason) => (
+              <p key={reason} className="text-[11.5px] font-medium leading-relaxed text-[#7A4B00]">{reason}</p>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-3.5 grid gap-2.5 lg:grid-cols-[1fr_1.1fr]">
         <div className="rounded-xl border border-[#E2E5EA] bg-white p-3">
@@ -226,8 +250,8 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <p className="line-clamp-1 max-w-[70%] text-[11px] text-[#98A2B3]">{item.sample_response ?? "Evidence comes from matching AI responses for this prompt."}</p>
+      <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <p className="line-clamp-2 max-w-full text-[11px] text-[#98A2B3] md:max-w-[70%]">{item.sample_response ?? "Evidence comes from matching AI responses for this prompt."}</p>
         <Link to={`/prompts/${item.prompt_id}`} className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2563EB] transition hover:text-[#1D4ED8]">
           Open prompt
           <ArrowUpRight size={11} />
@@ -280,7 +304,7 @@ export function OpportunitiesTab() {
   return (
     <div data-product-tour-id="opportunities-shell" className="flex flex-col gap-4 pb-10">
       <section className="overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-        <div className="relative flex min-h-[110px] items-center justify-between gap-5 px-5 py-5">
+        <div className="relative flex min-h-[110px] flex-col items-start justify-between gap-5 px-5 py-5 xl:flex-row xl:items-center">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,0,0,0.025),transparent_60%)]" />
           <div className="relative min-w-0">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em] text-zinc-600">
@@ -312,7 +336,7 @@ export function OpportunitiesTab() {
         </div>
       </section>
 
-      <div className="grid gap-3 lg:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
         <StatCard label="Content gaps" value={summary.total} detail="Prompt intents where content can improve AI visibility" tone="blue" icon={<Target size={14} />} />
         <StatCard label="High impact" value={summary.high_impact} detail="Issues likely to move visibility fastest" tone="emerald" icon={<TrendingUp size={14} />} />
         <StatCard label="Create pages" value={summary.create_pages} detail="New content likely needed for missing intents" tone="amber" icon={<FileText size={14} />} />
@@ -320,7 +344,7 @@ export function OpportunitiesTab() {
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-        <div className="flex min-h-[58px] items-center justify-between gap-4 border-b border-[#EEF0F3] px-4 py-3">
+        <div className="flex min-h-[58px] flex-col items-start justify-between gap-4 border-b border-[#EEF0F3] px-4 py-3 xl:flex-row xl:items-center">
           <div>
             <div className="flex items-center gap-1.5">
               <Filter size={13} className="text-[#98A2B3]" />
@@ -328,19 +352,19 @@ export function OpportunitiesTab() {
             </div>
             <p className="mt-0.5 text-[11.5px] text-[#98A2B3]">Filtered by the controls above for {selectedProject?.brand_name ?? "your brand"}.</p>
           </div>
-          <div className="relative">
+          <div className="relative w-full xl:w-auto">
             <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3]"><Search size={13} /></span>
             <input
               value={search}
               onChange={(event) => setSearchAndReset(event.target.value)}
               placeholder="Search content gap, source, competitor..."
-              className="h-8 w-[260px] rounded-lg border border-[#E2E5EA] bg-white pl-8 pr-3 text-[11.5px] font-medium text-[#344054] outline-none transition placeholder:text-[#98A2B3] focus:border-[#93B8F8] focus:ring-4 focus:ring-[#2563EB]/10"
+              className="h-8 w-full rounded-lg border border-[#E2E5EA] bg-white pl-8 pr-3 text-[11.5px] font-medium text-[#344054] outline-none transition placeholder:text-[#98A2B3] focus:border-[#93B8F8] focus:ring-4 focus:ring-[#2563EB]/10 xl:w-[260px]"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-b border-[#EEF0F3] bg-[#F7F8FA] px-3 py-2">
-          <div className="inline-flex rounded-lg bg-[#EEF1F5] p-1">
+        <div className="flex flex-col gap-3 border-b border-[#EEF0F3] bg-[#F7F8FA] px-3 py-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="inline-flex flex-wrap rounded-lg bg-[#EEF1F5] p-1">
             {SEGMENTS.map((option) => (
               <SegmentButton key={option.key} active={segment === option.key} onClick={() => setSegmentAndReset(option.key)}>
                 {option.label}
@@ -391,7 +415,7 @@ export function OpportunitiesTab() {
             {Array.from({ length: 6 }).map((_, index) => <Sk key={index} cls="h-[280px] rounded-2xl" />)}
           </div>
         ) : filtered.length ? (
-          <div className="grid gap-3 p-4 xl:grid-cols-2">
+          <div className="grid gap-3 p-4 2xl:grid-cols-2">
             {paged.map((item) => <OpportunityCard key={item.id} item={item} />)}
           </div>
         ) : (

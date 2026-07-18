@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { useProjects } from "@/hooks/useProjects"
+import { PROJECT_LIMIT_BY_PLAN } from "@/pages/onboarding/types"
+import { countryByName, countryFlagUrl, countryLabel } from "@/lib/countries"
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const O = (props: React.SVGProps<SVGSVGElement>) => (
@@ -25,14 +27,14 @@ const icons = {
     settings: <O><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></O>,
     help: <O><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></O>,
     logout: <O><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></O>,
+    plus: <O><path d="M12 5v14" /><path d="M5 12h14" /></O>,
     chevron: <O width="11" height="11"><polyline points="6 9 12 15 18 9" /></O>,
     check: <O width="12" height="12"><polyline points="20 6 9 17 4 12" /></O>,
 }
 
 // ── NavItem ───────────────────────────────────────────────────────────────────
-// ── NavItem ───────────────────────────────────────────────────────────────────
 function NavItem({
-    icon, label, href, badge, onClick, tourId,
+    icon, label, href, badge, onClick, tourId, tone = "default",
 }: {
     icon: React.ReactNode
     label: string
@@ -40,6 +42,7 @@ function NavItem({
     badge?: string
     onClick?: () => void
     tourId?: string
+    tone?: "default" | "support" | "danger"
 }) {
     const location = useLocation()
     const isActive = href
@@ -50,22 +53,35 @@ function NavItem({
                 : location.pathname === href
         : false
 
-    const base = "relative flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2 text-[14px] text-left appearance-none border-0 bg-transparent transition-all duration-200 ease-out active:scale-[0.985] group"
-    const state = isActive
-        ? "premium-nav-item-active text-white font-bold"
-        : "text-[#D6D8DE] font-semibold hover:text-white hover:bg-white/[0.07]"
+    const base = "relative flex w-full items-center justify-center gap-2.5 rounded-xl px-3 py-2 text-[14px] text-left appearance-none border-0 transition-all duration-200 ease-out active:scale-[0.985] group xl:justify-start xl:px-3.5"
+
+    const state = tone === "support"
+        ? "premium-support-nav text-white font-black"
+        : tone === "danger"
+            ? "premium-logout-nav font-semibold"
+            : isActive
+                ? "premium-nav-item-active text-white font-bold"
+                : "bg-transparent text-[#D6D8DE] font-semibold hover:text-white hover:bg-white/[0.07]"
+
+    const iconColor = tone === "support"
+        ? "text-white"
+        : tone === "danger"
+            ? "premium-logout-icon"
+            : isActive
+                ? "text-[#93C5FD]"
+                : "text-[#A9AFBD] group-hover:text-white"
 
     const inner = (
         <>
-            {isActive && (
+            {isActive && tone !== "support" && tone !== "danger" && (
                 <span className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full bg-[#60A5FA] shadow-[0_0_18px_rgba(96,165,250,0.72)]" />
             )}
-            <span className={["flex-shrink-0", isActive ? "text-[#93C5FD]" : "text-[#9EA1AC] group-hover:text-white"].join(" ")}>
+            <span className={["flex-shrink-0 transition-colors duration-150", iconColor].join(" ")}>
                 {icon}
             </span>
-            <span className="flex-1 leading-none">{label}</span>
+            <span className="hidden flex-1 leading-none xl:block transition-colors duration-150">{label}</span>
             {badge && (
-                <span className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-bold leading-none text-white">
+                <span className="hidden rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-bold leading-none text-white xl:inline-flex">
                     {badge}
                 </span>
             )}
@@ -79,8 +95,8 @@ function NavItem({
 // ── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ label, badge }: { label: string; badge?: string }) {
     return (
-        <div className="flex items-center justify-between px-3.5 pb-1 pt-3">
-            <span className="premium-section-label text-[10.5px] font-black uppercase select-none">
+        <div className="hidden items-center justify-between px-3.5 pb-1 pt-3 xl:flex">
+            <span className="premium-section-label text-[10.5px] font-black uppercase tracking-wider select-none">
                 {label}
             </span>
             {badge && (
@@ -92,16 +108,40 @@ function SectionLabel({ label, badge }: { label: string; badge?: string }) {
     )
 }
 
+function ProjectCountry({ location }: { location?: string | null }) {
+    const country = countryByName(location)
+    const label = countryLabel(location)
+
+    return (
+        <span className="inline-flex min-w-0 items-center gap-1">
+            {country ? (
+                <img
+                    src={countryFlagUrl(country.code)}
+                    alt={`${country.name} flag`}
+                    className="h-2.5 w-3.5 flex-shrink-0 rounded-[2px] object-cover shadow-[0_0_0_1px_rgba(255,255,255,0.16)]"
+                    loading="lazy"
+                />
+            ) : (
+                <span className="h-2.5 w-3.5 flex-shrink-0 rounded-[2px] border border-white/15 bg-white/10" />
+            )}
+            <span className="min-w-0 truncate">{label}</span>
+        </span>
+    )
+}
+
 // ── Workspace switcher (custom dropdown, replaces native <select>) ───────────
 function WorkspaceSwitcher() {
     const { projects, selectedProject, selectProject } = useProjects()
+    const { user } = useAuth()
     const [open, setOpen] = useState(false)
     const [logoFailed, setLogoFailed] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
-    const logoDomain = selectedProject?.brand_url?.trim() || "refractone.com"
+    const logoDomain = selectedProject?.brand_url?.trim() || "promptpulse.com"
     const logoSrc = logoFailed
         ? "/favicon.svg"
         : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logoDomain)}&sz=64`
+    const projectLimit = PROJECT_LIMIT_BY_PLAN[user?.effective_plan ?? user?.plan ?? "FREE"]
+    const canAddProject = projects.length < projectLimit
 
     useEffect(() => {
         function onClickOutside(e: MouseEvent) {
@@ -125,14 +165,14 @@ function WorkspaceSwitcher() {
     }, [logoDomain])
 
     return (
-        <div ref={containerRef} data-product-tour-id="workspace-switcher" className="relative px-5 py-4">
+        <div ref={containerRef} data-product-tour-id="workspace-switcher" className="relative px-3 py-3.5 xl:px-4">
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex w-full items-center gap-3 rounded-2xl px-1 py-1 transition hover:bg-white/[0.045]"
+                className="flex w-full items-center justify-center gap-3 rounded-xl px-1.5 py-1.5 transition hover:bg-white/[0.065] xl:justify-start"
             >
                 <div
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white shadow-[0_14px_30px_-16px_rgba(59,130,246,0.75),inset_0_1px_0_rgba(255,255,255,0.32)]"
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white shadow-[0_14px_26px_-18px_rgba(15,23,42,0.95),inset_0_1px_0_rgba(255,255,255,0.42)]"
                 >
                     <img
                         src={logoSrc}
@@ -141,23 +181,23 @@ function WorkspaceSwitcher() {
                         onError={() => setLogoFailed(true)}
                     />
                 </div>
-                <div className="min-w-0 flex-1 text-left">
+                <div className="hidden min-w-0 flex-1 text-left xl:block">
                     <p className="truncate text-[16px] font-black leading-tight text-white">
                         {selectedProject?.brand_name ?? "No project"}
                     </p>
-                    <p className="mt-0.5 truncate text-[13px] font-medium leading-tight text-[#969BA8]">
-                        {selectedProject?.brand_location ?? "India"}
+                    <p className="mt-0.5 truncate text-[13px] font-semibold leading-tight text-[#9BA8B8]">
+                        <ProjectCountry location={selectedProject?.brand_location} />
                     </p>
                 </div>
-                <span className={["flex-shrink-0 text-[#858A97] transition-transform", open ? "rotate-180" : ""].join(" ")}>
+                <span className={["hidden flex-shrink-0 text-[#9BA8B8] transition-transform xl:block", open ? "rotate-180" : ""].join(" ")}>
                     {icons.chevron}
                 </span>
             </button>
 
             {open && (
-                <div className="absolute left-5 right-5 top-[calc(100%-4px)] z-30 overflow-hidden rounded-2xl border border-white/10 bg-[#101218]/95 py-1 shadow-[0_18px_46px_-12px_rgba(0,0,0,0.65)] backdrop-blur">
+                <div className="absolute left-3 right-3 top-[calc(100%-4px)] z-30 overflow-hidden rounded-2xl border border-white/10 bg-[#172033]/98 py-1 shadow-[0_18px_46px_-12px_rgba(0,0,0,0.55)] backdrop-blur xl:left-4 xl:right-4">
                     {projects.length === 0 ? (
-                        <p className="px-3 py-2 text-[12.5px] text-[#858A97]">No projects yet</p>
+                        <p className="px-3 py-2 text-[12.5px] text-[#9BA8B8]">No projects yet</p>
                     ) : (
                         projects.map((p) => {
                             const active = p.id === selectedProject?.id
@@ -168,14 +208,41 @@ function WorkspaceSwitcher() {
                                     onClick={() => { selectProject(p.id); setOpen(false) }}
                                     className={[
                                         "flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] transition",
-                                        active ? "bg-[#3B82F6]/18 text-white font-bold" : "text-[#D6D8DE] hover:bg-white/[0.07]",
+                                        active ? "bg-white/10 text-white font-bold" : "text-[#C8D1DE] hover:bg-white/[0.075]",
                                     ].join(" ")}
                                 >
-                                    <span className="min-w-0 flex-1 truncate">{p.brand_name}</span>
-                                    {active && <span className="flex-shrink-0 text-[#60A5FA]">{icons.check}</span>}
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate">{p.brand_name}</span>
+                                        <span className="mt-0.5 flex min-w-0 text-[10.5px] font-medium text-[#9BA8B8]">
+                                            <ProjectCountry location={p.brand_location} />
+                                        </span>
+                                    </span>
+                                    {active && <span className="flex-shrink-0 text-[#9EE6C8]">{icons.check}</span>}
                                 </button>
                             )
                         })
+                    )}
+                    <div className="my-1 border-t border-white/10" />
+                    {canAddProject ? (
+                        <Link
+                            to="/onboarding"
+                            onClick={() => setOpen(false)}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-[12.5px] font-bold text-[#C8D1DE] transition hover:bg-white/[0.075] hover:text-white"
+                        >
+                            <span className="flex-shrink-0 text-[#9EE6C8]">{icons.plus}</span>
+                            <span className="min-w-0 flex-1 truncate">Add project</span>
+                            <span className="text-[10px] font-semibold text-[#9BA8B8]">{projects.length}/{projectLimit}</span>
+                        </Link>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled
+                            className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2 text-left text-[12.5px] font-semibold text-[#9BA8B8]"
+                        >
+                            <span className="flex-shrink-0">{icons.plus}</span>
+                            <span className="min-w-0 flex-1 truncate">Project limit reached</span>
+                            <span className="text-[10px]">{projects.length}/{projectLimit}</span>
+                        </button>
                     )}
                 </div>
             )}
@@ -190,15 +257,54 @@ export function Sidebar() {
     const isAdmin = user?.role === "ADMIN"
 
     return (
-        <aside className="premium-sidebar sticky top-0 flex h-screen w-[280px] select-none flex-col">
+        <aside className="premium-sidebar sticky top-0 flex h-screen w-[88px] select-none flex-col xl:w-[280px]">
+            <style>{`
+                .premium-sidebar {
+                    background: linear-gradient(180deg, #0B1220 0%, #0A0F1C 55%, #080C16 100%);
+                    border-right: 1px solid rgba(255, 255, 255, 0.06);
+                    box-shadow: 1px 0 24px rgba(0, 0, 0, 0.35);
+                }
+                .premium-nav-item-active {
+                    background: linear-gradient(90deg, rgba(96, 165, 250, 0.16), rgba(96, 165, 250, 0.03));
+                    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                }
+                .premium-section-label {
+                    color: #6B7280;
+                    letter-spacing: 0.08em;
+                }
+                .premium-support-nav {
+                    background: linear-gradient(135deg, #16A34A, #059669);
+                    box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+                    transition: background 0.2s ease;
+                }
+                .premium-support-nav:hover {
+                    background: linear-gradient(135deg, #15803D, #047857);
+                }
+                .premium-logout-nav {
+                    background: transparent;
+                    color: #D6D8DE;
+                    transition: background 0.2s ease, color 0.2s ease;
+                }
+                .premium-logout-nav:hover {
+                    background: rgba(239, 68, 68, 0.10);
+                    color: #F87171;
+                }
+                .premium-logout-nav:hover .premium-logout-icon {
+                    color: #F87171;
+                }
+                .premium-logout-icon {
+                    color: #9EA1AC;
+                    transition: color 0.2s ease;
+                }
+            `}</style>
 
             {/* ── Workspace ── */}
             <WorkspaceSwitcher />
 
-            <div className="mx-5 border-t border-white/10" />
+            <div className="mx-3 border-t border-white/10 xl:mx-5" />
 
             {/* ── Nav ── */}
-            <nav className="min-h-0 flex-1 overflow-hidden px-3 py-1">
+            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 xl:px-3">
                 <SectionLabel label="General" />
                 <NavItem icon={icons.overview} label="Overview" href="/dashboard" tourId="nav-overview" />
                 <NavItem icon={icons.opportunities} label="Opportunities" href="/opportunities" tourId="nav-opportunities" />
@@ -216,11 +322,11 @@ export function Sidebar() {
             </nav>
 
             {/* ── Bottom ── */}
-            <div className="flex-shrink-0 px-3 pb-4">
+            <div className="flex-shrink-0 px-2 pb-4 xl:px-3">
                 <div className="mb-3 border-t border-white/10" />
                 <NavItem icon={icons.aiWorkspace} label="AI Workspace" href="/ai-workspace" tourId="nav-ai-workspace" />
-                <NavItem icon={icons.help} label="Help" href="/help" tourId="nav-help" />
-                <NavItem icon={icons.logout} label="Log out" onClick={() => { logout(); navigate("/login") }} />
+                <NavItem icon={icons.help} label="Help" href="/help" tourId="nav-help" tone="support" />
+                <NavItem icon={icons.logout} label="Log out" tone="danger" onClick={() => { logout(); navigate("/login") }} />
             </div>
 
         </aside>

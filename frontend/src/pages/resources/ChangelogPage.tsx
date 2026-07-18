@@ -26,7 +26,7 @@ export function ChangelogPage() {
     <ResourceShell
       eyebrow="Changelog"
       title={<>See what shipped and what is getting better.</>}
-      description="A simple product timeline so users know RefractOne is actively improving across analytics, recommendations, reports, and Sara."
+      description="A simple product timeline so users know PromptPulse is actively improving across analytics, recommendations, reports, and Sara."
     >
       <div className="grid gap-5 lg:grid-cols-[1fr_0.72fr]">
         <ResourceCard className="p-6">

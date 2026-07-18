@@ -18,7 +18,7 @@ export function useReport() {
     try {
       setReports(await listAIReports(selectedProject.id))
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load reports")
+      setError(readApiError(err, "Failed to load reports"))
     } finally {
       setIsLoading(false)
     }
@@ -29,7 +29,7 @@ export function useReport() {
     try {
       setDetail(await getAIReport(reportId))
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to open report")
+      setError(readApiError(err, "Failed to open report"))
     }
   }
 
@@ -44,7 +44,7 @@ export function useReport() {
       const reportId = text(result.report_id, "")
       if (reportId) await openReport(reportId)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate report")
+      setError(readApiError(err, "Failed to generate report"))
     } finally {
       setIsGenerating(false)
     }
@@ -66,4 +66,18 @@ export function useReport() {
     openReport,
     generate,
   }
+}
+
+function readApiError(error: unknown, fallback: string) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: { data?: { error?: unknown } } }).response?.data?.error === "string"
+  ) {
+    return (error as { response: { data: { error: string } } }).response.data.error
+  }
+
+  if (error instanceof Error) return error.message
+  return fallback
 }

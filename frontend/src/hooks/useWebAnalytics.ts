@@ -90,7 +90,7 @@ const EMPTY_FACTS: AnalyticsFacts = {
 }
 
 export function useWebAnalytics(projectId: string | null, queryString = "") {
-  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(() => localStorage.getItem("geolens_analytics_site_id"))
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(() => localStorage.getItem("promptpulse_analytics_site_id"))
   const [state, setState] = useState<WebAnalyticsState>({
     sites: [],
     selectedSite: null,
@@ -121,7 +121,7 @@ export function useWebAnalytics(projectId: string | null, queryString = "") {
       const sites = sitesRes.data
       const selectedSite = sites.find(site => site.id === selectedSiteId) ?? sites[0] ?? null
       if (selectedSite) {
-        localStorage.setItem("geolens_analytics_site_id", selectedSite.id)
+        localStorage.setItem("promptpulse_analytics_site_id", selectedSite.id)
         setSelectedSiteId(selectedSite.id)
       }
 
@@ -186,7 +186,7 @@ export function useWebAnalytics(projectId: string | null, queryString = "") {
     setState(prev => ({ ...prev, isSaving: true }))
     try {
       const response = await api.post<AnalyticsSite>(`/webanalytics/${projectId}/sites`, input)
-      localStorage.setItem("geolens_analytics_site_id", response.data.id)
+      localStorage.setItem("promptpulse_analytics_site_id", response.data.id)
       setSelectedSiteId(response.data.id)
       await load({ silent: true })
     } finally {
@@ -217,7 +217,7 @@ export function useWebAnalytics(projectId: string | null, queryString = "") {
   }
 
   function selectSite(siteId: string) {
-    localStorage.setItem("geolens_analytics_site_id", siteId)
+    localStorage.setItem("promptpulse_analytics_site_id", siteId)
     setSelectedSiteId(siteId)
   }
 
@@ -238,7 +238,7 @@ export function useWebAnalytics(projectId: string | null, queryString = "") {
   const trackerSnippet = useMemo(() => {
     if (!state.selectedSite) return ""
     const src = `${API_BASE_URL}/webanalytics/tracker.js`
-    return `<script async src="${src}" data-geolens-key="${state.selectedSite.public_key}" data-geolens-endpoint="${API_BASE_URL}/webanalytics"></script>`
+    return `<script async src="${src}" data-promptpulse-key="${state.selectedSite.public_key}" data-promptpulse-endpoint="${API_BASE_URL}/webanalytics"></script>`
   }, [state.selectedSite])
 
   return {
