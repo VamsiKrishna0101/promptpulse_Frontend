@@ -52,7 +52,7 @@ export function SaraProductPage() {
               </div>
               <div>
                 <p className="text-[15px] font-black text-white">Sara</p>
-                <p className="text-[12px] font-medium text-zinc-500">Northstar / Overview</p>
+                <p className="text-[12px] font-medium text-zinc-500">NorthstarIQ / Overview</p>
               </div>
             </div>
             <span className="flex items-center gap-1.5 rounded-full border border-emerald-400/25 px-3 py-1 text-[11px] font-black text-emerald-300">
@@ -68,7 +68,7 @@ export function SaraProductPage() {
 
             <div className="max-w-[84%] space-y-3">
               <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-4 text-[14px] font-medium leading-7 text-zinc-200">
-                Northstar visibility improved after Gemini and ChatGPT started citing your comparison page again. The biggest remaining gap is Reddit and G2 proof, where PromptWatch and Peec AI are still referenced more often.
+                NorthstarIQ visibility improved after Gemini and ChatGPT started citing your comparison page again. The biggest remaining gap is Reddit and G2 proof, where QueryPilot and SignalNest are still referenced more often.
               </div>
               <p className="pl-1 text-[11px] font-bold uppercase tracking-[0.1em] text-zinc-600">Suggested next steps</p>
             </div>

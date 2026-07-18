@@ -13,14 +13,14 @@ const conversation = [
     {
         user: "Why did our visibility drop this week?",
         answer:
-            "Visibility fell 12% after ChatGPT and Perplexity stopped citing two sources that used to mention Northstar — G2 and a Reddit comparison thread. Refresh those pages, strengthen the comparison section, and get one third-party benchmark published this month.",
+            "Visibility fell 12% after ChatGPT and Perplexity stopped citing two sources that used to mention NorthstarIQ — G2 and a Reddit comparison thread. Refresh those pages, strengthen the comparison section, and get one third-party benchmark published this month.",
         tag: "Root cause found",
         confidence: "High confidence · 41 prompt runs, 3 models",
     },
     {
         user: "Which competitor is gaining on us?",
         answer:
-            "Peec AI picked up 6 of the 9 prompts you lost this week, mostly on pricing and integration questions. It's cited more often on G2 and two dev-community threads you don't currently have a presence on.",
+            "SignalNest picked up 6 of the 9 prompts you lost this week, mostly on pricing and integration questions. It's cited more often on G2 and two dev-community threads you don't currently have a presence on.",
         tag: "Competitor gap",
         confidence: "High confidence · 18 shared prompts",
     },
@@ -44,7 +44,7 @@ const capabilities = [
 
 const savedThreads = [
     { title: "Why Perplexity dropped us", meta: "2 days ago" },
-    { title: "Peec AI competitor gap", meta: "5 days ago" },
+    { title: "SignalNest competitor gap", meta: "5 days ago" },
     { title: "India segment: data gaps", meta: "6 days ago" },
 ]
 

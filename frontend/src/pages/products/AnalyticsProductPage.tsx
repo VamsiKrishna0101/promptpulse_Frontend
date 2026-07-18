@@ -8,11 +8,11 @@ import {
 import { ProductPageShell } from "./ProductShared"
 
 const brandRows = [
-  { name: "Northstar", domain: "promptpulse.com", visibility: "96%", vDelta: "+9.0", sentiment: "72", sDelta: "+3.3", position: "#4.1", pDelta: "+0.2", isYou: true },
-  { name: "PromptWatch", domain: "promptwatch.com", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "+0.8", position: "#3.1", pDelta: "-0.1" },
-  { name: "Peec AI", domain: "peec.ai", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "-0.2", position: "#3.0", pDelta: "0" },
-  { name: "PromptMonitor", domain: "promptmonitor.ai", visibility: "60%", vDelta: "+0.5", sentiment: "65", sDelta: "+0.1", position: "#3.0", pDelta: "0" },
-  { name: "Profound", domain: "tryprofound.com", visibility: "60%", vDelta: "+0.5", sentiment: "65", sDelta: "+1.3", position: "#2.9", pDelta: "+0.1" },
+  { name: "NorthstarIQ", domain: "northstariq.example", visibility: "96%", vDelta: "+9.0", sentiment: "72", sDelta: "+3.3", position: "#4.1", pDelta: "+0.2", isYou: true },
+  { name: "QueryPilot", domain: "querypilot.example", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "+0.8", position: "#3.1", pDelta: "-0.1" },
+  { name: "SignalNest", domain: "signalnest.example", visibility: "60%", vDelta: "-1.1", sentiment: "65", sDelta: "-0.2", position: "#3.0", pDelta: "0" },
+  { name: "AnswerLens", domain: "answerlens.example", visibility: "60%", vDelta: "+0.5", sentiment: "65", sDelta: "+0.1", position: "#3.0", pDelta: "0" },
+  { name: "AtlasRank", domain: "atlasrank.example", visibility: "60%", vDelta: "+0.5", sentiment: "65", sDelta: "+1.3", position: "#2.9", pDelta: "+0.1" },
 ]
 
 const sources = [
@@ -372,7 +372,7 @@ export function AnalyticsProductPage() {
     >
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Visibility" value="96%" delta="+9.0" note="Northstar share across AI answers" badge="Brand line" accent="#2563EB" />
+          <MetricCard label="Visibility" value="96%" delta="+9.0" note="NorthstarIQ share across AI answers" badge="Brand line" accent="#2563EB" />
           <MetricCard label="Position" value="4.1" delta="+0.2" note="Average rank when mentioned" badge="Rank" accent="#7C3AED" />
           <MetricCard label="Sentiment" value="72" delta="+3.3" note="Weighted response sentiment" badge="Tone" accent="#10B981" />
           <MetricCard label="Sources" value="9" note="Domains influencing answers" badge="Evidence" accent="#F59E0B" />

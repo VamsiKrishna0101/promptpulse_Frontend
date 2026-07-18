@@ -90,30 +90,30 @@ const stats = [
 
 const gaps = [
     {
-        competitor: "PromptMonitor",
-        title: "PromptMonitor is ranking ahead",
-        subtitle: "PromptMonitor ranks at #2.8 while your brand ranks at #4.2 for this prompt.",
+        competitor: "AnswerLens",
+        title: "AnswerLens is ranking ahead",
+        subtitle: "AnswerLens ranks at #2.8 while your brand ranks at #4.2 for this prompt.",
         score: 39,
         category: "Category landing page",
         recommendation:
             "Which sources influence ChatGPT answers for AI visibility software: a practical guide from PromptPulse",
         proof:
-            "PromptMonitor has stronger AI-answer evidence for this intent. Sources like linkedin.com and peec.ai are reinforcing competitor answers.",
+            "AnswerLens has stronger AI-answer evidence for this intent. Sources like linkedin.com and signalnest.example are reinforcing competitor answers.",
         intent: "Which sources influence ChatGPT answers for AI visibility software?",
-        chips: ["Source intelligence", "18 answers", "PromptMonitor"],
+        chips: ["Source intelligence", "18 answers", "AnswerLens"],
     },
     {
-        competitor: "AthenaHQ",
-        title: "AthenaHQ is ranking ahead",
-        subtitle: "AthenaHQ ranks at #2.8 while your brand ranks at #4.2 for this prompt.",
+        competitor: "AtlasRank",
+        title: "AtlasRank is ranking ahead",
+        subtitle: "AtlasRank ranks at #2.8 while your brand ranks at #4.2 for this prompt.",
         score: 39,
         category: "Best tools / category list",
         recommendation:
             "Best tools to monitor competitor visibility across AI answer engines: where PromptPulse fits",
         proof:
-            "AthenaHQ has stronger AI-answer evidence for this intent. Sources like g2.com and reddit.com are reinforcing competitor answers.",
+            "AtlasRank has stronger AI-answer evidence for this intent. Sources like g2.com and reddit.com are reinforcing competitor answers.",
         intent: "Best tools to monitor competitor visibility across AI answer engines",
-        chips: ["Competitor monitoring", "18 answers", "AthenaHQ"],
+        chips: ["Competitor monitoring", "18 answers", "AtlasRank"],
     },
 ]
 

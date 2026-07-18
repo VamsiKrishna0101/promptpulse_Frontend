@@ -20,11 +20,11 @@ import {
 
 const chartLines = [
     { name: "PromptPulse", color: "#2563EB", points: "0,12 120,10 240,6 360,8 480,10 600,11", end: "89%", primary: true },
-    { name: "PromptWatch", color: "#12B76A", points: "0,58 120,50 240,44 360,52 480,46 600,48", end: "67%" },
-    { name: "Peec AI", color: "#F79009", points: "0,48 120,54 240,58 360,50 480,56 600,54", end: "61%" },
-    { name: "PromptMonitor", color: "#8B5CF6", points: "0,62 120,56 240,60 360,58 480,54 600,58", end: "56%" },
-    { name: "Profound", color: "#EC4899", points: "0,54 120,60 240,52 360,64 480,58 600,60", end: "56%" },
-    { name: "AthenaHQ", color: "#06AED4", points: "0,66 120,60 240,64 360,56 480,60 600,58", end: "56%" },
+    { name: "QueryPilot", color: "#12B76A", points: "0,58 120,50 240,44 360,52 480,46 600,48", end: "67%" },
+    { name: "SignalNest", color: "#F79009", points: "0,48 120,54 240,58 360,50 480,56 600,54", end: "61%" },
+    { name: "AnswerLens", color: "#8B5CF6", points: "0,62 120,56 240,60 360,58 480,54 600,58", end: "56%" },
+    { name: "NorthstarIQ", color: "#EC4899", points: "0,54 120,60 240,52 360,64 480,58 600,60", end: "56%" },
+    { name: "AtlasRank", color: "#06AED4", points: "0,66 120,60 240,64 360,56 480,60 600,58", end: "56%" },
 ]
 
 const yLabels = ["100%", "80%", "60%", "40%", "20%", "0%"]
@@ -32,11 +32,11 @@ const xLabels = ["2 Jul", "3 Jul", "4 Jul", "5 Jul", "6 Jul", "7 Jul"]
 
 const brandRows = [
     { rank: 1, name: "PromptPulse", mono: "R", monoBg: "#2563EB", visChange: "+6.3", vis: "94%", sentDot: "#12B76A", sentChange: "+3.7", sent: "71", posChange: "+0.2", pos: "4.1" },
-    { rank: 2, name: "PromptWatch", mono: "P", monoBg: "#2563EB", visChange: "+1.6", vis: "61%", sentDot: "#F79009", sentChange: "+0.2", sent: "65", posChange: null, pos: "3.0" },
-    { rank: 3, name: "Peec AI", mono: "P", monoBg: "#15161B", visChange: "-0.9", vis: "60%", sentDot: "#F79009", sentChange: "-0.7", sent: "64", posChange: "+0.1", pos: "3.0" },
-    { rank: 4, name: "Profound", mono: "P", monoBg: "#12B76A", visChange: "+1.5", vis: "60%", sentDot: "#12B76A", sentChange: "+0.6", sent: "65", posChange: null, pos: "3.0" },
-    { rank: 5, name: "PromptMonitor", mono: "P", monoBg: "#8B5CF6", visChange: "-1.9", vis: "59%", sentDot: "#F79009", sentChange: "-0.5", sent: "65", posChange: null, pos: "3.0" },
-    { rank: 6, name: "AthenaHQ", mono: "A", monoBg: "#2563EB", visChange: "-0.3", vis: "59%", sentDot: "#12B76A", sentChange: "+0.3", sent: "65", posChange: "-0.1", pos: "3.0" },
+    { rank: 2, name: "QueryPilot", mono: "Q", monoBg: "#2563EB", visChange: "+1.6", vis: "61%", sentDot: "#F79009", sentChange: "+0.2", sent: "65", posChange: null, pos: "3.0" },
+    { rank: 3, name: "SignalNest", mono: "S", monoBg: "#15161B", visChange: "-0.9", vis: "60%", sentDot: "#F79009", sentChange: "-0.7", sent: "64", posChange: "+0.1", pos: "3.0" },
+    { rank: 4, name: "NorthstarIQ", mono: "N", monoBg: "#12B76A", visChange: "+1.5", vis: "60%", sentDot: "#12B76A", sentChange: "+0.6", sent: "65", posChange: null, pos: "3.0" },
+    { rank: 5, name: "AnswerLens", mono: "A", monoBg: "#8B5CF6", visChange: "-1.9", vis: "59%", sentDot: "#F79009", sentChange: "-0.5", sent: "65", posChange: null, pos: "3.0" },
+    { rank: 6, name: "AtlasRank", mono: "A", monoBg: "#2563EB", visChange: "-0.3", vis: "59%", sentDot: "#12B76A", sentChange: "+0.3", sent: "65", posChange: "-0.1", pos: "3.0" },
 ]
 
 const sourceRows = [

@@ -8,10 +8,10 @@ const BRANDS: Record<string, {
     position: string
 }> = {
     "PromptPulse": { sentiment: "positive", visibility: "64%", sentimentScore: 86, position: "2.4" },
-    "Peec AI": { sentiment: "positive", visibility: "58%", sentimentScore: 78, position: "2.7" },
-    "PromptWatch": { sentiment: "positive", visibility: "51%", sentimentScore: 74, position: "3.1" },
-    "Profound": { sentiment: "neutral", visibility: "46%", sentimentScore: 68, position: "3.4" },
-    "AthenaHQ": { sentiment: "neutral", visibility: "38%", sentimentScore: 62, position: "3.9" },
+    "SignalNest": { sentiment: "positive", visibility: "58%", sentimentScore: 78, position: "2.7" },
+    "QueryPilot": { sentiment: "positive", visibility: "51%", sentimentScore: 74, position: "3.1" },
+    "NorthstarIQ": { sentiment: "neutral", visibility: "46%", sentimentScore: 68, position: "3.4" },
+    "AtlasRank": { sentiment: "neutral", visibility: "38%", sentimentScore: 62, position: "3.9" },
     "missing citations": { sentiment: "negative", visibility: "-", sentimentScore: 24, position: "-" },
 }
 
@@ -24,19 +24,19 @@ const SENT_COLOR = {
 // card → which brand tooltip to show on right panel
 const CARD_BRAND: Record<string, string> = {
     visibility: "PromptPulse",
-    position: "PromptWatch",
-    sentiment: "Peec AI",
+    position: "QueryPilot",
+    sentiment: "SignalNest",
 }
 
 const AI_RESPONSE = `For B2B SaaS teams trying to improve visibility inside AI answer engines, the strongest tools usually split across monitoring, source intelligence, and content recommendations:
 
 PromptPulse is useful when teams want one workflow for AI visibility, competitor benchmarking, source tracking, opportunity discovery, and Sara-powered recommendations.
 
-Peec AI is often mentioned for broad AI search analytics and marketing-team reporting.
+SignalNest is often mentioned for broad AI search analytics and marketing-team reporting.
 
-PromptWatch is commonly referenced for prompt tracking and category visibility monitoring.
+QueryPilot is commonly referenced for prompt tracking and category visibility monitoring.
 
-Profound and AthenaHQ also appear in comparison-style answers, especially when buyers ask for enterprise AI visibility platforms.
+NorthstarIQ and AtlasRank also appear in comparison-style answers, especially when buyers ask for enterprise AI visibility platforms.
 
 If a brand has missing citations across trusted third-party sources like Reddit, G2, LinkedIn, and category blogs, AI models may recommend competitors more often.`
 

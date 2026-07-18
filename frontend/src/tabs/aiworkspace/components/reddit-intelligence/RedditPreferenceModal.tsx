@@ -60,7 +60,7 @@ export function RedditPreferenceModal({
             <TextArea label="Avoid bad matches" value={avoidKeywords} onChange={setAvoidKeywords} placeholder={"profound books\nprofound lyrics\nhearing loss"} />
           </div>
 
-          <TextArea label="Competitor context" value={competitorContext} onChange={setCompetitorContext} rows={3} placeholder="Semrush and Ahrefs are SEO competitors, not direct GEO tools." />
+          <TextArea label="Competitor context" value={competitorContext} onChange={setCompetitorContext} rows={3} placeholder="QueryForge and RankPilot are SEO competitors, not direct GEO tools." />
           <TextArea label="Reddit focus" value={redditFocus} onChange={setRedditFocus} rows={3} placeholder={"reviews\nalternatives\npricing complaints\nrecommendations"} />
 
           {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-medium text-red-700">{error}</div>}

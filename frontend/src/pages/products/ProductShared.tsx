@@ -128,7 +128,7 @@ function AppMockFrame({ active, children }: { active: string; children: ReactNod
             <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
               <BrandMark />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[12.5px] font-black">Northstar</p>
+                <p className="truncate text-[12.5px] font-black">NorthstarIQ</p>
                 <p className="truncate text-[10.5px] text-zinc-500">United States</p>
               </div>
               <ChevronDown size={13} className="text-zinc-500" />
@@ -180,7 +180,7 @@ function AppMockFrame({ active, children }: { active: string; children: ReactNod
           </aside>
           <section className="min-w-0 flex-1 bg-[#F8FAFC]">
             <div className="flex min-h-[52px] items-center gap-2 border-b border-zinc-200 bg-white px-5">
-              <FilterPill dark>Northstar</FilterPill>
+              <FilterPill dark>NorthstarIQ</FilterPill>
               <FilterPill>All time</FilterPill>
               <FilterPill>All Topics</FilterPill>
               <FilterPill>All Models</FilterPill>

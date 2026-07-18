@@ -19,7 +19,7 @@ function PromptMockup() {
                 For B2B SaaS teams,{" "}
                 <span style={{ background: "rgba(34,197,94,0.12)", color: "#15803d", borderBottom: "1.5px solid rgba(34,197,94,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>PromptPulse</span>
                 {" "}should appear alongside category leaders like{" "}
-                <span style={{ background: "rgba(234,179,8,0.12)", color: "#a16207", borderBottom: "1.5px solid rgba(234,179,8,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>PromptWatch</span>
+                <span style={{ background: "rgba(234,179,8,0.12)", color: "#a16207", borderBottom: "1.5px solid rgba(234,179,8,0.28)", borderRadius: 3, padding: "0 2px", fontWeight: 600 }}>QueryPilot</span>
                 {" "}when source evidence is strong.
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#f9f9f9", border: "1px solid #e4e4e7", borderRadius: 7, padding: "4px 8px" }}>
@@ -35,9 +35,9 @@ function PromptMockup() {
 function CompetitorMockup() {
     const rows = [
         { name: "PromptPulse", vis: 65, color: "#2563eb", you: true },
-        { name: "Peec AI", vis: 46, color: "#22c55e", you: false },
-        { name: "PromptWatch", vis: 38, color: "#f59e0b", you: false },
-        { name: "Profound", vis: 29, color: "#a855f7", you: false },
+        { name: "SignalNest", vis: 46, color: "#22c55e", you: false },
+        { name: "QueryPilot", vis: 38, color: "#f59e0b", you: false },
+        { name: "NorthstarIQ", vis: 29, color: "#a855f7", you: false },
     ]
     return (
         <div style={{ background: "#fff", border: "1px solid #e4e4e7", borderRadius: 12, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
@@ -66,7 +66,7 @@ function SourcesMockup() {
         { domain: "g2.com", cited: true },
         { domain: "reddit.com", cited: true },
         { domain: "yoursite.com", cited: false },
-        { domain: "hubspot.com", cited: false },
+        { domain: "marketloop.example", cited: false },
         { domain: "techcrunch.com", cited: true },
     ]
     return (

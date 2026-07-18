@@ -3,7 +3,7 @@ import { CheckCircle2, ChevronRight, FileText, Sparkles, Target } from "lucide-r
 
 const outline = [
   "Answer the target query directly in the opening section",
-  "Compare Northstar against Signalworks, Cascadian, and Vantage Loop",
+  "Compare NorthstarIQ against Signalworks, Cascadian, and Vantage Loop",
   "Reference sources already shaping AI answers",
   "Add short FAQ blocks for answer-engine snippets",
 ]

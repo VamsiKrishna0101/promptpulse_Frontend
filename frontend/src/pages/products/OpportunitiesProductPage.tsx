@@ -1,7 +1,7 @@
 import { CardHeader, DashboardCard, ProductPageShell } from "./ProductShared"
 
 const opportunities = [
-  ["Outranked", "PromptWatch is ranking ahead", "Comparison proof is weak for commercial-intent prompts.", "48"],
+  ["Outranked", "QueryPilot is ranking ahead", "Comparison proof is weak for commercial-intent prompts.", "48"],
   ["Source gap", "Competitors cited on G2", "AI answers trust G2 and Reddit more than owned pages.", "44"],
   ["Create page", "Missing alternatives page", "No strong page answers 'best AI visibility tools for startups'.", "39"],
   ["Sentiment", "Positioning unclear", "Models describe the category but not your product advantage.", "32"],

@@ -146,7 +146,7 @@ function AddCompetitorDrawer({
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Peec AI"
+              placeholder="SignalNest"
               className="mt-2 h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-[13px] font-medium text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-300"
             />
 
@@ -154,7 +154,7 @@ function AddCompetitorDrawer({
             <input
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://peec.ai"
+              placeholder="https://signalnest.example"
               className="mt-2 h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-[13px] font-medium text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-300"
             />
 
