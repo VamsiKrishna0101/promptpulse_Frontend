@@ -6,11 +6,12 @@ import { ProjectsProvider, useProjects } from "@/hooks/useProjects"
 import { DAYS_OPTIONS, MODEL_OPTIONS, useFilterOptions } from "@/hooks/useFilters"
 import { useSubscription } from "@/hooks/useSubscription"
 import { SaraFloatingAssistant } from "@/components/sara/SaraFloatingAssistant"
-import { Bot, Calendar, FolderOpen, ChevronDown, Check, Coins } from "lucide-react"
+import { Bot, Calendar, FolderOpen, ChevronDown, Check, Coins, Loader2 } from "lucide-react"
 import { downloadCsvExport, type ExportResource } from "@/lib/exportDownload"
 import { ProductTourProvider } from "@/features/product-tour/ProductTourProvider"
 import { TodayRunStatus } from "@/components/status/TodayRunStatus"
 import { MODEL_ICON_DOMAINS, modelIconUrl } from "@/lib/aiModels"
+import { useToast } from "@/components/ui/Toast"
 
 type DropdownOption = { label: string; value: string }
 
@@ -158,6 +159,8 @@ function CreditsPill() {
 function AppShellContent({ children }: { children: ReactNode }) {
   const { projects, selectedProject, isLoading } = useProjects()
   const [searchParams, setSearchParams] = useSearchParams()
+  const toast = useToast()
+  const [exporting, setExporting] = useState<"pdf" | "csv" | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const mainRef = useRef<HTMLElement>(null)
@@ -169,6 +172,23 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const showTopbar = filtersEnabled || Boolean(exportResource)
   const filterQuery = searchParams.toString() ? `?${searchParams.toString()}` : ""
   const hideSaraAssistant = ["/chat", "/settings", "/profile", "/subscription", "/help", "/ai-workspace"].includes(location.pathname) || location.pathname.startsWith("/admin")
+
+  async function handleExport(format: "pdf" | "csv") {
+    if (!selectedProject?.id || !exportResource || exporting) return
+
+    setExporting(format)
+    try {
+      await downloadCsvExport(selectedProject.id, exportResource, filterQuery, format)
+      toast.success(
+        format === "pdf" ? "PDF ready" : "CSV ready",
+        "Your export has started downloading. Credits have been refreshed.",
+      )
+    } catch (error: any) {
+      toast.error("Export failed", error?.message || "We could not prepare this export. Please try again.")
+    } finally {
+      setExporting(null)
+    }
+  }
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" })
@@ -257,32 +277,48 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 {exportResource && (
                   <button
                     type="button"
-                    onClick={() => void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery, "pdf")}
-                    className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                    onClick={() => void handleExport("pdf")}
+                    disabled={Boolean(exporting)}
+                    className={[
+                      "flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-70",
+                      exporting === "pdf" ? "cursor-wait" : "",
+                    ].join(" ")}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                    PDF
+                    {exporting === "pdf" ? (
+                      <Loader2 size={13} className="animate-spin text-rose-500" />
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                      </svg>
+                    )}
+                    {exporting === "pdf" ? "Preparing..." : "PDF"}
                   </button>
                 )}
                 {/* CSV export — all resources */}
                 {exportResource && (
                   <button
                     type="button"
-                    onClick={() => void downloadCsvExport(selectedProject?.id ?? null, exportResource, filterQuery)}
-                    className="flex h-8 items-center gap-1.5 rounded-lg bg-slate-950 px-3 text-[12px] font-semibold text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.5)] transition hover:bg-slate-800"
+                    onClick={() => void handleExport("csv")}
+                    disabled={Boolean(exporting)}
+                    className={[
+                      "flex h-8 items-center gap-1.5 rounded-lg bg-slate-950 px-3 text-[12px] font-semibold text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.5)] transition hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-70",
+                      exporting === "csv" ? "cursor-wait" : "",
+                    ].join(" ")}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    CSV
+                    {exporting === "csv" ? (
+                      <Loader2 size={13} className="animate-spin text-emerald-400" />
+                    ) : (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                    )}
+                    {exporting === "csv" ? "Preparing..." : "CSV"}
                   </button>
                 )}
               </div>

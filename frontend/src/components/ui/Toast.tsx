@@ -21,36 +21,40 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | null>(null)
 
-const typeConfig: Record<ToastType, { icon: React.ReactNode; bar: string }> = {
+const typeConfig: Record<ToastType, { icon: React.ReactNode; iconWrap: string; title: string }> = {
   success: {
-    bar: "bg-emerald-500",
+    title: "text-slate-950",
+    iconWrap: "border-slate-900 bg-slate-900 text-white shadow-[0_8px_18px_-12px_rgba(15,23,42,0.9)]",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.7} strokeLinecap="round" strokeLinejoin="round">
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
   },
   error: {
-    bar: "bg-red-500",
+    title: "text-slate-950",
+    iconWrap: "border-rose-200 bg-rose-50 text-rose-600",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.7} strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
   },
   warning: {
-    bar: "bg-amber-500",
+    title: "text-slate-950",
+    iconWrap: "border-amber-200 bg-amber-50 text-amber-600",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
         <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
   },
   info: {
-    bar: "bg-blue-500",
+    title: "text-slate-950",
+    iconWrap: "border-blue-200 bg-blue-50 text-blue-600",
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
     ),
@@ -60,20 +64,20 @@ const typeConfig: Record<ToastType, { icon: React.ReactNode; bar: string }> = {
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) => void }) {
   const config = typeConfig[toast.type]
   return (
-    <div className="relative flex items-start gap-3 bg-white border border-zinc-200 rounded-xl shadow-lg shadow-black/5 px-4 py-3 min-w-[280px] max-w-sm overflow-hidden animate-in slide-in-from-right-5 fade-in-0 duration-200">
-      <div className={cn("absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl", config.bar)} />
-      <span className="flex-shrink-0 mt-0.5">{config.icon}</span>
+    <div className="relative flex min-w-[320px] max-w-[430px] items-start gap-3 overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 px-4 py-3.5 shadow-[0_18px_55px_-30px_rgba(15,23,42,0.55),0_8px_18px_-14px_rgba(15,23,42,0.18)] ring-1 ring-white/70 backdrop-blur animate-in slide-in-from-bottom-3 fade-in-0 duration-200">
+      <span className={cn("mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border", config.iconWrap)}>{config.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-zinc-800 leading-tight">{toast.title}</p>
+        <p className={cn("text-[14px] font-bold leading-tight tracking-[-0.01em]", config.title)}>{toast.title}</p>
         {toast.description && (
-          <p className="text-[12px] text-zinc-400 mt-0.5 leading-snug">{toast.description}</p>
+          <p className="mt-1 text-[12.5px] leading-snug text-slate-500">{toast.description}</p>
         )}
       </div>
       <button
         onClick={() => onRemove(toast.id)}
-        className="flex-shrink-0 p-0.5 rounded text-zinc-300 hover:text-zinc-500 transition-colors"
+        className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        aria-label="Dismiss notification"
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
@@ -106,7 +110,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={ctx}>
       {children}
       {/* Portal */}
-      <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 items-end">
+      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col items-end gap-2.5">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onRemove={remove} />
         ))}
