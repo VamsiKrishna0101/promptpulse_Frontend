@@ -24,6 +24,7 @@ export type ProjectRun = {
     prompt_id: string
     completed_at: string | null
     error_reason: string | null
+    retry_count: number
   }[]
 }
 

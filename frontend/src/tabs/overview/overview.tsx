@@ -43,6 +43,7 @@ export function Fav({ domain }: { domain: string }) {
     return (
         <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
             alt="" width={15} height={15} className="flex-shrink-0 rounded-[2px] object-contain"
+            loading="lazy" decoding="async"
             onError={e => { (e.target as HTMLImageElement).style.display = "none" }}
         />
     )
@@ -56,6 +57,7 @@ export function Avatar({ name, url }: { name: string; url?: string }) {
             {domain
                 ? <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
                     alt="" width={12} height={12} className="object-contain"
+                    loading="lazy" decoding="async"
                     onError={e => {
                         const el = e.target as HTMLImageElement
                         el.style.display = "none"
@@ -98,6 +100,7 @@ export function EngIcon({ model }: { model: string }) {
             <img src={iconUrl}
                 alt={model} width={18} height={18} 
                 className="flex-shrink-0 rounded-[4px] object-contain"
+                loading="lazy" decoding="async"
                 onError={e => { (e.target as HTMLImageElement).style.display = "none" }}
             />
         )

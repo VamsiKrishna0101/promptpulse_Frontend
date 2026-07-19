@@ -48,7 +48,7 @@ export function RecommendationsTab({ report }: { report: ReportViewModel }) {
                 { label: "Sources", value: report.recommendations.sourceActions.length },
                 { label: "Content", value: report.recommendations.contentSequence.length },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/8 px-3 py-2.5 backdrop-blur">
+                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">{item.label}</p>
                   <p className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-white tabular-nums">{item.value}</p>
                 </div>

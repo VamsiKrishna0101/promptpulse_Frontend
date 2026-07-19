@@ -7,8 +7,12 @@ import {
   PlayCircle,
   X,
   Activity,
+  Loader2,
+  RotateCcw,
 } from "lucide-react"
-import type { Project } from "@/hooks/useProjects"
+import { useProjects, type Project } from "@/hooks/useProjects"
+import { api } from "@/lib/api"
+import { useToast } from "@/components/ui/Toast"
 
 function sameLocalDay(value: string | null | undefined) {
   if (!value) return false
@@ -51,6 +55,7 @@ const SUPPORTED_TODAY_RUN_ENGINES = new Set([
 
 export function TodayRunStatus({ project }: { project: Project | null }) {
   const [open, setOpen] = useState(false)
+  const { refresh } = useProjects()
 
   const run = project?.runs?.[0]
   const jobs = (run?.scrape_jobs ?? []).filter((job) => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine))
@@ -125,6 +130,7 @@ export function TodayRunStatus({ project }: { project: Project | null }) {
           progress={progress}
           running={running}
           completeToday={completeToday}
+          onRefresh={refresh}
           onClose={() => setOpen(false)}
         />,
         document.body
@@ -141,6 +147,7 @@ function TodayRunModal({
   progress,
   running,
   completeToday,
+  onRefresh,
   onClose,
 }: {
   project: Project | null
@@ -150,9 +157,36 @@ function TodayRunModal({
   progress: number
   running: boolean
   completeToday: boolean
+  onRefresh: () => Promise<void>
   onClose: () => void
 }) {
   const run = project?.runs?.[0]
+  const toast = useToast()
+  const [retrying, setRetrying] = useState(false)
+  const supportedJobs = (run?.scrape_jobs ?? []).filter(job => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine))
+  const retryableJobs = supportedJobs.filter(job => job.status === "FAILED" && job.retry_count < 2)
+  const exhaustedJobs = supportedJobs.filter(job => job.status === "FAILED" && job.retry_count >= 2)
+
+  async function retryFailedJobs() {
+    if (!run?.id || retrying || retryableJobs.length === 0) return
+
+    setRetrying(true)
+    try {
+      const response = await api.post<{ queued: number }>(`/scraping/runs/${run.id}/retry-failed`)
+      await onRefresh()
+      toast.success(
+        "Retry queued",
+        `${response.data.queued} failed ${response.data.queued === 1 ? "job is" : "jobs are"} ready for the next Bright Data processing cycle.`,
+      )
+    } catch (error: any) {
+      toast.error(
+        "Retry unavailable",
+        error?.response?.data?.error ?? "We could not queue these failed jobs. Please try again.",
+      )
+    } finally {
+      setRetrying(false)
+    }
+  }
 
   const state = useMemo(() => {
     if (!run) {
@@ -222,7 +256,7 @@ function TodayRunModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090b]/35 px-4 py-6 backdrop-blur-[5px]"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090b]/45 px-4 py-6"
       onClick={onClose}
     >
       <div className="w-full max-w-[430px]">
@@ -312,6 +346,35 @@ function TodayRunModal({
                 </span>
               </div>
             </div>
+
+            {failed > 0 && (
+              <div className="mt-3 rounded-xl border border-red-100 bg-white p-3 shadow-[0_1px_2px_rgba(9,9,11,0.035)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[12px] font-semibold text-[#18181b]">
+                      Retry failed jobs
+                    </p>
+                    <p className="mt-0.5 text-[10.5px] leading-4 text-[#71717a]">
+                      Up to two retries per job. Retrying does not deduct credits.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void retryFailedJobs()}
+                    disabled={retrying || retryableJobs.length === 0}
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#18181b] px-3 text-[11px] font-semibold text-white transition hover:bg-[#27272a] disabled:cursor-not-allowed disabled:bg-[#e4e4e7] disabled:text-[#a1a1aa]"
+                  >
+                    {retrying ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+                    {retrying ? "Queuing..." : retryableJobs.length > 0 ? `Retry ${retryableJobs.length}` : "Limit reached"}
+                  </button>
+                </div>
+                {exhaustedJobs.length > 0 && (
+                  <p className="mt-2 border-t border-[#f4f4f5] pt-2 text-[10.5px] text-red-600">
+                    {exhaustedJobs.length} {exhaustedJobs.length === 1 ? "job has" : "jobs have"} used both retry attempts.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

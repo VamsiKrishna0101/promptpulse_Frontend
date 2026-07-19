@@ -1,32 +1,34 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
-import { Navbar } from './components/navbar/navbar'
-import { LoginPage } from './pages/auth/LoginPage'
-import { SignupPage } from './pages/auth/SignupPage'
-import { AppShell } from './components/layout/AppShell'
 import { useAuth } from './hooks/useAuth'
-import { OverviewTab } from './tabs/overview/overview'
-import { PromptsTab } from './tabs/prompts/prompts'
-import { PromptDetailTab } from './tabs/prompts/PromptDetailTab'
-import { SourcesTab } from './tabs/sources/SourcesTab'
-import { CompetitorsTab } from './tabs/competitors/CompetitorsTab'
-import { WebAnalyticsTab } from './tabs/webanalytics/WebAnalyticsTab'
-import { ChatHistoryPage } from './tabs/chat/ChatHistoryPage'
-import { SubscriptionTab } from './tabs/subscription/SubscriptionTab'
-import { ProfileTab } from './tabs/profile/ProfileTab'
-import { SettingsTab } from './tabs/settings/SettingsTab'
-import { HelpTab } from './tabs/help/HelpTab'
-import { OpportunitiesTab } from './tabs/opportunities/OpportunitiesTab'
-import { AIWorkspaceTab } from './tabs/aiworkspace/AIWorkspaceTab'
-import { AdminTab } from './tabs/admin/AdminTab'
-import { PricingPage } from './pages/homepage/PricingPage'
-import { BookDemoPage } from './pages/homepage/BookDemoPage'
-import { ProductPage } from './pages/homepage/ProductPage'
-import { BlogPage } from './pages/resources/BlogPage'
-import { ChangelogPage } from './pages/resources/ChangelogPage'
-import { GeoGuidePage } from './pages/resources/GeoGuidePage'
-import { PublicHelpPage } from './pages/resources/PublicHelpPage'
-import { OnboardingSetupPage } from './pages/onboarding/OnboardingSetupPage'
+
+const Navbar = lazy(() => import('./components/navbar/navbar').then(module => ({ default: module.Navbar })))
+const LoginPage = lazy(() => import('./pages/auth/LoginPage').then(module => ({ default: module.LoginPage })))
+const SignupPage = lazy(() => import('./pages/auth/SignupPage').then(module => ({ default: module.SignupPage })))
+const AppShell = lazy(() => import('./components/layout/AppShell').then(module => ({ default: module.AppShell })))
+const OverviewTab = lazy(() => import('./tabs/overview/overview').then(module => ({ default: module.OverviewTab })))
+const PromptsTab = lazy(() => import('./tabs/prompts/prompts').then(module => ({ default: module.PromptsTab })))
+const PromptDetailTab = lazy(() => import('./tabs/prompts/PromptDetailTab').then(module => ({ default: module.PromptDetailTab })))
+const SourcesTab = lazy(() => import('./tabs/sources/SourcesTab').then(module => ({ default: module.SourcesTab })))
+const CompetitorsTab = lazy(() => import('./tabs/competitors/CompetitorsTab').then(module => ({ default: module.CompetitorsTab })))
+const WebAnalyticsTab = lazy(() => import('./tabs/webanalytics/WebAnalyticsTab').then(module => ({ default: module.WebAnalyticsTab })))
+const ChatHistoryPage = lazy(() => import('./tabs/chat/ChatHistoryPage').then(module => ({ default: module.ChatHistoryPage })))
+const SubscriptionTab = lazy(() => import('./tabs/subscription/SubscriptionTab').then(module => ({ default: module.SubscriptionTab })))
+const ProfileTab = lazy(() => import('./tabs/profile/ProfileTab').then(module => ({ default: module.ProfileTab })))
+const SettingsTab = lazy(() => import('./tabs/settings/SettingsTab').then(module => ({ default: module.SettingsTab })))
+const HelpTab = lazy(() => import('./tabs/help/HelpTab').then(module => ({ default: module.HelpTab })))
+const OpportunitiesTab = lazy(() => import('./tabs/opportunities/OpportunitiesTab').then(module => ({ default: module.OpportunitiesTab })))
+const AIWorkspaceTab = lazy(() => import('./tabs/aiworkspace/AIWorkspaceTab').then(module => ({ default: module.AIWorkspaceTab })))
+const AdminTab = lazy(() => import('./tabs/admin/AdminTab').then(module => ({ default: module.AdminTab })))
+const PricingPage = lazy(() => import('./pages/homepage/PricingPage').then(module => ({ default: module.PricingPage })))
+const BookDemoPage = lazy(() => import('./pages/homepage/BookDemoPage').then(module => ({ default: module.BookDemoPage })))
+const ProductPage = lazy(() => import('./pages/homepage/ProductPage').then(module => ({ default: module.ProductPage })))
+const BlogPage = lazy(() => import('./pages/resources/BlogPage').then(module => ({ default: module.BlogPage })))
+const ChangelogPage = lazy(() => import('./pages/resources/ChangelogPage').then(module => ({ default: module.ChangelogPage })))
+const GeoGuidePage = lazy(() => import('./pages/resources/GeoGuidePage').then(module => ({ default: module.GeoGuidePage })))
+const PublicHelpPage = lazy(() => import('./pages/resources/PublicHelpPage').then(module => ({ default: module.PublicHelpPage })))
+const OnboardingSetupPage = lazy(() => import('./pages/onboarding/OnboardingSetupPage').then(module => ({ default: module.OnboardingSetupPage })))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -36,6 +38,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-500">Loading PromptPulse...</div>}>
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Navbar />} />
@@ -228,6 +231,7 @@ function App() {
         }
       />
     </Routes>
+    </Suspense>
   )
 }
 

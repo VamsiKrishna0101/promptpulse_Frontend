@@ -38,8 +38,8 @@ export async function generatePrompts(input: {
   brand_url: string
   brand_data: BrandResearchData
 }) {
-  const response = await api.post<{ prompts: SuggestedPrompt[] }>("/onboarding/prompts", input)
-  return response.data.prompts
+  const response = await api.post<{ prompts: Array<Omit<SuggestedPrompt, "source">> }>("/onboarding/prompts", input)
+  return response.data.prompts.map((prompt) => ({ ...prompt, source: "GENERATED" as const }))
 }
 
 export async function createProject(input: {
@@ -47,7 +47,7 @@ export async function createProject(input: {
   brand_url: string
   brand_location: string
   competitors: string[]
-  prompts: SuggestedPrompt[]
+  prompts: Array<SuggestedPrompt & { selected: boolean }>
 }) {
   const response = await api.post<{ id: string }>("/onboarding/project", input)
   return response.data

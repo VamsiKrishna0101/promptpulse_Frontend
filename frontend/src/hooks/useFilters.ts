@@ -6,6 +6,9 @@ import { MODEL_FILTER_OPTIONS } from "@/lib/aiModels"
 
 export type FilterOptions = {
     topics: string[]
+    tags: string[]
+    intents: string[]
+    countries: { value: string; label: string }[]
 }
 
 export const DAYS_OPTIONS = [
@@ -24,6 +27,11 @@ export function useFilters() {
     const days  = searchParams.get("days")  ?? "7"
     const model = searchParams.get("model") ?? ""
     const topic = searchParams.get("topic") ?? ""
+    const country = searchParams.get("country") ?? ""
+    const intent = searchParams.get("intent") ?? ""
+    const tag = searchParams.get("tag") ?? ""
+    const mentioned = searchParams.get("mentioned") ?? ""
+    const cited = searchParams.get("cited") ?? ""
 
     function setFilter(key: string, value: string) {
         setSearchParams(prev => {
@@ -40,20 +48,30 @@ export function useFilters() {
         if (days)  p.set("days",  days)
         if (model) p.set("model", model)
         if (topic) p.set("topic", topic)
+        if (country) p.set("country", country)
+        if (intent) p.set("intent", intent)
+        if (tag) p.set("tag", tag)
+        if (mentioned) p.set("mentioned", mentioned)
+        if (cited) p.set("cited", cited)
         return p.toString() ? `?${p.toString()}` : ""
     })()
 
-    return { days, model, topic, setFilter, queryString }
+    return { days, model, topic, country, intent, tag, mentioned, cited, setFilter, queryString }
 }
 
 export function useFilterOptions() {
     const { selectedProject } = useProjects()
-    const [options, setOptions] = useState<FilterOptions>({ topics: [] })
+    const [options, setOptions] = useState<FilterOptions>({ topics: [], tags: [], intents: [], countries: [] })
 
     useEffect(() => {
         if (!selectedProject) return
-        api.get(`/dashboard/${selectedProject.id}/filters`)
-            .then(r => setOptions(r.data))
+        api.get<Partial<FilterOptions>>(`/dashboard/${selectedProject.id}/filters`)
+            .then(r => setOptions({
+                topics: Array.isArray(r.data.topics) ? r.data.topics : [],
+                tags: Array.isArray(r.data.tags) ? r.data.tags : [],
+                intents: Array.isArray(r.data.intents) ? r.data.intents : [],
+                countries: Array.isArray(r.data.countries) ? r.data.countries : [],
+            }))
             .catch(() => {})
     }, [selectedProject?.id])
 

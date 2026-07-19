@@ -6,7 +6,7 @@ import { ProjectsProvider, useProjects } from "@/hooks/useProjects"
 import { DAYS_OPTIONS, MODEL_OPTIONS, useFilterOptions } from "@/hooks/useFilters"
 import { useSubscription } from "@/hooks/useSubscription"
 import { SaraFloatingAssistant } from "@/components/sara/SaraFloatingAssistant"
-import { Bot, Calendar, FolderOpen, ChevronDown, Check, Coins, Loader2 } from "lucide-react"
+import { Bot, Calendar, FolderOpen, ChevronDown, Check, Coins, Loader2, Globe2, Tag, SlidersHorizontal, Sparkles, CircleCheck, Quote } from "lucide-react"
 import { downloadCsvExport, type ExportResource } from "@/lib/exportDownload"
 import { ProductTourProvider } from "@/features/product-tour/ProductTourProvider"
 import { TodayRunStatus } from "@/components/status/TodayRunStatus"
@@ -117,6 +117,62 @@ function FilterDropdown({
   )
 }
 
+function AdvancedFiltersButton({
+  activeCount,
+  countryOptions,
+  intentOptions,
+  tagOptions,
+}: {
+  activeCount: number
+  countryOptions: DropdownOption[]
+  intentOptions: DropdownOption[]
+  tagOptions: DropdownOption[]
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(value => !value)}
+        className={["flex h-7 items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors", activeCount > 0 ? "border-zinc-950 bg-zinc-950 text-white" : "border-zinc-200 bg-[#f6f6f7] text-zinc-600 hover:border-zinc-300 hover:bg-white"].join(" ")}
+      >
+        <SlidersHorizontal size={13} />
+        More filters
+        {activeCount > 0 && <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-zinc-900">{activeCount}</span>}
+        <ChevronDown size={11} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-[278px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.14)]">
+          <div className="mb-2 flex items-center justify-between px-1">
+            <div>
+              <p className="text-[12px] font-bold text-zinc-900">Refine the view</p>
+              <p className="text-[10px] text-zinc-400">Apply filters to the current workspace.</p>
+            </div>
+            <Sparkles size={14} className="text-amber-500" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <FilterDropdown icon={<Globe2 size={13} />} options={countryOptions} paramKey="country" allLabel="All Markets" />
+            <FilterDropdown icon={<Sparkles size={13} />} options={intentOptions} paramKey="intent" allLabel="All Intents" />
+            <FilterDropdown icon={<Tag size={13} />} options={tagOptions} paramKey="tag" allLabel="All Tags" />
+            <FilterDropdown icon={<CircleCheck size={13} />} options={[{ label: "Mentioned", value: "true" }, { label: "Not mentioned", value: "false" }]} paramKey="mentioned" allLabel="Any mention" />
+            <FilterDropdown icon={<Quote size={13} />} options={[{ label: "Cited", value: "true" }, { label: "Not cited", value: "false" }]} paramKey="cited" allLabel="Any citation" />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function BrandFilterIcon({ domain, name }: { domain?: string | null; name: string }) {
   const [failed, setFailed] = useState(false)
   const logoDomain = domain?.trim() || "promptpulse.com"
@@ -132,6 +188,7 @@ function BrandFilterIcon({ domain, name }: { domain?: string | null; name: strin
         src={logoSrc}
         alt={`${name} logo`}
         className="h-3.5 w-3.5 object-contain"
+        decoding="async"
         onError={() => setFailed(true)}
       />
     </span>
@@ -166,11 +223,16 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const mainRef = useRef<HTMLElement>(null)
   const filterOptions = useFilterOptions()
 
-  const topicOptions: DropdownOption[] = filterOptions.topics.map(t => ({ label: t, value: t }))
+  const topicOptions: DropdownOption[] = (filterOptions.topics ?? []).map(t => ({ label: t, value: t }))
+  const intentOptions: DropdownOption[] = (filterOptions.intents ?? []).map(t => ({ label: t.replace(/[-_]+/g, " ").replace(/\b\w/g, c => c.toUpperCase()), value: t }))
+  const countryOptions: DropdownOption[] = (filterOptions.countries ?? []).map(country => ({ label: country.label, value: country.value }))
+  const tagOptions: DropdownOption[] = (filterOptions.tags ?? []).map(t => ({ label: t.replace(/^intent:/, ""), value: t }))
   const exportResource = EXPORT_RESOURCE_BY_PATH[location.pathname]
   const filtersEnabled = FILTER_ENABLED_PATHS.has(location.pathname)
   const showTopbar = filtersEnabled || Boolean(exportResource)
   const filterQuery = searchParams.toString() ? `?${searchParams.toString()}` : ""
+  const advancedFilterKeys = ["country", "intent", "tag", "mentioned", "cited"]
+  const advancedFilterCount = advancedFilterKeys.filter(key => searchParams.has(key)).length
   const hideSaraAssistant = ["/chat", "/settings", "/profile", "/subscription", "/help", "/ai-workspace"].includes(location.pathname) || location.pathname.startsWith("/admin")
 
   async function handleExport(format: "pdf" | "csv") {
@@ -251,10 +313,20 @@ function AppShellContent({ children }: { children: ReactNode }) {
                 isModelFilter
               />
 
-              {/* Clear all — shown when any filter is active */}
-              {(searchParams.has("days") || searchParams.has("model") || searchParams.has("topic")) && (
+              <AdvancedFiltersButton
+                activeCount={advancedFilterCount}
+                countryOptions={countryOptions}
+                intentOptions={intentOptions}
+                tagOptions={tagOptions}
+              />
+
+              {(searchParams.has("days") || searchParams.has("model") || searchParams.has("topic") || advancedFilterCount > 0) && (
                 <button
-                  onClick={() => setSearchParams({}, { replace: true })}
+                  onClick={() => setSearchParams(prev => {
+                    const next = new URLSearchParams(prev)
+                    ;["days", "model", "topic", ...advancedFilterKeys].forEach(key => next.delete(key))
+                    return next
+                  }, { replace: true })}
                   className="ml-1 text-[11px] font-medium text-zinc-400 hover:text-zinc-700 transition-colors"
                 >
                   Clear all

@@ -437,7 +437,7 @@ function ArticlePreviewPage({
 
   return (
     <div className="space-y-2.5">
-      <div className="sticky top-0 z-20 rounded-xl border border-[#e4e4e7] bg-[#fafafa]/95 p-3 shadow-[0_1px_3px_rgba(9,9,11,0.06)] backdrop-blur">
+      <div className="sticky top-0 z-20 rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-3 shadow-[0_1px_3px_rgba(9,9,11,0.06)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"

@@ -36,6 +36,7 @@ export type SuggestedPrompt = {
   topic: string
   type: string
   text: string
+  source: "GENERATED" | "CUSTOMER"
 }
 
 export const PROMPT_LIMIT_BY_PLAN: Record<Plan, number> = {

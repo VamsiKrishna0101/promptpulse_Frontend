@@ -48,6 +48,7 @@ export function OnboardingSetupPage() {
   const [isWorking, setIsWorking] = useState(false)
   const [customBrief, setCustomBrief] = useState("")
   const [customPromptText, setCustomPromptText] = useState("")
+  const [customPromptTopic, setCustomPromptTopic] = useState("Custom")
   const [quota, setQuota] = useState<PlanQuota | null>(null)
   const [isQuotaLoading, setIsQuotaLoading] = useState(true)
 
@@ -133,7 +134,7 @@ export function OnboardingSetupPage() {
       })
 
       setPrompts(nextPrompts)
-      setSelected(new Set(nextPrompts.slice(0, promptLimit).map((_, index) => index)))
+      setSelected(new Set(getBalancedSelection(nextPrompts, promptLimit)))
       setStep("prompts")
     } catch (error) {
       toast({
@@ -165,26 +166,38 @@ export function OnboardingSetupPage() {
   function addCustomPrompt() {
     const text = customPromptText.trim()
     if (!text) return
+    if (prompts.some(prompt => normalizePromptText(prompt.text) === normalizePromptText(text))) return
 
-    setPrompts((current) => {
-      const exists = current.some(prompt => prompt.text.trim().toLowerCase() === text.toLowerCase())
-      if (exists) return current
-
-      const nextIndex = current.length
-      if (selected.size < promptLimit) {
-        setSelected((currentSelected) => new Set(currentSelected).add(nextIndex))
-      }
-
-      return [
-        ...current,
-        {
-          topic: "Custom",
-          type: "user prompt",
-          text,
-        },
-      ]
-    })
+    const nextIndex = prompts.length
+    setPrompts((current) => [...current, {
+      topic: customPromptTopic.trim() || "Custom",
+      type: "user_prompt",
+      text,
+      source: "CUSTOMER",
+    }])
+    if (selected.size < promptLimit) {
+      setSelected((current) => new Set(current).add(nextIndex))
+    }
     setCustomPromptText("")
+  }
+
+  function addImportedPrompts(importedPrompts: SuggestedPrompt[]) {
+    const existing = new Set(prompts.map((prompt) => normalizePromptText(prompt.text)))
+    const unique = importedPrompts.filter((prompt) => {
+      const key = normalizePromptText(prompt.text)
+      if (!key || existing.has(key)) return false
+      existing.add(key)
+      return true
+    })
+    const startIndex = prompts.length
+    setPrompts((current) => [...current, ...unique])
+    setSelected((current) => {
+      const next = new Set(current)
+      unique.forEach((_, offset) => {
+        if (next.size < promptLimit) next.add(startIndex + offset)
+      })
+      return next
+    })
   }
 
   function removePrompt(index: number) {
@@ -211,7 +224,10 @@ export function OnboardingSetupPage() {
         brand_url: research.brand_url,
         brand_location: brandLocation.trim() || "United States",
         competitors: [],
-        prompts: selectedPrompts,
+        prompts: prompts.map((prompt, index) => ({
+          ...prompt,
+          selected: selected.has(index),
+        })),
       })
 
       await enqueueInitialRun(project.id)
@@ -369,9 +385,13 @@ export function OnboardingSetupPage() {
               totalLimit={totalPromptLimit}
               usedAcrossProjects={quota?.usage.prompt_count ?? 0}
               onToggle={togglePrompt}
+              onSelectionChange={setSelected}
               customPromptText={customPromptText}
+              customPromptTopic={customPromptTopic}
               onCustomPromptTextChange={setCustomPromptText}
+              onCustomPromptTopicChange={setCustomPromptTopic}
               onAddCustomPrompt={addCustomPrompt}
+              onImportPrompts={addImportedPrompts}
               onRemovePrompt={removePrompt}
             />
 
@@ -404,6 +424,29 @@ export function OnboardingSetupPage() {
       </div>
     </main>
   )
+}
+
+function normalizePromptText(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ")
+}
+
+function getBalancedSelection(prompts: SuggestedPrompt[], limit: number) {
+  const groups = new Map<string, number[]>()
+  prompts.forEach((prompt, index) => {
+    const key = prompt.topic.trim() || "Other"
+    groups.set(key, [...(groups.get(key) ?? []), index])
+  })
+
+  const selected: number[] = []
+  const queues = [...groups.values()].map((indices) => [...indices])
+  while (selected.length < limit && queues.some((queue) => queue.length)) {
+    for (const queue of queues) {
+      const next = queue.shift()
+      if (next !== undefined) selected.push(next)
+      if (selected.length >= limit) break
+    }
+  }
+  return selected
 }
 
 function getErrorMessage(error: unknown, fallback: string) {

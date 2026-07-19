@@ -128,7 +128,7 @@ function AddCompetitorDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/25 backdrop-blur-[2px]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/40" onClick={onClose}>
       <aside className="flex h-full w-full max-w-[430px] flex-col border-l border-zinc-200 bg-[#f7f7f8] shadow-[-18px_0_45px_rgba(15,23,42,0.16)]" onClick={(event) => event.stopPropagation()}>
         <div className="flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-5">
           <div>
@@ -198,7 +198,7 @@ function ConfirmDialog({
   const confirmLabel = action.type === "remove" ? "Remove" : "Track competitor"
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/25 p-4 backdrop-blur-[2px]" onClick={onCancel}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/40 p-4" onClick={onCancel}>
       <div className="w-full max-w-[380px] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.18)]" onClick={(event) => event.stopPropagation()}>
         <div className="border-b border-zinc-100 px-4 py-3">
           <p className="text-[14px] font-semibold text-zinc-900">{title}</p>
@@ -242,7 +242,7 @@ function CompetitorDetailsDrawer({
   const mentions = row.mention_count ?? 0
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/25 backdrop-blur-[2px]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/40" onClick={onClose}>
       <aside className="flex h-full w-full max-w-[480px] flex-col border-l border-zinc-200 bg-[#f7f7f8] shadow-[-18px_0_45px_rgba(15,23,42,0.16)]" onClick={(event) => event.stopPropagation()}>
         <div className="flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-5">
           <div className="flex min-w-0 items-center gap-2.5">

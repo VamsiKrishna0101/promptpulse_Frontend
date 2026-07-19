@@ -44,7 +44,7 @@ export function SupportAgentChat({
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 px-5 py-6 backdrop-blur-[5px]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 px-5 py-6" onMouseDown={onClose}>
       <div
         className="sara-surface flex h-[min(760px,calc(100vh-56px))] w-[min(980px,calc(100vw-56px))] overflow-hidden rounded-[26px]"
         onMouseDown={(event) => event.stopPropagation()}
@@ -129,7 +129,7 @@ export function SupportAgentChat({
           </div>
 
           <form
-            className="border-t border-slate-200/80 bg-white/85 p-4 backdrop-blur"
+            className="border-t border-slate-200/80 bg-white p-4"
             onSubmit={(event) => {
               event.preventDefault()
               void submit()

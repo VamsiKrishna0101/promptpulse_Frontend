@@ -7,6 +7,10 @@ type PaidPlan = "STARTER" | "GROWTH" | "PRO"
 type ModelKey = "chatgpt" | "gemini" | "perplexity" | "googleMode" | "copilot"
 type PlanFeature = { label: string; included?: boolean }
 
+function annualMonthlyPrice(monthlyPrice: number) {
+    return (monthlyPrice * 0.8).toFixed(2).replace(/\.00$/, "")
+}
+
 const MODEL_CATALOG: Record<ModelKey, { name: string; domain: string }> = {
     chatgpt: { name: "ChatGPT", domain: "chatgpt.com" },
     gemini: { name: "Gemini", domain: "gemini.google.com" },
@@ -253,8 +257,8 @@ export function Pricing() {
 
                 <div className="grid gap-3 md:grid-cols-3">
                     {PLANS.map((plan) => {
-                        const price = billing === "annual" ? Math.round(plan.price * 0.8) : plan.price
-                        const oldPrice = plan.oldPrice ? (billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice) : null
+                        const price = billing === "annual" ? annualMonthlyPrice(plan.price) : String(plan.price)
+                        const oldPrice = plan.oldPrice ? (billing === "annual" ? annualMonthlyPrice(plan.oldPrice) : String(plan.oldPrice)) : null
                         const featured = plan.id === "GROWTH"
 
                         return (
@@ -366,10 +370,10 @@ export function Pricing() {
                                     <p className="mt-1 text-[12px] font-medium text-zinc-400">
                                         {plan.oldPrice && (
                                             <span className="mr-1 text-zinc-300 line-through">
-                                                ${billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice}
+                                                ${billing === "annual" ? annualMonthlyPrice(plan.oldPrice) : plan.oldPrice}
                                             </span>
                                         )}
-                                        ${billing === "annual" ? Math.round(plan.price * 0.8) : plan.price}
+                                        ${billing === "annual" ? annualMonthlyPrice(plan.price) : plan.price}
                                         <span className="text-zinc-300">/mo</span>
                                     </p>
                                 </div>

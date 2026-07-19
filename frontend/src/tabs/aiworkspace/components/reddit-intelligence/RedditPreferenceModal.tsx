@@ -31,7 +31,7 @@ export function RedditPreferenceModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-zinc-950/55 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-zinc-950/60 px-4">
       <form onSubmit={submit} className="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,40,0.5)]">
         <div className="flex items-start justify-between gap-4 border-b border-zinc-200 bg-zinc-50/60 p-6">
           <div>

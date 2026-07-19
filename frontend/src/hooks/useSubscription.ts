@@ -2,6 +2,18 @@ import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 
 export type PlanName = "FREE" | "STARTER" | "GROWTH" | "PRO"
+export type BillingInterval = "monthly" | "annual"
+
+export type BillingInvoice = {
+  id: string
+  invoice_number: string | null
+  status: string
+  currency: string
+  amount_paid: number
+  created_at: string
+  hosted_invoice_url: string | null
+  invoice_pdf_url: string | null
+}
 
 export type PlanLimits = {
   projects: number
@@ -66,17 +78,37 @@ export function useSubscription() {
     }
   }
 
-  async function startCheckout(plan: Exclude<PlanName, "FREE">) {
+  async function startCheckout(plan: Exclude<PlanName, "FREE">, billingInterval: BillingInterval) {
     setCheckoutPlan(plan)
     setError(null)
     try {
-      const response = await api.post<{ checkout_url: string }>("/subscription/create", { plan })
+      const response = await api.post<{ checkout_url: string }>("/subscription/create", {
+        plan,
+        billing_interval: billingInterval,
+        request_id: crypto.randomUUID(),
+      })
       window.location.href = response.data.checkout_url
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start checkout")
     } finally {
       setCheckoutPlan(null)
     }
+  }
+
+  async function verifyCheckout(sessionId: string) {
+    const response = await api.get<{ status: string; payment_status: string; plan: PlanName | null }>(`/subscription/checkout/${encodeURIComponent(sessionId)}`)
+    await refresh()
+    return response.data
+  }
+
+  async function openBillingPortal() {
+    const response = await api.post<{ url: string }>("/subscription/portal")
+    window.location.href = response.data.url
+  }
+
+  async function getInvoices() {
+    const response = await api.get<{ invoices: BillingInvoice[] }>("/subscription/invoices")
+    return response.data.invoices
   }
 
   useEffect(() => {
@@ -97,5 +129,8 @@ export function useSubscription() {
     checkoutPlan,
     refresh,
     startCheckout,
+    verifyCheckout,
+    openBillingPortal,
+    getInvoices,
   }
 }

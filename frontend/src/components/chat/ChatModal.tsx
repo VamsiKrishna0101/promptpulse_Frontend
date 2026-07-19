@@ -619,8 +619,6 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#09090b]/45"
             style={{
                 animation: "chatModalBackdropIn 220ms ease-out forwards",
-                backdropFilter: "blur(5px)",
-                WebkitBackdropFilter: "blur(5px)",
             }}
             onClick={onClose}
         >
@@ -628,13 +626,9 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
         @keyframes chatModalBackdropIn {
           from {
             opacity: 0;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
           }
           to {
             opacity: 1;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
           }
         }
 

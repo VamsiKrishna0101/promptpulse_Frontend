@@ -21,7 +21,7 @@ export function GenerateReportModal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 px-4">
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_40px_100px_-30px_rgba(0,0,0,0.35)]">
         <div className="absolute inset-x-0 top-0 h-[3px] bg-zinc-900" />
 

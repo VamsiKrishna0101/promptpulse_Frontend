@@ -397,7 +397,7 @@ function SaraInput({
 }) {
     return (
         <form
-            className={compact ? "flex-shrink-0 border-t border-slate-200/80 bg-white/85 p-3 backdrop-blur" : "border-t border-slate-200/80 bg-white/85 p-4 backdrop-blur"}
+            className={compact ? "flex-shrink-0 border-t border-slate-200/80 bg-white p-3" : "border-t border-slate-200/80 bg-white p-4"}
             onSubmit={(event) => {
                 event.preventDefault()
                 onSubmit()

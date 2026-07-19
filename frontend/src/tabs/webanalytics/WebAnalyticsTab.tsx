@@ -130,7 +130,7 @@ function TrafficChart({ data, topPages, topReferrers }: { data: AnalyticsPoint[]
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-xl border border-white/80 bg-white/85 px-3 py-2 shadow-[0_8px_28px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-xl border border-white bg-white px-3 py-2 shadow-[0_4px_16px_rgba(15,23,42,0.07)]">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Top performer</p>
         <p className="mt-1 max-w-[220px] truncate text-[12.5px] font-bold text-zinc-900">{topPage?.name ?? "Waiting for page data"}</p>
         <p className="mt-0.5 text-[11px] font-medium text-zinc-500">{topPage ? `${topPage.count} views` : "Add visits to populate trend"}</p>
@@ -291,7 +291,7 @@ function SetupDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/25 backdrop-blur-[2px]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/40" onClick={onClose}>
       <aside className="flex h-full w-full max-w-[500px] flex-col border-l border-zinc-200 bg-[#f7f7f8] shadow-[-18px_0_45px_rgba(15,23,42,0.16)]" onClick={(event) => event.stopPropagation()}>
         <div className="flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-5">
           <div>
@@ -352,7 +352,7 @@ function AddEventDrawer({ open, isSaving, onClose, onCreate }: { open: boolean; 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/25 backdrop-blur-[2px]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/40" onClick={onClose}>
       <aside className="flex h-full w-full max-w-[430px] flex-col border-l border-zinc-200 bg-[#f7f7f8] shadow-[-18px_0_45px_rgba(15,23,42,0.16)]" onClick={(event) => event.stopPropagation()}>
         <div className="flex h-14 items-center justify-between border-b border-zinc-200 bg-white px-5">
           <div>

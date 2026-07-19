@@ -1,9 +1,13 @@
 import { Check, ChevronRight, CreditCard, Loader2, RefreshCcw, ShieldCheck, Sparkles, X, Zap } from "lucide-react"
-import { useState } from "react"
-import { useSubscription, type PlanName } from "@/hooks/useSubscription"
+import { useEffect, useState } from "react"
+import { useSubscription, type BillingInvoice, type PlanName } from "@/hooks/useSubscription"
 
 type PaidPlan = Exclude<PlanName, "FREE">
 type PlanFeature = { label: string; included?: boolean }
+
+function annualMonthlyPrice(monthlyPrice: number) {
+  return (monthlyPrice * 0.8).toFixed(2).replace(/\.00$/, "")
+}
 
 const PLANS: {
   id: PaidPlan
@@ -218,12 +222,12 @@ function PlanCard({
   billing: "monthly" | "annual"
   currentPlan: PlanName
   checkoutPlan: PlanName | null
-  onSelect: (plan: PaidPlan) => void
+  onSelect: (plan: PaidPlan, billing: "monthly" | "annual") => void
 }) {
   const isCurrent = currentPlan === plan.id
   const isLoading = checkoutPlan === plan.id
-  const displayedPrice = billing === "annual" ? Math.round(plan.price * 0.8) : plan.price
-  const displayedOldPrice = plan.oldPrice ? (billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice) : null
+  const displayedPrice = billing === "annual" ? annualMonthlyPrice(plan.price) : String(plan.price)
+  const displayedOldPrice = plan.oldPrice ? (billing === "annual" ? annualMonthlyPrice(plan.oldPrice) : String(plan.oldPrice)) : null
   const featured = plan.id === "GROWTH"
 
   return (
@@ -265,13 +269,13 @@ function PlanCard({
       <button
         type="button"
         disabled={isCurrent || isLoading}
-        onClick={() => onSelect(plan.id)}
+        onClick={() => onSelect(plan.id, billing)}
         className={[
           "subscription-cta-btn mt-5 flex h-10 w-full items-center justify-center gap-2 rounded-md text-[13.5px] font-semibold transition disabled:cursor-not-allowed",
           isCurrent ? "border border-[#B7EFCF] bg-[#ECFDF3] text-[#067647]" : "bg-[#101828] text-white hover:bg-[#1D2939]",
         ].join(" ")}
       >
-        {isLoading ? <Loader2 size={15} className="animate-spin" /> : isCurrent ? "Current plan" : "Try free for 14 days"}
+        {isLoading ? <Loader2 size={15} className="animate-spin" /> : isCurrent ? "Current plan" : "Choose plan"}
         {!isCurrent && !isLoading && <ChevronRight size={14} />}
       </button>
 
@@ -299,10 +303,37 @@ function ValueCell({ value }: { value: string | boolean }) {
 }
 
 export function SubscriptionTab() {
-  const { data, isLoading, error, checkoutPlan, startCheckout, refresh } = useSubscription()
+  const { data, isLoading, error, checkoutPlan, startCheckout, refresh, verifyCheckout, openBillingPortal, getInvoices } = useSubscription()
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly")
   const [refreshing, setRefreshing] = useState(false)
+  const [checkoutNotice, setCheckoutNotice] = useState<string | null>(null)
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [invoices, setInvoices] = useState<BillingInvoice[]>([])
   const currentPlan = data?.plan ?? "FREE"
+
+  useEffect(() => {
+    void getInvoices().then(setInvoices).catch(() => setInvoices([]))
+    const params = new URLSearchParams(window.location.search)
+    const state = params.get("checkout")
+    const sessionId = params.get("session_id")
+    if (state === "cancelled") setCheckoutNotice("Checkout was cancelled. No payment was taken.")
+    if (state === "success" && sessionId) {
+      setCheckoutNotice("Confirming your payment with Stripe...")
+      void verifyCheckout(sessionId)
+        .then(result => {
+          setCheckoutNotice(result.payment_status === "paid" ? "Payment confirmed. Your plan is active." : "Checkout completed. Stripe is still confirming the payment.")
+          return getInvoices()
+        })
+        .then(setInvoices)
+        .catch(() => setCheckoutNotice("Stripe received the checkout. Your plan will update as soon as payment is confirmed."))
+    }
+    if (state) window.history.replaceState({}, "", window.location.pathname)
+  }, [])
+
+  async function handlePortal() {
+    setPortalLoading(true)
+    try { await openBillingPortal() } finally { setPortalLoading(false) }
+  }
 
   async function handleRefresh() {
     setRefreshing(true)
@@ -383,6 +414,10 @@ export function SubscriptionTab() {
         </div>
       )}
 
+      {checkoutNotice && (
+        <div className="rounded-lg border border-[#ABEFC6] bg-[#ECFDF3] px-4 py-3 text-[12.5px] font-semibold text-[#067647]">{checkoutNotice}</div>
+      )}
+
       {/* ── Heading ── */}
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#E2E5EA] bg-[#F9FAFB] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#475467]">
@@ -423,8 +458,8 @@ export function SubscriptionTab() {
             <div key={plan.id} className="px-6 py-5 text-center">
               <p className="text-[12.5px] font-semibold text-[#101828]">{plan.name}</p>
               <p className="mt-1 text-[12px] font-medium text-[#667085]">
-                {plan.oldPrice && <span className="mr-1 text-[#98A2B3] line-through">${billing === "annual" ? Math.round(plan.oldPrice * 0.8) : plan.oldPrice}</span>}
-                ${billing === "annual" ? Math.round(plan.price * 0.8) : plan.price}<span className="text-[#98A2B3]">/mo</span>
+                {plan.oldPrice && <span className="mr-1 text-[#98A2B3] line-through">${billing === "annual" ? annualMonthlyPrice(plan.oldPrice) : plan.oldPrice}</span>}
+                ${billing === "annual" ? annualMonthlyPrice(plan.price) : plan.price}<span className="text-[#98A2B3]">/mo</span>
               </p>
             </div>
           ))}
@@ -453,6 +488,20 @@ export function SubscriptionTab() {
                 </div>
               ))}
             </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-[#E2E5EA] bg-white">
+        <div className="flex items-center justify-between border-b border-[#E7E9EC] px-5 py-4">
+          <div><h2 className="text-[14px] font-semibold text-[#101828]">Billing history</h2><p className="mt-1 text-[11.5px] text-[#667085]">Stripe invoices and payment receipts for this account.</p></div>
+          <button type="button" disabled={portalLoading} onClick={() => void handlePortal()} className="flex h-9 items-center gap-2 rounded-md bg-[#101828] px-3.5 text-[12px] font-semibold text-white disabled:opacity-60">{portalLoading && <Loader2 size={13} className="animate-spin" />}Manage billing</button>
+        </div>
+        {invoices.length === 0 ? <p className="px-5 py-8 text-center text-[12.5px] text-[#98A2B3]">No paid invoices yet.</p> : invoices.map(invoice => (
+          <div key={invoice.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b border-[#EEF0F3] px-5 py-3.5 last:border-0">
+            <div><p className="text-[12.5px] font-semibold text-[#101828]">{invoice.invoice_number ?? "Stripe invoice"}</p><p className="mt-0.5 text-[11px] text-[#98A2B3]">{new Date(invoice.created_at).toLocaleDateString()}</p></div>
+            <span className="text-[12.5px] font-semibold text-[#344054]">{new Intl.NumberFormat("en-US", { style: "currency", currency: invoice.currency.toUpperCase() }).format(invoice.amount_paid / 100)}</span>
+            {invoice.hosted_invoice_url ? <a href={invoice.hosted_invoice_url} target="_blank" rel="noreferrer" className="text-[12px] font-semibold text-[#175CD3]">View invoice</a> : <span className="text-[12px] text-[#98A2B3]">Unavailable</span>}
           </div>
         ))}
       </section>

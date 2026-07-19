@@ -637,7 +637,7 @@ function SourceDetailsDrawer({
     : fetchStatus || (hasFullContent ? "Enriched" : bodyText ? "Preview" : "Metadata only")
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/35 px-4 py-6 backdrop-blur-[3px]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/45 px-4 py-6" onClick={onClose}>
       <section
         className="flex max-h-[92vh] w-full max-w-[1080px] flex-col overflow-hidden rounded-[28px] border border-white/70 bg-[#f6f7fb] shadow-[0_30px_90px_rgba(15,23,42,0.32)]"
         onClick={(event) => event.stopPropagation()}

@@ -96,7 +96,7 @@ export function ReportGenerating({ brandName }: { brandName: string }) {
       </div>
 
       <div className="fade-up relative text-center">
-        <span className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-[11px] font-semibold text-zinc-600 shadow-sm backdrop-blur">
+        <span className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[11px] font-semibold text-zinc-600 shadow-sm">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />

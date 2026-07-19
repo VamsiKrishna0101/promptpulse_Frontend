@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react"
+import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFilters } from "@/hooks/useFilters"
 import { useProjects } from "@/hooks/useProjects"
@@ -80,6 +80,8 @@ const CHIP_COLORS = [
     "bg-violet-600",
     "bg-fuchsia-600",
 ]
+
+const PROMPTS_PAGE_SIZE = 20
 
 function chipColor(name: string) {
     let sum = 0
@@ -242,6 +244,7 @@ export function PromptsTab() {
     const [tab, setTab] = useState<PromptStatus>("ACTIVE")
     const [selectedTopic, setSelectedTopic] = useState("ALL")
     const [search, setSearch] = useState("")
+    const [page, setPage] = useState(1)
     const [isAddingTopic, setIsAddingTopic] = useState(false)
     const [newTopicName, setNewTopicName] = useState("")
     const [topicError, setTopicError] = useState<string | null>(null)
@@ -284,6 +287,20 @@ export function PromptsTab() {
             return topicMatches && searchMatches
         })
     }, [prompts, search, selectedTopic])
+
+    const pageCount = Math.max(1, Math.ceil(visiblePrompts.length / PROMPTS_PAGE_SIZE))
+    const paginatedPrompts = useMemo(() => {
+        const start = (page - 1) * PROMPTS_PAGE_SIZE
+        return visiblePrompts.slice(start, start + PROMPTS_PAGE_SIZE)
+    }, [page, visiblePrompts])
+
+    useEffect(() => {
+        setPage(1)
+    }, [projectId, queryString, search, selectedTopic, tab])
+
+    useEffect(() => {
+        setPage((current) => Math.min(current, pageCount))
+    }, [pageCount])
 
     const summary = useMemo(() => {
         if (!visiblePrompts.length) return { visibility: null, sentiment: null, position: null }
@@ -567,7 +584,7 @@ export function PromptsTab() {
                                     ))
                                 )}
 
-                                {!isLoading && visiblePrompts.map((prompt, index) => (
+                                {!isLoading && paginatedPrompts.map((prompt, index) => (
                                     <tr
                                         key={prompt.id}
                                         className={`group h-[62px] cursor-pointer transition-colors hover:bg-blue-50/70 ${isFetching ? "opacity-80" : ""} ${index % 2 === 0 ? "premium-row-even" : "premium-row-odd"}`}
@@ -663,11 +680,39 @@ export function PromptsTab() {
                             </tbody>
                         </table>
                     </div>
+                    {!isLoading && visiblePrompts.length > 0 && (
+                        <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3">
+                            <p className="text-[11.5px] font-medium text-slate-500">
+                                {Math.min((page - 1) * PROMPTS_PAGE_SIZE + 1, visiblePrompts.length)}-{Math.min(page * PROMPTS_PAGE_SIZE, visiblePrompts.length)} of {visiblePrompts.length} prompts
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                                    disabled={page === 1}
+                                    className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-[11.5px] font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    Previous
+                                </button>
+                                <span className="min-w-16 text-center text-[11.5px] font-semibold tabular-nums text-slate-600">
+                                    {page} / {pageCount}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+                                    disabled={page === pageCount}
+                                    className="h-8 rounded-lg border border-slate-200 bg-white px-3 text-[11.5px] font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </section>
             </div>
 
             {isAddPromptOpen && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/35 px-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 px-4">
                     <form
                         onSubmit={submitPrompt}
                         className="w-full max-w-[560px] overflow-visible rounded-[28px] border border-slate-200 bg-white shadow-[0_34px_110px_-52px_rgba(15,23,42,0.78)]"
