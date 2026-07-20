@@ -12,15 +12,21 @@ export function useVisibilityTimeSeries(projectId: string | null, queryString: s
     const [isLoading, setIsLoading] = useState(Boolean(projectId))
     const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
+    async function refresh() {
         if (!projectId) return
         setIsLoading(true)
         setError(null)
-        api.get<TimeSeriesDay[]>(`/dashboard/${projectId}/timeseries${queryString}`)
-            .then(res => setData(res.data))
-            .catch(err => setError(err instanceof Error ? err.message : "Failed to load chart data"))
-            .finally(() => setIsLoading(false))
-    }, [projectId, queryString])
+        try {
+            const response = await api.get<TimeSeriesDay[]>(`/dashboard/${projectId}/timeseries${queryString}`)
+            setData(response.data)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load chart data")
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
-    return { data, isLoading, error }
+    useEffect(() => { void refresh() }, [projectId, queryString])
+
+    return { data, isLoading, error, refresh }
 }

@@ -96,6 +96,14 @@ input:disabled {
   background: #ffffff;
 }
 
+.topbar-controls {
+  scrollbar-width: none;
+}
+
+.topbar-controls::-webkit-scrollbar {
+  display: none;
+}
+
 /* Keep the authenticated desktop shell usable at laptop widths. Page-level
    overflow belongs to the data card that owns it, never to the whole shell. */
 .premium-main,
@@ -109,13 +117,16 @@ input:disabled {
   min-width: 0;
 }
 
-@media (min-width: 1280px) {
+/* A Windows laptop at 125% display scaling can report a 1280px CSS
+   viewport while only having laptop-sized physical space. Keep the compact
+   navigation until the wider MacBook/desktop breakpoint. */
+@media (min-width: 1440px) {
   .premium-sidebar {
     width: 248px !important;
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
+@media (min-width: 1024px) and (max-width: 1439px) {
   .premium-sidebar {
     width: 72px !important;
   }
@@ -127,6 +138,10 @@ input:disabled {
 
   .premium-filterbar {
     align-items: center;
+  }
+
+  .topbar-controls {
+    gap: 6px;
   }
 }
 

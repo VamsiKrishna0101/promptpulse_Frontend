@@ -58,6 +58,10 @@ type DashboardState = {
   competitors: CompetitorRow[]
 }
 
+type SourcePageResponse<T> = {
+  items: T[]
+}
+
 export function useDashboard(projectId: string | null, queryString: string = "") {
   const [state, setState] = useState<DashboardState>({
     data: null,
@@ -75,10 +79,13 @@ export function useDashboard(projectId: string | null, queryString: string = "")
 
     try {
       const qs = queryString || ""
+      const domainParams = new URLSearchParams(qs.replace(/^\?/, ""))
+      domainParams.set("page", "1")
+      domainParams.set("page_size", "20")
       const [dashboard, sources, domains, tracked] = await Promise.allSettled([
         api.get<DashboardData>(`/dashboard/${projectId}${qs}`),
         api.get<SourceRow[]>(`/sources/${projectId}/top${qs}`),
-        api.get<SourceRow[]>(`/sources/${projectId}/domains${qs}`),
+        api.get<SourcePageResponse<SourceRow>>(`/sources/${projectId}/domains?${domainParams.toString()}`),
         api.get<CompetitorRow[]>(`/brands/${projectId}/tracked${qs}`),
       ])
 
@@ -91,7 +98,9 @@ export function useDashboard(projectId: string | null, queryString: string = "")
       setState({
         data: dashboard.status === "fulfilled" ? dashboard.value.data : null,
         sources: sources.status === "fulfilled" ? sources.value.data : [],
-        domains: domains.status === "fulfilled" ? domains.value.data : [],
+        domains: domains.status === "fulfilled"
+          ? Array.isArray(domains.value.data) ? domains.value.data : domains.value.data.items
+          : [],
         competitors: measuredTrackedRows,
       })
     } catch (err) {

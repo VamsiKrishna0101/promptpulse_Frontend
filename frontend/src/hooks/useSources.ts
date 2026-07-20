@@ -81,15 +81,44 @@ type SourcesState = {
   gaps: SourceGapRow[]
   top: TopSourceRow[]
   trend: SourceTrendPoint[]
+  domainTotal: number
+  urlTotal: number
+  gapTotal: number
+  domainTotalPages: number
+  urlTotalPages: number
+  gapTotalPages: number
 }
 
-export function useSources(projectId: string | null, queryString: string = "") {
+type SourcePageResponse<T> = {
+  items: T[]
+  page: number
+  page_size: number
+  total: number
+  total_pages: number
+}
+
+type SourcePageOptions = {
+  mode?: "domains" | "urls"
+  page?: number
+  pageSize?: number
+  search?: string
+  domain?: string | null
+  gapAnalysis?: boolean
+}
+
+export function useSources(projectId: string | null, queryString: string = "", options: SourcePageOptions = {}) {
   const [state, setState] = useState<SourcesState>({
     domains: [],
     urls: [],
     gaps: [],
     top: [],
     trend: [],
+    domainTotal: 0,
+    urlTotal: 0,
+    gapTotal: 0,
+    domainTotalPages: 1,
+    urlTotalPages: 1,
+    gapTotalPages: 1,
   })
   const [isLoading, setIsLoading] = useState(Boolean(projectId))
   const [error, setError] = useState<string | null>(null)
@@ -101,21 +130,40 @@ export function useSources(projectId: string | null, queryString: string = "") {
     setError(null)
 
     try {
-      const qs = queryString || ""
-      const [domains, urls, gaps, top, trend] = await Promise.allSettled([
-        api.get<DomainSourceRow[]>(`/sources/${projectId}/domains${qs}`),
-        api.get<UrlSourceRow[]>(`/sources/${projectId}/urls${qs}`),
-        api.get<SourceGapRow[]>(`/sources/${projectId}/gaps${qs}`),
+      const params = new URLSearchParams(queryString.replace(/^\?/, ""))
+      params.set("page", String(options.page ?? 1))
+      params.set("page_size", String(options.pageSize ?? 20))
+      if (options.search?.trim()) params.set("search", options.search.trim())
+      if (options.domain) params.set("domain", options.domain)
+      const qs = params.toString() ? `?${params.toString()}` : ""
+      const tableRequest = options.mode === "domains"
+        ? api.get<SourcePageResponse<DomainSourceRow>>(`/sources/${projectId}/domains${qs}`)
+        : options.gapAnalysis
+          ? api.get<SourcePageResponse<SourceGapRow>>(`/sources/${projectId}/gaps${qs}`)
+          : api.get<SourcePageResponse<UrlSourceRow>>(`/sources/${projectId}/urls${qs}`)
+      const [table, top, trend] = await Promise.allSettled([
+        tableRequest,
         api.get<TopSourceRow[]>(`/sources/${projectId}/top${qs}`),
         api.get<SourceTrendPoint[]>(`/sources/${projectId}/trend${qs}`),
       ])
 
+      const tablePage = table.status === "fulfilled" ? table.value.data : null
+      const domainPage = options.mode === "domains" ? tablePage as SourcePageResponse<DomainSourceRow> | null : null
+      const urlPage = options.mode !== "domains" && !options.gapAnalysis ? tablePage as SourcePageResponse<UrlSourceRow> | null : null
+      const gapPage = options.mode !== "domains" && options.gapAnalysis ? tablePage as SourcePageResponse<SourceGapRow> | null : null
+
       setState({
-        domains: domains.status === "fulfilled" ? domains.value.data : [],
-        urls: urls.status === "fulfilled" ? urls.value.data : [],
-        gaps: gaps.status === "fulfilled" ? gaps.value.data : [],
+        domains: Array.isArray(domainPage) ? domainPage : domainPage?.items ?? [],
+        urls: Array.isArray(urlPage) ? urlPage : urlPage?.items ?? [],
+        gaps: Array.isArray(gapPage) ? gapPage : gapPage?.items ?? [],
         top: top.status === "fulfilled" ? top.value.data : [],
         trend: trend.status === "fulfilled" ? trend.value.data : [],
+        domainTotal: Array.isArray(domainPage) ? domainPage.length : domainPage?.total ?? 0,
+        urlTotal: Array.isArray(urlPage) ? urlPage.length : urlPage?.total ?? 0,
+        gapTotal: Array.isArray(gapPage) ? gapPage.length : gapPage?.total ?? 0,
+        domainTotalPages: Array.isArray(domainPage) ? 1 : domainPage?.total_pages ?? 1,
+        urlTotalPages: Array.isArray(urlPage) ? 1 : urlPage?.total_pages ?? 1,
+        gapTotalPages: Array.isArray(gapPage) ? 1 : gapPage?.total_pages ?? 1,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load sources")
@@ -126,7 +174,7 @@ export function useSources(projectId: string | null, queryString: string = "") {
 
   useEffect(() => {
     void refresh()
-  }, [projectId, queryString])
+  }, [projectId, queryString, options.mode, options.page, options.pageSize, options.search, options.domain, options.gapAnalysis])
 
   return {
     ...state,

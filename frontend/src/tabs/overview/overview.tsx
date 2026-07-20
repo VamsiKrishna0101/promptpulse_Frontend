@@ -9,6 +9,7 @@ import { ChatModal } from "@/components/chat/ChatModal"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { engineKey, modelIconUrl } from "@/lib/aiModels"
+import { SectionRefreshButton } from "@/components/ui/SectionRefreshButton"
 
 /* ─── type label/color config ──────────────────────────────── */
 const TCFG: Record<string, { label: string; color: string; tw: string }> = {
@@ -270,9 +271,9 @@ export function OverviewTab() {
     const projectId = selectedProject?.id ?? null
     const { queryString } = useFilters()
 
-    const { data: dash, sources, competitors: tracked, isLoading } = useDashboard(projectId, queryString)
-    const { data: ts, isLoading: tsLoad } = useVisibilityTimeSeries(projectId, queryString)
-    const { chats, isLoading: chLoad } = useRecentChats(projectId, queryString)
+    const { data: dash, sources, competitors: tracked, isLoading, refresh: refreshDashboard } = useDashboard(projectId, queryString)
+    const { data: ts, isLoading: tsLoad, refresh: refreshVisibility } = useVisibilityTimeSeries(projectId, queryString)
+    const { chats, isLoading: chLoad, refresh: refreshChats } = useRecentChats(projectId, queryString)
 
     const [selectedChat, setSelectedChat] = useState<RecentChat | null>(null)
 
@@ -350,6 +351,7 @@ export function OverviewTab() {
                             <span className="dashboard-card-title">Visibility</span>
                             <span className="dashboard-card-subtitle">Percentage of chats mentioning each brand</span>
                         </div>
+                        <SectionRefreshButton onClick={refreshVisibility} loading={tsLoad} />
                     </div>
                     <div className="px-4 pb-4 pt-3">
                         {tsLoad ? <Sk cls="h-[210px] w-full"/> : <VisibilityChart data={ts} height={210}/>}
@@ -368,6 +370,7 @@ export function OverviewTab() {
                             Show All
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
                         </Link>
+                        <SectionRefreshButton onClick={refreshDashboard} loading={isLoading} />
                     </div>
                     {isLoading ? (
                         <div className="flex flex-col gap-2 p-4">
@@ -430,16 +433,17 @@ export function OverviewTab() {
 
             {/* ── Top Sources ── */}
             <div data-product-tour-id="overview-sources" className="dashboard-card">
-                <div className="dashboard-card-header">
+                    <div className="dashboard-card-header">
                     <div className="flex items-center gap-1.5">
                         <svg className="text-zinc-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         <span className="dashboard-card-title">Top Sources</span>
                         <span className="dashboard-card-subtitle">Sources across active models</span>
                     </div>
-                    <Link to={`/sources${queryString}`} className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">
+                        <Link to={`/sources${queryString}`} className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">
                         Show All
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
-                    </Link>
+                        </Link>
+                        <SectionRefreshButton onClick={refreshDashboard} loading={isLoading} />
                 </div>
                 <div className="flex flex-col divide-y divide-zinc-100 xl:flex-row xl:divide-x xl:divide-y-0">
 
@@ -513,6 +517,7 @@ export function OverviewTab() {
                     <svg className="text-zinc-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span className="dashboard-card-title">Recent Chats</span>
                     <span className="dashboard-card-subtitle">Chats that mentioned {selectedProject?.brand_name ?? "your brand"}</span>
+                    <SectionRefreshButton onClick={refreshChats} loading={chLoad} />
                 </div>
                 {chLoad ? (
                     <div className="grid gap-3 p-4 md:grid-cols-2 2xl:grid-cols-3">

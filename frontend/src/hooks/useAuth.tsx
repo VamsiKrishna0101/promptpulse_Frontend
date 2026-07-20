@@ -40,6 +40,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem("promptpulse_user")
   }, [user])
 
+  useEffect(() => {
+    const handleExpired = () => {
+      setToken(null)
+      setUser(null)
+    }
+    window.addEventListener("promptpulse:auth-expired", handleExpired)
+    return () => window.removeEventListener("promptpulse:auth-expired", handleExpired)
+  }, [])
+
   const value = useMemo<AuthContextValue>(() => ({
     user,
     token,
@@ -56,6 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const accessToken = response.data.access_token ?? response.data.accessToken
       if (!accessToken) throw new Error("Email verified but no access token was returned")
       setToken(accessToken)
+      if (response.data.refresh_token ?? response.data.refreshToken) {
+        localStorage.setItem("promptpulse_refresh_token", response.data.refresh_token ?? response.data.refreshToken)
+      }
       setUser(response.data.user)
     },
     async login(email: string, password: string) {
@@ -63,11 +75,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const accessToken = response.data.access_token ?? response.data.accessToken
       if (!accessToken) throw new Error("Login succeeded but no access token was returned")
       setToken(accessToken)
+      if (response.data.refresh_token ?? response.data.refreshToken) {
+        localStorage.setItem("promptpulse_refresh_token", response.data.refresh_token ?? response.data.refreshToken)
+      }
       setUser(response.data.user)
     },
     logout() {
       setToken(null)
       setUser(null)
+      localStorage.removeItem("promptpulse_refresh_token")
       localStorage.removeItem("promptpulse_selected_project_id")
     },
   }), [token, user])

@@ -30,16 +30,22 @@ export function useRecentChats(projectId: string | null, queryString: string = "
     const [chats, setChats] = useState<RecentChat[]>([])
     const [isLoading, setIsLoading] = useState(Boolean(projectId))
 
-    useEffect(() => {
+    async function refresh() {
         if (!projectId) return
         setIsLoading(true)
-        api.get<RecentChat[]>(`/dashboard/${projectId}/recent-chats${queryString}`)
-            .then(res => setChats(res.data))
-            .catch(() => setChats([]))
-            .finally(() => setIsLoading(false))
-    }, [projectId, queryString])
+        try {
+            const response = await api.get<RecentChat[]>(`/dashboard/${projectId}/recent-chats${queryString}`)
+            setChats(response.data)
+        } catch {
+            setChats([])
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
-    return { chats, isLoading }
+    useEffect(() => { void refresh() }, [projectId, queryString])
+
+    return { chats, isLoading, refresh }
 }
 
 export type ChatsPageResponse = {

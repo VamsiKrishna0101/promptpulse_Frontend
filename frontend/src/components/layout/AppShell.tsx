@@ -12,6 +12,7 @@ import { ProductTourProvider } from "@/features/product-tour/ProductTourProvider
 import { TodayRunStatus } from "@/components/status/TodayRunStatus"
 import { MODEL_ICON_DOMAINS, modelIconUrl } from "@/lib/aiModels"
 import { useToast } from "@/components/ui/Toast"
+import { useAuth } from "@/hooks/useAuth"
 
 type DropdownOption = { label: string; value: string }
 
@@ -215,6 +216,7 @@ function CreditsPill() {
 
 function AppShellContent({ children }: { children: ReactNode }) {
   const { projects, selectedProject, isLoading } = useProjects()
+  const { isAuthenticated } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const toast = useToast()
   const [exporting, setExporting] = useState<"pdf" | "csv" | null>(null)
@@ -257,10 +259,10 @@ function AppShellContent({ children }: { children: ReactNode }) {
   }, [location.pathname])
 
   useEffect(() => {
-    if (!isLoading && projects.length === 0) {
+    if (isAuthenticated && !isLoading && projects.length === 0) {
       navigate("/onboarding", { replace: true })
     }
-  }, [isLoading, navigate, projects.length])
+  }, [isAuthenticated, isLoading, navigate, projects.length])
 
   return (
     <div className="app-premium-shell flex h-screen overflow-hidden">
@@ -276,7 +278,8 @@ function AppShellContent({ children }: { children: ReactNode }) {
         {showTopbar && (
         <div className="premium-topbar z-40 min-w-0 flex-shrink-0">
           {/* Filter bar */}
-          <div data-product-tour-id="top-filters" className="premium-filterbar flex min-w-0 flex-wrap items-center gap-2 px-3 py-2.5 lg:px-4 lg:py-3 xl:px-5">
+          <div data-product-tour-id="top-filters" className="premium-filterbar flex min-w-0 flex-nowrap items-center gap-2 overflow-hidden px-3 py-2.5 lg:px-4 lg:py-3 xl:px-5">
+            <div className="topbar-controls flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden scrollbar-none">
             {filtersEnabled && (
               <>
               {/* Brand chip — static, always active */}
@@ -341,8 +344,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
               </>
             )}
+            </div>
 
-              <div className="flex w-full items-center justify-end gap-1.5 sm:ml-auto sm:w-auto">
+              <div className="flex flex-shrink-0 items-center justify-end gap-1.5">
                 <CreditsPill />
 
                 {/* PDF export — all resources */}

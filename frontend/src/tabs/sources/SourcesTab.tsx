@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useFilters } from "@/hooks/useFilters"
+import { SectionRefreshButton } from "@/components/ui/SectionRefreshButton"
 import { useProjects } from "@/hooks/useProjects"
 import { useSources, type DomainSourceRow, type SourceGapRow, type SourceTrendPoint, type TopSourceRow, type UrlSourceRow } from "@/hooks/useSources"
 import { Fav, Sk, timeAgo } from "@/tabs/overview/overview"
@@ -857,7 +858,6 @@ export function SourcesTab() {
   const { selectedProject } = useProjects()
   const projectId = selectedProject?.id ?? null
   const { queryString } = useFilters()
-  const { domains, urls, gaps, top, trend, isLoading } = useSources(projectId, queryString)
   const [mode, setMode] = useState<"domains" | "urls">("domains")
   const [gapAnalysis, setGapAnalysis] = useState(false)
   const [search, setSearch] = useState("")
@@ -866,9 +866,18 @@ export function SourcesTab() {
   const [sourceContent, setSourceContent] = useState<SourceContent | null>(null)
   const [sourceContentLoading, setSourceContentLoading] = useState(false)
   const [page, setPage] = useState(1)
+  const { domains, urls, gaps, top, trend, domainTotal, urlTotal, gapTotal, domainTotalPages, urlTotalPages, gapTotalPages, isLoading, refresh } = useSources(projectId, queryString, {
+    mode,
+    page,
+    pageSize: SOURCES_PAGE_SIZE,
+    search,
+    domain: selectedDomain,
+    gapAnalysis,
+  })
 
   const ownBrand = selectedProject?.brand_name ?? "PromptPulse"
-  const domainRows: DomainSourceRow[] = domains.length ? domains : top.map((row) => ({
+  const domainRows: DomainSourceRow[] = domains
+  const chartDomains: DomainSourceRow[] = top.map((row) => ({
     domain: row.domain,
     source_type: row.source_type,
     retrieval_rate: row.used_percentage ?? row.usage_percentage ?? 0,
@@ -877,39 +886,26 @@ export function SourcesTab() {
 
   const searchNeedle = search.trim().toLowerCase()
 
-  const filteredDomains = useMemo(() => {
-    return domainRows.filter((row) => !searchNeedle || row.domain.toLowerCase().includes(searchNeedle) || sourceType(row.source_type).toLowerCase().includes(searchNeedle))
-  }, [domainRows, searchNeedle])
-
   const selectedDomainRow = useMemo(() => {
     if (!selectedDomain) return null
-    return domainRows.find((row) => row.domain === selectedDomain) ?? null
-  }, [domainRows, selectedDomain])
+    return domainRows.find((row) => row.domain === selectedDomain)
+      ?? chartDomains.find((row) => row.domain === selectedDomain)
+      ?? null
+  }, [chartDomains, domainRows, selectedDomain])
 
-  const filteredUrls = useMemo(() => {
-    const baseRows: Array<UrlSourceRow | SourceGapRow> = gapAnalysis ? gaps : urls
-    return baseRows.filter((row) => {
-      const domainMatch = !selectedDomain || row.domain === selectedDomain
-      const text = `${row.url} ${row.domain} ${row.title ?? ""} ${row.url_type ?? ""}`.toLowerCase()
-      return domainMatch && (!searchNeedle || text.includes(searchNeedle))
-    })
-  }, [gapAnalysis, gaps, searchNeedle, selectedDomain, urls])
-
-  const activeRowCount = mode === "domains" ? filteredDomains.length : filteredUrls.length
-  const totalPages = Math.max(1, Math.ceil(activeRowCount / SOURCES_PAGE_SIZE))
+  const activeRowCount = mode === "domains" ? domainTotal : gapAnalysis ? gapTotal : urlTotal
+  const totalPages = mode === "domains"
+    ? domainTotalPages
+    : gapAnalysis ? gapTotalPages : urlTotalPages
   const pageStart = (page - 1) * SOURCES_PAGE_SIZE
   const firstItem = activeRowCount === 0 ? 0 : pageStart + 1
   const lastItem = Math.min(page * SOURCES_PAGE_SIZE, activeRowCount)
-  const paginatedDomains = useMemo(() => {
-    return filteredDomains.slice(pageStart, pageStart + SOURCES_PAGE_SIZE)
-  }, [filteredDomains, pageStart])
-  const paginatedUrls = useMemo(() => {
-    return filteredUrls.slice(pageStart, pageStart + SOURCES_PAGE_SIZE)
-  }, [filteredUrls, pageStart])
+  const paginatedDomains = domainRows
+  const paginatedUrls: Array<UrlSourceRow | SourceGapRow> = gapAnalysis ? gaps : urls
 
   const visibleGapCount = useMemo(() => {
     return gaps.filter((row) => !selectedDomain || row.domain === selectedDomain).length
-  }, [gaps, selectedDomain])
+  }, [gapTotal, selectedDomain])
 
   const tableTitle = mode === "domains"
     ? "All Domains"
@@ -1019,12 +1015,12 @@ export function SourcesTab() {
               </div>
             </div>
             <div className="px-4 py-3">
-              {isLoading ? <Sk cls="h-[286px] w-full" /> : <SourceUsageChart domains={domainRows} trend={trend} />}
+              {isLoading ? <Sk cls="h-[286px] w-full" /> : <SourceUsageChart domains={chartDomains} trend={trend} />}
             </div>
           </section>
 
           <section className="dashboard-card">
-            {isLoading ? <div className="p-5"><Sk cls="h-[286px] w-full rounded-xl" /></div> : <DomainDonut rows={domainRows} />}
+            {isLoading ? <div className="p-5"><Sk cls="h-[286px] w-full rounded-xl" /></div> : <DomainDonut rows={chartDomains} />}
           </section>
         </div>
       )}
@@ -1092,6 +1088,7 @@ export function SourcesTab() {
               <ExportIcon />
               Export
             </button>
+            <SectionRefreshButton onClick={refresh} loading={isLoading} />
           </div>
         </div>
 
@@ -1138,7 +1135,7 @@ export function SourcesTab() {
                   </tr>
                 ))}
 
-                {!isLoading && filteredDomains.length === 0 && (
+                {!isLoading && paginatedDomains.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-5 py-14 text-center text-sm text-zinc-500">No sources found.</td>
                   </tr>
@@ -1223,7 +1220,7 @@ export function SourcesTab() {
                   )
                 })}
 
-                {!isLoading && filteredUrls.length === 0 && (
+                {!isLoading && paginatedUrls.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-5 py-14 text-center text-sm text-zinc-500">No URLs found.</td>
                   </tr>
