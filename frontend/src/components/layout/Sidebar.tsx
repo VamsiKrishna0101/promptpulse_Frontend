@@ -88,8 +88,8 @@ function NavItem({
         </>
     )
 
-    if (onClick) return <button type="button" data-product-tour-id={tourId} onClick={onClick} className={`${base} ${state}`}>{inner}</button>
-    return <Link to={href ?? "#"} data-product-tour-id={tourId} className={`${base} ${state}`}>{inner}</Link>
+    if (onClick) return <button type="button" data-product-tour-id={tourId} data-tooltip={label} onClick={onClick} className={`${base} ${state} sidebar-nav-item`}>{inner}</button>
+    return <Link to={href ?? "#"} data-product-tour-id={tourId} data-tooltip={label} className={`${base} ${state} sidebar-nav-item`}>{inner}</Link>
 }
 
 // ── Section label ─────────────────────────────────────────────────────────────
