@@ -23,8 +23,12 @@ export type ProjectRun = {
     status: string
     prompt_id: string
     completed_at: string | null
+    created_at: string
     error_reason: string | null
     retry_count: number
+    chat_id: string | null
+    geo_country_code: string | null
+    geo_city: string | null
   }[]
 }
 

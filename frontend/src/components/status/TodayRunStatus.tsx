@@ -53,18 +53,71 @@ const SUPPORTED_TODAY_RUN_ENGINES = new Set([
   "COPILOT",
 ])
 
+type TodayRunJob = NonNullable<Project["runs"][number]>["scrape_jobs"][number]
+
+function jobSlotKey(job: TodayRunJob) {
+  return [
+    job.prompt_id,
+    job.engine,
+    job.geo_country_code ?? "",
+    job.geo_city ?? "",
+  ].join(":")
+}
+
+function statusRank(job: TodayRunJob) {
+  if (job.status === "SUCCESS" || job.chat_id) return 4
+  if (job.status === "RUNNING" || job.status === "QUEUED") return 3
+  if (job.status === "RATE_LIMITED" || job.status === "MANUAL_NEEDED") return 2
+  if (job.status === "FAILED") return 1
+  return 0
+}
+
+function isEffectiveSuccess(job: TodayRunJob) {
+  return job.status === "SUCCESS" || Boolean(job.chat_id)
+}
+
+function timestampForJob(job: TodayRunJob) {
+  return new Date(job.completed_at ?? job.created_at ?? 0).getTime()
+}
+
+function effectiveTodayJobs(jobs: TodayRunJob[]) {
+  const bySlot = new Map<string, TodayRunJob>()
+
+  for (const job of jobs) {
+    const key = jobSlotKey(job)
+    const current = bySlot.get(key)
+    if (!current) {
+      bySlot.set(key, job)
+      continue
+    }
+
+    const nextRank = statusRank(job)
+    const currentRank = statusRank(current)
+    if (
+      nextRank > currentRank ||
+      (nextRank === currentRank && timestampForJob(job) > timestampForJob(current))
+    ) {
+      bySlot.set(key, job)
+    }
+  }
+
+  return [...bySlot.values()]
+}
+
 export function TodayRunStatus({ project }: { project: Project | null }) {
   const [open, setOpen] = useState(false)
   const { refresh } = useProjects()
 
   const run = project?.runs?.[0]
-  const jobs = (run?.scrape_jobs ?? []).filter((job) => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine))
+  const jobs = effectiveTodayJobs(
+    (run?.scrape_jobs ?? []).filter((job) => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine)),
+  )
 
-  const succeeded = jobs.filter((job) => job.status === "SUCCESS").length
-  const failed = jobs.filter((job) => job.status === "FAILED" || (job.status !== "SUCCESS" && job.error_reason)).length
+  const succeeded = jobs.filter(isEffectiveSuccess).length
+  const failed = jobs.filter((job) => job.status === "FAILED" && !job.chat_id).length
   const running = run?.status === "RUNNING" || run?.status === "QUEUED"
   const ranToday = sameLocalDay(run?.ran_at)
-  const supportedJobsComplete = jobs.length > 0 && jobs.every((job) => job.status === "SUCCESS")
+  const supportedJobsComplete = jobs.length > 0 && jobs.every(isEffectiveSuccess)
   const completeToday = ranToday && supportedJobsComplete && failed === 0
   const needsReview = ranToday && failed > 0
 
@@ -163,9 +216,9 @@ function TodayRunModal({
   const run = project?.runs?.[0]
   const toast = useToast()
   const [retrying, setRetrying] = useState(false)
-  const supportedJobs = (run?.scrape_jobs ?? []).filter(job => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine))
-  const retryableJobs = supportedJobs.filter(job => job.status === "FAILED" && job.retry_count < 2)
-  const exhaustedJobs = supportedJobs.filter(job => job.status === "FAILED" && job.retry_count >= 2)
+  const supportedJobs = effectiveTodayJobs((run?.scrape_jobs ?? []).filter(job => SUPPORTED_TODAY_RUN_ENGINES.has(job.engine)))
+  const retryableJobs = supportedJobs.filter(job => job.status === "FAILED" && !job.chat_id && job.retry_count < 2)
+  const exhaustedJobs = supportedJobs.filter(job => job.status === "FAILED" && !job.chat_id && job.retry_count >= 2)
 
   async function retryFailedJobs() {
     if (!run?.id || retrying || retryableJobs.length === 0) return
