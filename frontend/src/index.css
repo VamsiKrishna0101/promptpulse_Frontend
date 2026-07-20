@@ -96,6 +96,54 @@ input:disabled {
   background: #ffffff;
 }
 
+/* Keep the authenticated desktop shell usable at laptop widths. Page-level
+   overflow belongs to the data card that owns it, never to the whole shell. */
+.premium-main,
+.premium-main > div,
+.premium-topbar,
+.premium-filterbar {
+  max-width: 100%;
+}
+
+.premium-main > div > * {
+  min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  .premium-sidebar {
+    width: 248px !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .premium-sidebar {
+    width: 72px !important;
+  }
+
+  .premium-main {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .premium-filterbar {
+    align-items: center;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .premium-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .premium-main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
 .premium-sidebar {
   position: relative;
   background:

@@ -274,9 +274,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         {/* Top filters */}
         {showTopbar && (
-        <div className="premium-topbar z-40 flex-shrink-0">
+        <div className="premium-topbar z-40 min-w-0 flex-shrink-0">
           {/* Filter bar */}
-          <div data-product-tour-id="top-filters" className="premium-filterbar flex flex-wrap items-center gap-2 px-4 py-3 lg:px-5 xl:px-6">
+          <div data-product-tour-id="top-filters" className="premium-filterbar flex min-w-0 flex-wrap items-center gap-2 px-3 py-2.5 lg:px-4 lg:py-3 xl:px-5">
             {filtersEnabled && (
               <>
               {/* Brand chip — static, always active */}
@@ -399,8 +399,8 @@ function AppShellContent({ children }: { children: ReactNode }) {
         )}
 
         {/* Page content */}
-        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-5 xl:px-6">
-          <div className="mx-auto max-w-[1440px]">
+        <main ref={mainRef} className="premium-main min-h-0 min-w-0 flex-1 overflow-y-auto px-3 py-4 lg:px-4 lg:py-5 xl:px-5">
+          <div className="mx-auto min-w-0 max-w-[1440px]">
             {children}
           </div>
         </main>
