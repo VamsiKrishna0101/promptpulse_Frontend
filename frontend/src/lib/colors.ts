@@ -67,8 +67,7 @@ export const colors: ColorTokens = {
         950: "#0a0a0b",
     },
 
-    // Semantic — the one real color on the site: the green "Now in Beta" dot,
-    // plus the up/down deltas in the dashboard.
+    // Semantic colors for status dots and dashboard movement signals.
     success: {
         50: "#f0fdf4",
         500: "#16a34a",

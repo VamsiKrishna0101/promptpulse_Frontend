@@ -100,7 +100,7 @@ export function Hero() {
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     </span>
-                    <span className="text-[12px] font-medium text-zinc-500">Now in Beta - Free to start</span>
+                    <span className="text-[12px] font-medium text-zinc-500">14-day trial - no credit card required</span>
                 </div>
 
                 <h1 className="fade-up-2 max-w-2xl text-balance text-[38px] font-extrabold leading-[1.04] tracking-[-0.055em] text-zinc-950 sm:text-[44px] md:text-[52px]">

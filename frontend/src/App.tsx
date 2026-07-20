@@ -29,6 +29,7 @@ const ChangelogPage = lazy(() => import('./pages/resources/ChangelogPage').then(
 const GeoGuidePage = lazy(() => import('./pages/resources/GeoGuidePage').then(module => ({ default: module.GeoGuidePage })))
 const PublicHelpPage = lazy(() => import('./pages/resources/PublicHelpPage').then(module => ({ default: module.PublicHelpPage })))
 const OnboardingSetupPage = lazy(() => import('./pages/onboarding/OnboardingSetupPage').then(module => ({ default: module.OnboardingSetupPage })))
+const LandingChatWidget = lazy(() => import('./components/landing-chat/LandingChatWidget').then(module => ({ default: module.LandingChatWidget })))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -39,27 +40,28 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-500">Loading PromptPulse...</div>}>
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Navbar />} />
-      <Route path="/demo" element={<BookDemoPage />} />
-      <Route path="/book-demo" element={<BookDemoPage />} />
-      <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/product/:product" element={<ProductPage />} />
-      <Route path="/blog" element={<BlogPage />} />
-      <Route path="/geo-guide" element={<GeoGuidePage />} />
-      <Route path="/help-center" element={<PublicHelpPage />} />
-      <Route path="/changelog" element={<ChangelogPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route
-        path="/onboarding"
-        element={
-          <ProtectedRoute>
-            <OnboardingSetupPage />
-          </ProtectedRoute>
-        }
-      />
+      <>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Navbar />} />
+          <Route path="/demo" element={<BookDemoPage />} />
+          <Route path="/book-demo" element={<BookDemoPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/product/:product" element={<ProductPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/geo-guide" element={<GeoGuidePage />} />
+          <Route path="/help-center" element={<PublicHelpPage />} />
+          <Route path="/changelog" element={<ChangelogPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingSetupPage />
+              </ProtectedRoute>
+            }
+          />
 
 
       {/* Protected Routes */}
@@ -221,16 +223,18 @@ function App() {
             </ProtectedRoute>
           }
         />
-      {/* Catch-all to dashboard if logged in, otherwise login */}
-      <Route
-        path="*"
-        element={
-          <ProtectedRoute>
-            <Navigate to="/dashboard" replace />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+          {/* Catch-all to dashboard if logged in, otherwise login */}
+          <Route
+            path="*"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/dashboard" replace />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+        <LandingChatWidget />
+      </>
     </Suspense>
   )
 }
