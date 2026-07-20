@@ -24,13 +24,11 @@ export async function downloadCsvExport(
   // "csv" requests are routed to .xlsx for professional Excel output
   const ext = format === "pdf" ? "pdf" : "xlsx"
   const token = localStorage.getItem("promptpulse_access_token")
-  const idempotencyKey = `export-${projectId}-${resource}-${format}-${Date.now()}`
 
   const response = await fetch(
     `${API_BASE_URL}/exports/${projectId}/${resource}.${ext}${queryString}`,
     {
       headers: {
-        "Idempotency-Key": idempotencyKey,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     },
@@ -52,7 +50,6 @@ export async function downloadCsvExport(
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
-  window.dispatchEvent(new Event("credits:changed"))
 }
 
 function readFilename(disposition: string | null): string | null {
@@ -70,7 +67,6 @@ export async function downloadGeoArticlePdf(
   article: any,
 ) {
   const token = localStorage.getItem("promptpulse_access_token")
-  const idempotencyKey = `geoarticle-pdf-${projectId}-${Date.now()}`
 
   const response = await fetch(
     `${API_BASE_URL}/exports/${projectId}/geoarticle-pdf`,
@@ -78,7 +74,6 @@ export async function downloadGeoArticlePdf(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Idempotency-Key": idempotencyKey,
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
       body: JSON.stringify({ brief, article })
@@ -101,7 +96,6 @@ export async function downloadGeoArticlePdf(
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
-  window.dispatchEvent(new Event("credits:changed"))
 }
 
 async function readError(response: Response, fallback: string) {

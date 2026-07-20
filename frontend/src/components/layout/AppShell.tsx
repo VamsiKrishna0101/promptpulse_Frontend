@@ -245,7 +245,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
       await downloadCsvExport(selectedProject.id, exportResource, filterQuery, format)
       toast.success(
         format === "pdf" ? "PDF ready" : "CSV ready",
-        "Your export has started downloading. Credits have been refreshed.",
+        "Your export has started downloading.",
       )
     } catch (error: any) {
       toast.error("Export failed", error?.message || "We could not prepare this export. Please try again.")

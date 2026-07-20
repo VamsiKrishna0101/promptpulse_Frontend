@@ -112,7 +112,7 @@ const COMPARISON_ROWS: Array<{
     { label: "Tracked competitors", values: { STARTER: "5", GROWTH: "12", PRO: "Unlimited" } },
     { label: "Refresh rate", values: { STARTER: "2x / week", GROWTH: "Daily", PRO: "Daily" } },
     { label: "14-day free trial", values: { STARTER: true, GROWTH: true, PRO: true } },
-    { label: "Monthly credits for reports, exports, briefs, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
+    { label: "Monthly credits for reports, briefs, scans, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
     { section: "AI Surfaces", label: "ChatGPT", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Gemini", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Perplexity", values: { STARTER: true, GROWTH: true, PRO: true } },
@@ -225,7 +225,7 @@ export function Pricing() {
                         surfaces PromptPulse supports today.
                     </p>
                     <p className="mx-auto mt-2 max-w-2xl text-[12.5px] leading-5 text-zinc-400">
-                        Prompt monitoring is included in your plan limits. Credits are used for reports, exports, content briefs,
+                        Prompt monitoring and exports are included in your plan limits. Credits are used for reports, content briefs,
                         and premium AI actions.
                     </p>
 

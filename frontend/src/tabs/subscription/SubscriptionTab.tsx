@@ -97,7 +97,7 @@ const COMPARISON_ROWS: {
     { label: "Estimated AI responses / month", values: { STARTER: "480", GROWTH: "7,500", PRO: "18,750" } },
     { label: "Tracked AI surfaces", values: { STARTER: "3 surfaces", GROWTH: "5 surfaces", PRO: "5 surfaces" } },
     { label: "Competitors", values: { STARTER: "5", GROWTH: "12", PRO: "Unlimited" } },
-    { label: "Monthly credits for reports, exports, briefs, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
+    { label: "Monthly credits for reports, briefs, scans, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
     { label: "Refresh rate", values: { STARTER: "2x / week", GROWTH: "Daily", PRO: "Daily" } },
     { label: "14-day free trial", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Country-level tracking", values: { STARTER: true, GROWTH: true, PRO: true } },
@@ -428,7 +428,7 @@ export function SubscriptionTab() {
           Choose the plan that fits your AI visibility motion.
         </h1>
         <p className="max-w-[600px] text-[13px] leading-5 text-[#667085]">
-          Prompt monitoring is included in your plan. Credits cover reports, exports, and premium actions.
+          Prompt monitoring and exports are included in your plan. Credits cover reports, briefs, scans, and premium actions.
         </p>
         <SegmentedControl value={billing} onChange={setBilling} />
       </div>
@@ -516,7 +516,7 @@ export function SubscriptionTab() {
             <h3 className="text-[13px] font-semibold tracking-[-0.01em] text-[#101828]">Launch pricing with real usage limits</h3>
             <p className="mt-0.5 text-[12.5px] leading-5 text-[#667085]">
               We cover the core PromptPulse workflow today: monitoring, citations, source enrichment, competitors,
-              exports, reports, action queue, and Sara. Credits are separate from prompt monitoring, so daily runs do not burn report credits.
+              exports, reports, action queue, and Sara. Credits are separate from prompt monitoring and exports, so daily runs and downloads do not burn report credits.
             </p>
           </div>
         </div>
