@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
+import * as Tooltip from "@radix-ui/react-tooltip"
 import { useAuth } from "@/hooks/useAuth"
 import { useProjects } from "@/hooks/useProjects"
 import { PROJECT_LIMIT_BY_PLAN } from "@/pages/onboarding/types"
@@ -88,8 +89,28 @@ function NavItem({
         </>
     )
 
-    if (onClick) return <button type="button" data-product-tour-id={tourId} data-tooltip={label} onClick={onClick} className={`${base} ${state} sidebar-nav-item`}>{inner}</button>
-    return <Link to={href ?? "#"} data-product-tour-id={tourId} data-tooltip={label} className={`${base} ${state} sidebar-nav-item`}>{inner}</Link>
+    const linkContent = onClick ? (
+        <button type="button" data-product-tour-id={tourId} onClick={onClick} className={`${base} ${state}`}>{inner}</button>
+    ) : (
+        <Link to={href ?? "#"} data-product-tour-id={tourId} className={`${base} ${state}`}>{inner}</Link>
+    )
+
+    return (
+        <Tooltip.Root delayDuration={0}>
+            <Tooltip.Trigger asChild>
+                {linkContent}
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+                <Tooltip.Content
+                    side="right"
+                    sideOffset={12}
+                    className="z-[100] hidden rounded-lg bg-[#0F172A]/95 px-2.5 py-1.5 text-[12px] font-semibold text-slate-100 shadow-[0_8px_16px_rgba(0,0,0,0.4)] backdrop-blur-[2px] max-[1439px]:block"
+                >
+                    {label}
+                </Tooltip.Content>
+            </Tooltip.Portal>
+        </Tooltip.Root>
+    )
 }
 
 // ── Section label ─────────────────────────────────────────────────────────────
@@ -257,6 +278,7 @@ export function Sidebar() {
     const isAdmin = user?.role === "ADMIN"
 
     return (
+        <Tooltip.Provider delayDuration={50}>
         <aside className="premium-sidebar sticky top-0 flex h-screen w-[72px] select-none flex-col min-[1440px]:w-[240px]">
             <style>{`
                 .premium-sidebar {
@@ -304,7 +326,7 @@ export function Sidebar() {
             <div className="mx-3 border-t border-white/10 min-[1440px]:mx-5" />
 
             {/* ── Nav ── */}
-            <nav className="min-h-0 flex-1 overflow-visible px-2 py-1 min-[1440px]:px-3">
+            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 min-[1440px]:px-3">
                 <SectionLabel label="General" />
                 <NavItem icon={icons.overview} label="Overview" href="/dashboard" tourId="nav-overview" />
                 <NavItem icon={icons.opportunities} label="Opportunities" href="/opportunities" tourId="nav-opportunities" />
@@ -330,5 +352,6 @@ export function Sidebar() {
             </div>
 
         </aside>
+        </Tooltip.Provider>
     )
 }
