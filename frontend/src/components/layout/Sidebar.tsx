@@ -304,7 +304,7 @@ export function Sidebar() {
             <div className="mx-3 border-t border-white/10 min-[1440px]:mx-5" />
 
             {/* ── Nav ── */}
-            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 min-[1440px]:px-3">
+            <nav className="min-h-0 flex-1 overflow-visible px-2 py-1 min-[1440px]:px-3">
                 <SectionLabel label="General" />
                 <NavItem icon={icons.overview} label="Overview" href="/dashboard" tourId="nav-overview" />
                 <NavItem icon={icons.opportunities} label="Opportunities" href="/opportunities" tourId="nav-opportunities" />
