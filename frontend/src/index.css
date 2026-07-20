@@ -140,20 +140,15 @@ input:disabled {
 /* A Windows laptop at 125% display scaling can report a 1280px CSS
    viewport while only having laptop-sized physical space. Keep the compact
    navigation until the wider MacBook/desktop breakpoint. */
-@media (min-width: 1440px) {
-  .premium-sidebar {
-    width: 248px !important;
-  }
-}
+/* ── Sidebar responsive breakpoints ──
+   < 1440px  → icon-only rail (72px, handled by Tailwind classes)
+   ≥ 1440px  → full sidebar with labels (240px, handled by Tailwind classes)
+   The CSS below handles padding/layout of the main content area. */
 
 @media (min-width: 1024px) and (max-width: 1439px) {
-  .premium-sidebar {
-    width: 72px !important;
-  }
-
   .premium-main {
-    padding-left: 14px;
-    padding-right: 14px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .premium-filterbar {

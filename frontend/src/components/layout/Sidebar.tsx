@@ -53,7 +53,7 @@ function NavItem({
                 : location.pathname === href
         : false
 
-    const base = "relative flex w-full items-center justify-center gap-2.5 rounded-xl px-3 py-2 text-[14px] text-left appearance-none border-0 transition-all duration-200 ease-out active:scale-[0.985] group xl:justify-start xl:px-3.5"
+    const base = "relative flex w-full items-center justify-center gap-2.5 rounded-xl px-3 py-2 text-[14px] text-left appearance-none border-0 transition-all duration-200 ease-out active:scale-[0.985] group min-[1440px]:justify-start min-[1440px]:px-3.5"
 
     const state = tone === "support"
         ? "premium-support-nav text-white font-black"
@@ -79,9 +79,9 @@ function NavItem({
             <span className={["flex-shrink-0 transition-colors duration-150", iconColor].join(" ")}>
                 {icon}
             </span>
-            <span className="hidden flex-1 leading-none xl:block transition-colors duration-150">{label}</span>
+            <span className="hidden flex-1 leading-none min-[1440px]:block transition-colors duration-150">{label}</span>
             {badge && (
-                <span className="hidden rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-bold leading-none text-white xl:inline-flex">
+                <span className="hidden rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-bold leading-none text-white min-[1440px]:inline-flex">
                     {badge}
                 </span>
             )}
@@ -95,7 +95,7 @@ function NavItem({
 // ── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ label, badge }: { label: string; badge?: string }) {
     return (
-        <div className="hidden items-center justify-between px-3.5 pb-1 pt-3 xl:flex">
+        <div className="hidden items-center justify-between px-3.5 pb-1 pt-3 min-[1440px]:flex">
             <span className="premium-section-label text-[10.5px] font-black uppercase tracking-wider select-none">
                 {label}
             </span>
@@ -169,7 +169,7 @@ function WorkspaceSwitcher() {
             <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex w-full items-center justify-center gap-3 rounded-xl px-1.5 py-1.5 transition hover:bg-white/[0.065] xl:justify-start"
+                className="flex w-full items-center justify-center gap-3 rounded-xl px-1.5 py-1.5 transition hover:bg-white/[0.065] min-[1440px]:justify-start"
             >
                 <div
                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white shadow-[0_14px_26px_-18px_rgba(15,23,42,0.95),inset_0_1px_0_rgba(255,255,255,0.42)]"
@@ -181,7 +181,7 @@ function WorkspaceSwitcher() {
                         onError={() => setLogoFailed(true)}
                     />
                 </div>
-                <div className="hidden min-w-0 flex-1 text-left xl:block">
+                <div className="hidden min-w-0 flex-1 text-left min-[1440px]:block">
                     <p className="truncate text-[16px] font-black leading-tight text-white">
                         {selectedProject?.brand_name ?? "No project"}
                     </p>
@@ -189,7 +189,7 @@ function WorkspaceSwitcher() {
                         <ProjectCountry location={selectedProject?.brand_location} />
                     </p>
                 </div>
-                <span className={["hidden flex-shrink-0 text-[#9BA8B8] transition-transform xl:block", open ? "rotate-180" : ""].join(" ")}>
+                <span className={["hidden flex-shrink-0 text-[#9BA8B8] transition-transform min-[1440px]:block", open ? "rotate-180" : ""].join(" ")}>
                     {icons.chevron}
                 </span>
             </button>
@@ -257,7 +257,7 @@ export function Sidebar() {
     const isAdmin = user?.role === "ADMIN"
 
     return (
-        <aside className="premium-sidebar sticky top-0 flex h-screen w-[88px] select-none flex-col xl:w-[280px]">
+        <aside className="premium-sidebar sticky top-0 flex h-screen w-[72px] select-none flex-col min-[1440px]:w-[240px]">
             <style>{`
                 .premium-sidebar {
                     background: linear-gradient(180deg, #0B1220 0%, #0A0F1C 55%, #080C16 100%);
@@ -301,10 +301,10 @@ export function Sidebar() {
             {/* ── Workspace ── */}
             <WorkspaceSwitcher />
 
-            <div className="mx-3 border-t border-white/10 xl:mx-5" />
+            <div className="mx-3 border-t border-white/10 min-[1440px]:mx-5" />
 
             {/* ── Nav ── */}
-            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 xl:px-3">
+            <nav className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 min-[1440px]:px-3">
                 <SectionLabel label="General" />
                 <NavItem icon={icons.overview} label="Overview" href="/dashboard" tourId="nav-overview" />
                 <NavItem icon={icons.opportunities} label="Opportunities" href="/opportunities" tourId="nav-opportunities" />
@@ -322,7 +322,7 @@ export function Sidebar() {
             </nav>
 
             {/* ── Bottom ── */}
-            <div className="flex-shrink-0 px-2 pb-4 xl:px-3">
+            <div className="flex-shrink-0 px-2 pb-4 min-[1440px]:px-3">
                 <div className="mb-3 border-t border-white/10" />
                 <NavItem icon={icons.aiWorkspace} label="AI Workspace" href="/ai-workspace" tourId="nav-ai-workspace" />
                 <NavItem icon={icons.help} label="Help" href="/help" tourId="nav-help" tone="support" />
