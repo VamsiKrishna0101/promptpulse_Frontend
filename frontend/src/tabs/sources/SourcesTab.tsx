@@ -4,7 +4,6 @@ import { SectionRefreshButton } from "@/components/ui/SectionRefreshButton"
 import { useProjects } from "@/hooks/useProjects"
 import { useSources, type DomainSourceRow, type SourceGapRow, type SourceTrendPoint, type TopSourceRow, type UrlSourceRow } from "@/hooks/useSources"
 import { Fav, Sk, timeAgo } from "@/tabs/overview/overview"
-import { api } from "@/lib/api"
 import { downloadCsvExport } from "@/lib/exportDownload"
 import { ArticleReaderView } from "./ArticleReaderView"
 
@@ -598,10 +597,8 @@ function SourceDetailsDrawer({
   const suggestion = "suggested_action" in row ? row.suggested_action : null
   const gapScore = "gap_score" in row ? row.gap_score : null
   const fetchStatus = "fetch_status" in row ? row.fetch_status : null
-  const errorReason = "error_reason" in row ? row.error_reason : null
   const contentLength = "content_length" in row ? row.content_length : undefined
   const bodyText = "snippet" in row ? row.snippet : null
-  const hasFullContent = false
   const readableContentLength = typeof contentLength === "number" && contentLength > 0
     ? new Intl.NumberFormat().format(contentLength)
     : null
