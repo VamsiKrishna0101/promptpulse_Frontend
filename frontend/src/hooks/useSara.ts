@@ -128,6 +128,12 @@ export function useSara(projectId: string | null) {
             })
 
             if (!response.ok || !response.body) {
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}))
+                    if (errorData.error === "SARA_DAILY_LIMIT_REACHED") {
+                        throw new Error("You've reached your daily limit for AI questions. Please try again tomorrow or upgrade your plan.")
+                    }
+                }
                 throw new Error("Sara stream failed")
             }
 
@@ -185,6 +191,9 @@ export function useSara(projectId: string | null) {
                     )))
                 },
                 error: (payload) => {
+                    if (payload.error === "SARA_DAILY_LIMIT_REACHED") {
+                        throw new Error("You've reached your daily limit for AI questions. Please try again tomorrow or upgrade your plan.")
+                    }
                     throw new Error(payload.error || "Sara stream failed")
                 }
             })
