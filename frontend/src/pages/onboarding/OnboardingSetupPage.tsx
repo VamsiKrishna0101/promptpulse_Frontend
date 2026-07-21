@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useToast } from "@/components/ui/Toast"
 import { GEO_COUNTRIES, countryFlagUrl } from "@/lib/countries"
 import { BrandReviewCard } from "./components/BrandReviewCard"
+import { DEFAULT_ENGINE_SELECTION, EngineSelectionCard } from "./components/EngineSelectionCard"
 import { PromptSelectionCard } from "./components/PromptSelectionCard"
 import { SetupProgress } from "./components/SetupProgress"
 import {
@@ -19,17 +20,19 @@ import type { PlanQuota } from "./onboardingApi"
 import type {
   BrandResearchData,
   BrandResearchResult,
+  ProjectEngine,
   SuggestedPrompt,
 } from "./types"
 import { PROMPT_LIMIT_BY_PLAN, PROJECT_LIMIT_BY_PLAN } from "./types"
 
-type Step = "brand" | "review" | "prompts" | "launch"
+type Step = "brand" | "review" | "prompts" | "engines" | "launch"
 
 const stepIndex: Record<Step, number> = {
   brand: 0,
   review: 1,
   prompts: 2,
-  launch: 3,
+  engines: 3,
+  launch: 4,
 }
 
 export function OnboardingSetupPage() {
@@ -45,6 +48,7 @@ export function OnboardingSetupPage() {
   const [brandData, setBrandData] = useState<BrandResearchData | null>(null)
   const [prompts, setPrompts] = useState<SuggestedPrompt[]>([])
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [selectedEngines, setSelectedEngines] = useState<ProjectEngine[]>(DEFAULT_ENGINE_SELECTION)
   const [isWorking, setIsWorking] = useState(false)
   const [customBrief, setCustomBrief] = useState("")
   const [customPromptText, setCustomPromptText] = useState("")
@@ -56,6 +60,7 @@ export function OnboardingSetupPage() {
   const totalPromptLimit = quota?.limits.prompts ?? PROMPT_LIMIT_BY_PLAN[plan]
   const promptLimit = quota?.remaining.prompts ?? totalPromptLimit
   const projectLimit = quota?.limits.projects ?? PROJECT_LIMIT_BY_PLAN[plan]
+  const engineLimit = quota?.limits.engine_limit ?? 3
   const projectCount = quota?.usage.project_count ?? 0
   const canCreateProject = (quota?.remaining.projects ?? Math.max(0, projectLimit - projectCount)) > 0
 
@@ -212,8 +217,17 @@ export function OnboardingSetupPage() {
     })
   }
 
+  function toggleEngine(engine: ProjectEngine) {
+    const numericLimit = engineLimit === "all" ? 5 : engineLimit
+    setSelectedEngines((current) => {
+      if (current.includes(engine)) return current.filter(item => item !== engine)
+      if (current.length >= numericLimit) return current
+      return [...current, engine]
+    })
+  }
+
   async function handleLaunch() {
-    if (!research || !brandData || selectedPrompts.length === 0 || !canCreateProject) return
+    if (!research || !brandData || selectedPrompts.length === 0 || selectedEngines.length === 0 || !canCreateProject) return
 
     setStep("launch")
     setIsWorking(true)
@@ -224,6 +238,7 @@ export function OnboardingSetupPage() {
         brand_url: research.brand_url,
         brand_location: brandLocation.trim() || "United States",
         competitors: [],
+        engines: selectedEngines,
         prompts: prompts.map((prompt, index) => ({
           ...prompt,
           selected: selected.has(index),
@@ -241,7 +256,7 @@ export function OnboardingSetupPage() {
       localStorage.setItem("promptpulse_selected_project_id", project.id)
       navigate("/dashboard", { replace: true })
     } catch (error) {
-      setStep("prompts")
+      setStep("engines")
 
       toast({
         title: "Launch failed",
@@ -274,7 +289,7 @@ export function OnboardingSetupPage() {
 
               <p className="mt-2.5 max-w-2xl text-[13px] font-medium leading-6 text-[#52525b]">
                 Crawl your website, review the brand facts, select buyer-style prompts,
-                then launch an AI visibility run. Prompts are shared across all projects in your plan.
+                choose the AI engines that matter, then launch your first visibility run.
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2 text-[11.5px] font-semibold text-[#52525b]">
@@ -286,6 +301,9 @@ export function OnboardingSetupPage() {
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
                   {promptLimit} prompts available
+                </span>
+                <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
+                  {engineLimit === "all" ? "All engines" : `${engineLimit} engines`} per project
                 </span>
               </div>
             </div>
@@ -397,8 +415,30 @@ export function OnboardingSetupPage() {
 
             <div className="flex justify-end">
               <button
-                onClick={handleLaunch}
+                onClick={() => setStep("engines")}
                 disabled={isWorking || selectedPrompts.length === 0 || !canCreateProject}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#09090b] px-4 text-[12px] font-semibold text-white transition hover:bg-[#27272a] disabled:opacity-60"
+              >
+                <ArrowRight size={14} />
+                Choose AI engines
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === "engines" && (
+          <>
+            <EngineSelectionCard
+              selected={selectedEngines}
+              limit={engineLimit}
+              plan={plan}
+              onToggle={toggleEngine}
+            />
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleLaunch}
+                disabled={isWorking || selectedEngines.length === 0 || !canCreateProject}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#09090b] px-4 text-[12px] font-semibold text-white transition hover:bg-[#27272a] disabled:opacity-60"
               >
                 {isWorking ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}

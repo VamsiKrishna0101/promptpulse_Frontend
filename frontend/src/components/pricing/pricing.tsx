@@ -35,19 +35,19 @@ const PLANS: Array<{
         price: 29,
         oldPrice: 49,
         tagline: "Essentials for one brand getting serious about AI visibility",
-        models: ["chatgpt", "gemini", "perplexity"],
+        models: ["chatgpt", "gemini", "perplexity", "googleMode", "copilot"],
         features: [
             { label: "1 project" },
             { label: "20 prompts" },
             { label: "Up to 480 AI responses per month" },
             { label: "Twice a week refresh" },
-            { label: "ChatGPT, Gemini, Perplexity" },
+            { label: "Choose any 3 AI engines" },
             { label: "5 tracked competitors" },
             { label: "Visibility, position, sentiment" },
             { label: "Sources, citations, and chat evidence" },
             { label: "30 monthly credits for reports and premium actions" },
             { label: "Weekly email report" },
-            { label: "Google AI Mode and Copilot", included: false },
+            { label: "Google AI Mode and Copilot available in selection" },
             { label: "Sara core assistant" },
             { label: "Action queue", included: false },
             { label: "MCP connector for Claude/ChatGPT", included: false },
@@ -65,9 +65,9 @@ const PLANS: Array<{
         features: [
             { label: "2 projects" },
             { label: "50 prompts" },
-            { label: "Up to 7,500 AI responses per month" },
+            { label: "Up to 4,500 AI responses per month" },
             { label: "Daily refresh" },
-            { label: "All Starter models + Google AI Mode and Copilot" },
+            { label: "Choose any 3 AI engines" },
             { label: "12 tracked competitors" },
             { label: "100 monthly credits for reports and premium actions" },
             { label: "Source enrichment" },
@@ -91,7 +91,7 @@ const PLANS: Array<{
             { label: "125 prompts" },
             { label: "Up to 18,750 AI responses per month" },
             { label: "Daily refresh" },
-            { label: "All Growth AI surfaces" },
+            { label: "All 5 AI engines included" },
             { label: "Unlimited tracked competitors" },
             { label: "275 monthly credits for reports and premium actions" },
             { label: "Advanced source and competitor intelligence" },
@@ -111,16 +111,13 @@ const COMPARISON_ROWS: Array<{
 }> = [
     { section: "Monitoring", label: "Projects", values: { STARTER: "1", GROWTH: "2", PRO: "5" } },
     { label: "Tracked prompts", values: { STARTER: "20", GROWTH: "50", PRO: "125" } },
-    { label: "Estimated AI responses / month", values: { STARTER: "480", GROWTH: "7,500", PRO: "18,750" } },
+    { label: "Estimated AI responses / month", values: { STARTER: "480", GROWTH: "4,500", PRO: "18,750" } },
     { label: "Tracked competitors", values: { STARTER: "5", GROWTH: "12", PRO: "Unlimited" } },
     { label: "Refresh rate", values: { STARTER: "2x / week", GROWTH: "Daily", PRO: "Daily" } },
     { label: "14-day free trial", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Monthly credits for reports, briefs, scans, and premium AI actions", values: { STARTER: "30", GROWTH: "100", PRO: "275" } },
-    { section: "AI Surfaces", label: "ChatGPT", values: { STARTER: true, GROWTH: true, PRO: true } },
-    { label: "Gemini", values: { STARTER: true, GROWTH: true, PRO: true } },
-    { label: "Perplexity", values: { STARTER: true, GROWTH: true, PRO: true } },
-    { label: "Google AI Mode", values: { STARTER: false, GROWTH: true, PRO: true } },
-    { label: "Microsoft Copilot", values: { STARTER: false, GROWTH: true, PRO: true } },
+    { section: "AI Surfaces", label: "Selectable AI engines", values: { STARTER: "Choose 3", GROWTH: "Choose 3", PRO: "All 5" } },
+    { label: "Available catalog", values: { STARTER: "All 5 available", GROWTH: "All 5 available", PRO: "All 5 included" } },
     { section: "Insights", label: "Visibility, position, sentiment", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Source intelligence", values: { STARTER: true, GROWTH: true, PRO: true } },
     { label: "Source enrichment", values: { STARTER: "Basic", GROWTH: true, PRO: "Advanced" } },
@@ -314,7 +311,7 @@ export function Pricing() {
 
                                     <div className="mb-4 h-px bg-zinc-100" />
 
-                                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Models included</p>
+                                    <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Engine catalog</p>
                                     <div className="mb-4 flex flex-wrap gap-1.5">
                                         {plan.models.map((model) => (
                                             <ModelBadge key={model} model={model} />

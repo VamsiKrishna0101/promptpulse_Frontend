@@ -25,12 +25,16 @@ function splitCsvRow(row: string) {
   return cells
 }
 
-function cleanPrompt(input: Partial<SuggestedPrompt>): SuggestedPrompt | null {
+function cleanPrompt(input: Partial<SuggestedPrompt>, requireTopic: boolean = false): SuggestedPrompt | null {
   const text = input.text?.trim().replace(/\s+/g, " ") ?? ""
   if (text.length < 8 || text.length > 500) return null
+  
+  const topic = input.topic?.trim().replace(/\s+/g, " ")
+  if (requireTopic && !topic) return null
+
   return {
     text,
-    topic: input.topic?.trim().replace(/\s+/g, " ") || "Imported prompts",
+    topic: topic || "Imported prompts",
     type: input.type?.trim().replace(/\s+/g, "_") || "customer_prompt",
     source: "CUSTOMER",
   }
@@ -54,7 +58,7 @@ export function parsePromptImport(fileName: string, content: string) {
         text: cells[textIndex >= 0 ? textIndex : 0],
         topic: topicIndex >= 0 ? cells[topicIndex] : undefined,
         type: typeIndex >= 0 ? cells[typeIndex] : undefined,
-      })
+      }, true)
       if (prompt) parsed.push(prompt)
     }
   } else {

@@ -1,7 +1,7 @@
 import { CalendarDays, CheckCircle2, ChevronRight, Clock3, FileText, Gauge, Sparkles } from "lucide-react"
 import type { SavedReportSummary } from "@/lib/aiReportsApi"
 import { asRecord, dateLabel, periodLabel, text } from "./utils/reportHelpers"
-import { ScoreRing, toFiniteNumber } from "./components/ReportVisuals"
+import { ScoreRing, toFiniteNumber, toneForScore, toneClasses } from "./components/ReportVisuals"
 
 function statusStyle(status: string) {
   const normalized = status.toLowerCase()
@@ -114,16 +114,21 @@ export function ReportsList({
               </div>
 
               {/* Single score block — ring plus ONE supporting stat (mentions), no duplicate visibility number */}
-              <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5">
-                <ScoreRing value={score} label="" size="sm" />
-                <div className="min-w-0 border-l border-zinc-200 pl-3">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-zinc-400">Mentions</p>
-                  <p className="mt-0.5 text-[17px] font-semibold tracking-[-0.03em] tabular-nums text-zinc-950">
-                    {mentionRate ?? "NA"}
-                    {mentionRate !== null ? "%" : ""}
-                  </p>
-                </div>
-              </div>
+              {(() => {
+                const tone = toneClasses(toneForScore(score))
+                return (
+                  <div className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 ${tone.border} ${tone.bg}`}>
+                    <ScoreRing value={score} label="" size="sm" />
+                    <div className={`min-w-0 border-l pl-3 ${tone.border}`}>
+                      <p className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-zinc-400">Mentions</p>
+                      <p className="mt-0.5 text-[17px] font-semibold tracking-[-0.03em] tabular-nums text-zinc-950">
+                        {mentionRate ?? "NA"}
+                        {mentionRate !== null ? "%" : ""}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
 
               <div className="hidden justify-self-end lg:block">
                 <span className="grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-500 transition-all group-hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white">

@@ -4,7 +4,9 @@ import {
   Bell,
   CalendarDays,
   Check,
+  Cpu,
   KeyRound,
+  Lock,
   Loader2,
   LockKeyhole,
   Mail,
@@ -14,8 +16,21 @@ import {
   UserCog,
 } from "lucide-react"
 import { useSettings } from "@/hooks/useSettings"
+import { useProjects } from "@/hooks/useProjects"
+import { getProjectEngines, updateProjectEngines } from "@/lib/projectEnginesApi"
+import type { ProjectEngine, ProjectEnginesResponse } from "@/lib/projectEnginesApi"
+import { faviconUrl } from "@/lib/aiModels"
 
 type PreferenceKey = "weekly_email_reports" | "sara_recommendations" | "export_notifications"
+
+const ENGINE_META: Record<string, { name: string; domain: string; label: string }> = {
+  CHATGPT:       { name: "ChatGPT",        domain: "chatgpt.com",             label: "Best for commercial buyer questions" },
+  GEMINI:        { name: "Gemini",          domain: "gemini.google.com",       label: "Google ecosystem & research answers" },
+  PERPLEXITY:    { name: "Perplexity",      domain: "perplexity.ai",           label: "Source-heavy answers with citations" },
+  GOOGLE_AI_MODE:{ name: "Google AI Mode", domain: "google.com",              label: "Premium Google AI search surface" },
+  COPILOT:       { name: "Copilot",         domain: "copilot.microsoft.com",   label: "Microsoft / Bing discovery behavior" },
+}
+
 
 const SETTINGS_PREFERENCES_KEY = "promptpulse_settings_preferences"
 
@@ -127,6 +142,7 @@ function ToggleRow({
 
 export function SettingsTab() {
   const { data, isLoading, error, isUpdatingPassword, refresh, updatePassword } = useSettings()
+  const { selectedProject } = useProjects()
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -147,10 +163,71 @@ export function SettingsTab() {
     }
   })
 
+  // ── Engine preferences state ──
+  const [enginesData, setEnginesData] = useState<ProjectEnginesResponse | null>(null)
+  const [enginesLoading, setEnginesLoading] = useState(false)
+  const [enginesSaving, setEnginesSaving] = useState(false)
+  const [enginesError, setEnginesError] = useState<string | null>(null)
+  const [engineSuccess, setEngineSuccess] = useState<string | null>(null)
+  const [localEngines, setLocalEngines] = useState<ProjectEngine[]>([])
+
   useEffect(() => {
     localStorage.setItem(SETTINGS_PREFERENCES_KEY, JSON.stringify(preferences))
   }, [preferences])
 
+  // ── Load engines when project changes ──
+  useEffect(() => {
+    if (!selectedProject?.id) return
+    let cancelled = false
+    setEnginesLoading(true)
+    setEnginesError(null)
+    setEngineSuccess(null)
+    getProjectEngines(selectedProject.id)
+      .then((res) => {
+        if (cancelled) return
+        setEnginesData(res)
+        setLocalEngines(res.engines)
+      })
+      .catch(() => {
+        if (!cancelled) setEnginesError("Could not load engine preferences.")
+      })
+      .finally(() => {
+        if (!cancelled) setEnginesLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [selectedProject?.id])
+
+  function toggleLocalEngine(engine: ProjectEngine) {
+    if (!enginesData) return
+    const numericLimit = enginesData.limit === "all" ? enginesData.selectable.length : enginesData.limit
+    setLocalEngines((current) => {
+      if (current.includes(engine)) {
+        if (current.length <= 1) return current // keep at least 1
+        return current.filter((e) => e !== engine)
+      }
+      if (current.length >= numericLimit) return current
+      return [...current, engine]
+    })
+    setEngineSuccess(null)
+    setEnginesError(null)
+  }
+
+  async function handleSaveEngines() {
+    if (!selectedProject?.id || !enginesData) return
+    setEnginesSaving(true)
+    setEnginesError(null)
+    setEngineSuccess(null)
+    try {
+      const result = await updateProjectEngines(selectedProject.id, localEngines)
+      setLocalEngines(result.engines)
+      setEnginesData((prev) => prev ? { ...prev, engines: result.engines } : prev)
+      setEngineSuccess("Engine preferences saved.")
+    } catch (err: any) {
+      setEnginesError(err?.response?.data?.error ?? "Failed to save engine preferences.")
+    } finally {
+      setEnginesSaving(false)
+    }
+  }
   async function handleRefresh() {
     setRefreshing(true)
     try {
@@ -320,6 +397,105 @@ export function SettingsTab() {
           </button>
         </form>
       </section>
+
+      {/* ── AI Engine Preferences ── */}
+      {selectedProject && (
+        <section className="rounded-lg border border-[#E2E5EA] bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[14px] font-semibold tracking-[-0.005em] text-[#101828]">AI Engines</p>
+              <p className="mt-0.5 text-[12px] font-medium text-[#98A2B3]">
+                Choose which AI engines PromptPulse tracks for <span className="font-semibold text-[#344054]">{selectedProject.brand_name}</span>.
+                {enginesData && (
+                  <span className="ml-1">
+                    Your plan allows{" "}
+                    <span className="font-semibold text-[#344054]">
+                      {enginesData.limit === "all" ? "all 5" : `up to ${enginesData.limit}`}
+                    </span>{" "}
+                    engines.
+                  </span>
+                )}
+              </p>
+            </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F9FAFB] text-[#667085]">
+              <Cpu size={16} />
+            </span>
+          </div>
+
+          {enginesLoading ? (
+            <div className="flex items-center gap-2 py-4 text-[12.5px] font-medium text-[#667085]">
+              <Loader2 size={15} className="animate-spin" />
+              Loading engine preferences…
+            </div>
+          ) : enginesData ? (
+            <>
+              <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                {enginesData.selectable.map((engine) => {
+                  const meta = ENGINE_META[engine]
+                  const checked = localEngines.includes(engine)
+                  const numericLimit = enginesData.limit === "all" ? enginesData.selectable.length : enginesData.limit
+                  const locked = !checked && localEngines.length >= numericLimit
+
+                  return (
+                    <button
+                      key={engine}
+                      type="button"
+                      onClick={() => toggleLocalEngine(engine)}
+                      disabled={locked}
+                      className={[
+                        "flex items-center gap-3 rounded-lg border px-3.5 py-3 text-left transition",
+                        checked
+                          ? "border-[#101828] bg-white shadow-sm"
+                          : "border-[#E2E5EA] bg-[#FAFAFA] hover:border-[#C9CEDA]",
+                        locked ? "cursor-not-allowed opacity-40" : "",
+                      ].join(" ")}
+                    >
+                      <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-[#E2E5EA] bg-white">
+                        <img src={faviconUrl(meta.domain, 64) ?? ""} alt="" className="h-4 w-4 rounded-[3px]" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-semibold text-[#101828]">{meta.name}</span>
+                        <span className="block text-[11px] font-medium text-[#98A2B3]">{meta.label}</span>
+                      </span>
+                      <span className={[
+                        "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border",
+                        checked ? "border-[#101828] bg-[#101828] text-white" : "border-[#D0D5DD] bg-white text-[#98A2B3]",
+                      ].join(" ")}>
+                        {locked ? <Lock size={10} /> : checked ? <Check size={11} /> : null}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-4">
+                <p className="text-[12px] font-medium text-[#98A2B3]">
+                  {localEngines.length} / {enginesData.limit === "all" ? enginesData.selectable.length : enginesData.limit} selected
+                </p>
+                <div className="flex items-center gap-3">
+                  {(enginesError || engineSuccess) && (
+                    <span className={[
+                      "text-[12px] font-semibold",
+                      enginesError ? "text-[#B42318]" : "text-[#067647]",
+                    ].join(" ")}>
+                      {enginesError ?? engineSuccess}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveEngines()}
+                    disabled={enginesSaving || localEngines.length === 0}
+                    className="settings-save-btn flex h-9 items-center gap-2 rounded-md bg-[#101828] px-4 text-[12.5px] font-semibold text-white hover:bg-[#1D2939] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {enginesSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                    Save engines
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </section>
+      )}
 
       <section className="rounded-lg border border-[#E2E5EA] bg-white p-5">
         <div className="mb-3 flex items-center justify-between">

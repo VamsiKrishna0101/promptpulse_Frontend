@@ -39,6 +39,8 @@ export type SuggestedPrompt = {
   source: "GENERATED" | "CUSTOMER"
 }
 
+export type ProjectEngine = "CHATGPT" | "GEMINI" | "PERPLEXITY" | "GOOGLE_AI_MODE" | "COPILOT"
+
 export const PROMPT_LIMIT_BY_PLAN: Record<Plan, number> = {
   FREE: 5,
   STARTER: 20,

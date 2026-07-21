@@ -23,6 +23,7 @@ export type PlanLimits = {
   sara: "none" | "basic" | "full" | "advanced"
   exports: "none" | "basic" | "full"
   credits: number
+  engine_limit: number | "all"
 }
 
 export type MyPlanResponse = {

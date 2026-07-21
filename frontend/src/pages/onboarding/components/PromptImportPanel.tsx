@@ -90,19 +90,45 @@ export function PromptImportPanel({
         </div>
       </form>
 
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={isReading}
-        className="flex min-h-20 items-center gap-3 rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] px-4 text-left transition hover:border-[#94a3b8] hover:bg-white disabled:opacity-60"
+      <div
+        className="relative flex min-h-20 items-center gap-3 rounded-xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] px-4 text-left transition hover:border-[#94a3b8] hover:bg-white data-[disabled=true]:opacity-60"
+        data-disabled={isReading}
       >
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-white text-[#0f172a] shadow-sm"><FileUp size={16} /></span>
-        <span>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={isReading}
+          className="absolute inset-0 z-0 h-full w-full rounded-xl"
+          aria-label="Upload file"
+        />
+        <span className="relative z-10 pointer-events-none grid h-9 w-9 place-items-center rounded-lg bg-white text-[#0f172a] shadow-sm"><FileUp size={16} /></span>
+        <span className="relative z-10 pointer-events-none">
           <strong className="block text-[12px] text-[#18181b]">Bulk upload CSV or TXT</strong>
-          <span className="mt-1 block text-[10.5px] leading-4 text-[#71717a]">CSV: prompt, topic, type. TXT: one prompt per line.</span>
+          <span className="mt-1 block text-[10.5px] leading-4 text-[#71717a]">
+            CSV columns: prompt (required), topic (required), type.{' '}
+            <button
+              type="button"
+              className="pointer-events-auto text-[#0f172a] underline hover:text-black"
+              onClick={(e) => {
+                e.stopPropagation()
+                const content = "prompt,topic,type\nWhat are the best CRM tools?,Sales,buyer_question\nHow to improve SEO?,Marketing,customer_prompt\nWhat is your pricing?,Pricing, "
+                const blob = new Blob([content], { type: 'text/csv' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'example_prompts.csv'
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+              }}
+            >
+              Download example CSV
+            </button>
+          </span>
         </span>
         <input ref={inputRef} type="file" accept=".csv,.txt,text/csv,text/plain" hidden onChange={(event) => void readFile(event.target.files?.[0])} />
-      </button>
+      </div>
     </div>
   )
 }

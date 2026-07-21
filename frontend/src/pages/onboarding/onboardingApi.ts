@@ -1,5 +1,6 @@
 import { api } from "@/lib/api"
 import type { BrandResearchData, BrandResearchResult, Plan, SuggestedPrompt } from "./types"
+import type { ProjectEngine } from "./types"
 
 export type PlanQuota = {
   plan: Plan
@@ -10,6 +11,7 @@ export type PlanQuota = {
     refreshes_per_week: number | "daily"
     sara: "none" | "basic" | "full" | "advanced"
     exports: "none" | "basic" | "full"
+    engine_limit: number | "all"
   }
   usage: {
     project_count: number
@@ -47,6 +49,7 @@ export async function createProject(input: {
   brand_url: string
   brand_location: string
   competitors: string[]
+  engines: ProjectEngine[]
   prompts: Array<SuggestedPrompt & { selected: boolean }>
 }) {
   const response = await api.post<{ id: string }>("/onboarding/project", input)

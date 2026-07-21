@@ -31,6 +31,12 @@ const PublicHelpPage = lazy(() => import('./pages/resources/PublicHelpPage').the
 const OnboardingSetupPage = lazy(() => import('./pages/onboarding/OnboardingSetupPage').then(module => ({ default: module.OnboardingSetupPage })))
 const LandingChatWidget = lazy(() => import('./components/landing-chat/LandingChatWidget').then(module => ({ default: module.LandingChatWidget })))
 
+function RootRoute() {
+  const { isAuthenticated } = useAuth()
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />
+  return <Navbar />
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
@@ -43,7 +49,7 @@ function App() {
       <>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Navbar />} />
+          <Route path="/" element={<RootRoute />} />
           <Route path="/demo" element={<BookDemoPage />} />
           <Route path="/book-demo" element={<BookDemoPage />} />
           <Route path="/pricing" element={<PricingPage />} />

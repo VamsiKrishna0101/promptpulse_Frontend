@@ -32,6 +32,8 @@ export type ProjectRun = {
   }[]
 }
 
+export type ProjectEngine = "CHATGPT" | "GEMINI" | "PERPLEXITY" | "GOOGLE_AI_OVERVIEW" | "GOOGLE_AI_MODE" | "COPILOT"
+
 export type Project = {
   id: string
   brand_name: string
@@ -39,6 +41,7 @@ export type Project = {
   brand_location: string
   prompts: ProjectPrompt[]
   competitors: { id: string; name: string }[]
+  engine_preferences?: { engine: ProjectEngine }[]
   runs: ProjectRun[]
 }
 

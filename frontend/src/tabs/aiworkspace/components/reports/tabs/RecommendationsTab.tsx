@@ -22,22 +22,22 @@ export function RecommendationsTab({ report }: { report: ReportViewModel }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-zinc-950 p-5 text-white shadow-[0_18px_58px_-42px_rgba(9,9,11,0.75)]">
+        <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-[#fafafa] p-5 shadow-sm">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 opacity-40"
             style={{
               backgroundImage:
-                "radial-gradient(circle at 0% 0%, rgba(245,158,11,0.28), transparent 34%), linear-gradient(to right, rgba(255,255,255,0.075) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.075) 1px, transparent 1px)",
+                "radial-gradient(circle at 0% 0%, rgba(161,161,170,0.15), transparent 40%), linear-gradient(to right, rgba(161,161,170,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(161,161,170,0.08) 1px, transparent 1px)",
               backgroundSize: "auto, 32px 32px, 32px 32px",
             }}
           />
           <div className="relative">
-            <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-amber-300">Recommended sequence</p>
-            <h3 className="max-w-2xl text-[22px] font-semibold leading-tight tracking-[-0.03em]">
+            <p className="mb-2 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Recommended sequence</p>
+            <h3 className="max-w-2xl text-[22px] font-semibold leading-tight tracking-[-0.03em] text-zinc-900">
               Turn this report into the next optimization sprint.
             </h3>
-            <p className="mt-2 max-w-3xl text-[13px] font-medium leading-6 text-zinc-300">
+            <p className="mt-2 max-w-3xl text-[13px] font-medium leading-6 text-zinc-600">
               Start with fixes that protect visibility, then use quick wins and source actions to build authority before the next refresh cycle.
             </p>
 
@@ -48,9 +48,9 @@ export function RecommendationsTab({ report }: { report: ReportViewModel }) {
                 { label: "Sources", value: report.recommendations.sourceActions.length },
                 { label: "Content", value: report.recommendations.contentSequence.length },
               ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5">
-                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">{item.label}</p>
-                  <p className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-white tabular-nums">{item.value}</p>
+                <div key={item.label} className="rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(24,24,27,0.04)]">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-500">{item.label}</p>
+                  <p className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-zinc-950 tabular-nums">{item.value}</p>
                 </div>
               ))}
             </div>

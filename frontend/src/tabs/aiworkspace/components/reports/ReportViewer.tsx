@@ -93,18 +93,18 @@ export function ReportViewer({ detail, onBack }: { detail: SavedReportDetail; on
             <div className="hidden h-10 w-px bg-zinc-200 sm:block" />
             <div className="hidden gap-4 sm:flex">
               <div>
-                <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Mentions</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Mentions</p>
                 <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-zinc-950">
                   {mentionRate ?? "NA"}
                   {mentionRate !== null ? "%" : ""}
                 </p>
               </div>
               <div>
-                <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Avg pos</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Avg position</p>
                 <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-zinc-950">{avgPosition ?? "NA"}</p>
               </div>
               <div>
-                <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Runs</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">Runs</p>
                 <p className="mt-0.5 text-[15px] font-semibold tabular-nums text-zinc-950">
                   {report.overallMovement?.total_runs ?? "NA"}
                 </p>
@@ -116,7 +116,7 @@ export function ReportViewer({ detail, onBack }: { detail: SavedReportDetail; on
 
       {/* TABS */}
       <div className="mb-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-1.5 shadow-[0_1px_3px_rgba(9,9,11,0.05)]">
-        <div className="grid grid-cols-2 gap-1 lg:grid-cols-4">
+        <div className="flex gap-1 overflow-x-auto">
           {TABS.map((item) => {
             const Icon = item.icon
             const active = tab === item.id
@@ -125,7 +125,7 @@ export function ReportViewer({ detail, onBack }: { detail: SavedReportDetail; on
                 key={item.id}
                 onClick={() => setTab(item.id)}
                 className={cn(
-                  "flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-[12.5px] font-semibold transition",
+                  "flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-[12.5px] font-semibold transition",
                   active
                     ? "border border-zinc-200 bg-white text-zinc-950 shadow-[0_1px_2px_rgba(9,9,11,0.06)]"
                     : "border border-transparent text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950",

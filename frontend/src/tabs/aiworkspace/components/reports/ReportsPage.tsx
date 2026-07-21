@@ -78,8 +78,8 @@ export function ReportsPage({ onBack }: { onBack: () => void }) {
             <div className="mb-4 grid grid-cols-3 gap-2">
               {[
                 { label: "Reports", value: report.reports.length },
-                { label: "Report cost", value: "5" },
-                { label: "Period", value: "7-30d" },
+                { label: "Cost per report", value: "5 credits" },
+                { label: "Period", value: "7–30d" },
               ].map((item) => (
                 <div key={item.label} className="rounded-2xl border border-zinc-200 bg-white px-3 py-2.5">
                   <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-zinc-400">

@@ -1,6 +1,6 @@
 import { Check, CircleDashed } from "lucide-react"
 
-const steps = ["Brand", "Review", "Prompts", "Launch"] as const
+const steps = ["Brand", "Review", "Prompts", "Engines", "Launch"] as const
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
