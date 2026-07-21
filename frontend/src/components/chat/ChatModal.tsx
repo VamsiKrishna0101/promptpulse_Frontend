@@ -35,7 +35,7 @@ import { createPortal } from "react-dom"
 
 const HIGHLIGHT_STYLES = [
     "border-amber-200 bg-amber-100/85 text-amber-950",
-    "border-sky-200 bg-sky-100/85 text-sky-950",
+    "border-slate-200 bg-slate-100/85 text-slate-800",
     "border-emerald-200 bg-emerald-100/85 text-emerald-950",
     "border-fuchsia-200 bg-fuchsia-100/85 text-fuchsia-950",
     "border-violet-200 bg-violet-100/85 text-violet-950",
@@ -689,7 +689,7 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                         <div className="mx-auto max-w-[880px] px-8 py-6">
                             <div className="mb-7 flex justify-end gap-2.5">
                                 <div className="max-w-[650px] rounded-2xl rounded-tr-md bg-[#f4f4f5] px-4 py-3 text-[14px] font-semibold leading-6 text-[#18181b] shadow-[inset_0_0_0_1px_rgba(228,228,231,0.75)]">
-                                    <span className="rounded-[4px] bg-[#bfdbfe] px-0.5 py-px decoration-[#60a5fa]">
+                                    <span>
                                         {chat.prompt_text}
                                     </span>
                                 </div>

@@ -6,6 +6,7 @@ import { useSources, type DomainSourceRow, type SourceGapRow, type SourceTrendPo
 import { Fav, Sk, timeAgo } from "@/tabs/overview/overview"
 import { api } from "@/lib/api"
 import { downloadCsvExport } from "@/lib/exportDownload"
+import { ArticleReaderView } from "./ArticleReaderView"
 
 const TCFG: Record<string, { label: string; color: string; tw: string }> = {
   COMPETITOR: { label: "Competitor", color: "#ef4444", tw: "bg-red-50 text-red-600 border border-red-100" },
@@ -570,42 +571,16 @@ function RowSkeleton({ cols }: { cols: number }) {
   )
 }
 
-type SourceContent = {
-  title?: string | null
-  content?: string | null
-  snippet?: string | null
-  content_length?: number
-  source_type?: string | null
-  url_type?: string | null
-  platform?: string | null
-  subreddit?: string | null
-  mentioned_brands?: unknown
-  fetch_status?: string | null
-  error_reason?: string | null
-  content_updated_at?: string | null
-}
-
-function sourceTitle(row: UrlSourceRow | SourceGapRow, content?: SourceContent | null) {
-  return content?.title || row.title || cleanUrl(row.url)
-}
-
-function contentMentions(content?: SourceContent | null) {
-  if (!Array.isArray(content?.mentioned_brands)) return []
-  return content.mentioned_brands.filter((brand): brand is string => typeof brand === "string")
-}
-
 function SourceDetailsDrawer({
   row,
-  content,
-  contentLoading,
   ownBrand,
   onClose,
+  onReadArticle,
 }: {
   row: UrlSourceRow | SourceGapRow
-  content: SourceContent | null
-  contentLoading: boolean
   ownBrand: string
   onClose: () => void
+  onReadArticle: () => void
 }) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -615,27 +590,25 @@ function SourceDetailsDrawer({
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [onClose])
 
-  const mentions = [...new Set([...rowMentions(row), ...contentMentions(content)])]
+  const mentions = [...new Set([...rowMentions(row)])]
   const ownMentioned = mentions.some((name) => name.toLowerCase() === ownBrand.toLowerCase())
   const usedTotal = row.retrievals ?? 0
   const citations = row.citations ?? ("citation_rate" in row ? row.citation_rate ?? 0 : 0)
-  const updatedAt = ("content_updated_at" in row ? row.content_updated_at : null) ?? content?.content_updated_at ?? null
+  const updatedAt = "content_updated_at" in row ? row.content_updated_at : null
   const suggestion = "suggested_action" in row ? row.suggested_action : null
   const gapScore = "gap_score" in row ? row.gap_score : null
-  const fetchStatus = content?.fetch_status ?? ("fetch_status" in row ? row.fetch_status : null)
-  const errorReason = content?.error_reason ?? ("error_reason" in row ? row.error_reason : null)
-  const contentLength = content?.content_length ?? ("content_length" in row ? row.content_length : undefined)
-  const bodyText = content?.content || content?.snippet || ("snippet" in row ? row.snippet : null)
-  const hasFullContent = Boolean(content?.content)
+  const fetchStatus = "fetch_status" in row ? row.fetch_status : null
+  const errorReason = "error_reason" in row ? row.error_reason : null
+  const contentLength = "content_length" in row ? row.content_length : undefined
+  const bodyText = "snippet" in row ? row.snippet : null
+  const hasFullContent = false
   const readableContentLength = typeof contentLength === "number" && contentLength > 0
     ? new Intl.NumberFormat().format(contentLength)
     : null
-  const sourceKind = row.url_type || row.source_type || content?.url_type || content?.source_type
-  const platformLabel = row.platform || content?.platform
-  const subredditLabel = row.subreddit || content?.subreddit
-  const statusLabel = contentLoading
-    ? "Loading enriched page"
-    : fetchStatus || (hasFullContent ? "Enriched" : bodyText ? "Preview" : "Metadata only")
+  const sourceKind = row.url_type || row.source_type
+  const platformLabel = row.platform
+  const subredditLabel = row.subreddit
+  const statusLabel = fetchStatus || (bodyText ? "Preview" : "Metadata only")
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/45 px-4 py-6" onClick={onClose}>
@@ -662,7 +635,7 @@ function SourceDetailsDrawer({
                   )}
                 </div>
                 <h2 className="line-clamp-2 text-[20px] font-semibold leading-snug text-zinc-950">
-                  {sourceTitle(row, content)}
+                  {row.title || cleanUrl(row.url)}
                 </h2>
                 <p className="mt-1 truncate text-[12px] font-medium text-zinc-400">{cleanUrl(row.url)}</p>
               </div>
@@ -715,86 +688,25 @@ function SourceDetailsDrawer({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
-                  <div>
-                    <p className="text-[13px] font-semibold text-zinc-900">Page content</p>
-                    <p className="mt-0.5 text-[11px] font-medium text-zinc-400">
-                      {hasFullContent ? "Full enriched page text" : bodyText ? "Showing available preview while enrichment metadata is used above" : "No page text captured yet"}
-                    </p>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
                   </div>
-                  <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500">
-                    {statusLabel}
-                  </span>
+                  <h3 className="mb-2 text-[15px] font-semibold text-zinc-900">Read Article Content</h3>
+                  <p className="mb-6 max-w-sm text-[13px] leading-relaxed text-zinc-500">
+                    Dive into the full text of this source in a clean, distraction-free reader view.
+                  </p>
+                  <button
+                    onClick={onReadArticle}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-[13px] font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                  >
+                    View Full Article
+                  </button>
                 </div>
-                {contentLoading && (
-                  <div className="border-b border-sky-100 bg-sky-50/70 px-5 py-3 text-[12px] font-semibold text-sky-700">
-                    Pulling the latest enriched content for this exact URL...
-                  </div>
-                )}
-                {bodyText ? (
-                  <div className="max-h-[460px] overflow-y-auto border-t border-zinc-100 bg-white">
-                    <div className="space-y-3 px-6 py-5 text-[13.5px] leading-[1.75] text-zinc-700">
-                      {(() => {
-                        // Split into paragraphs on double-newlines (new enriched content)
-                        // or fall back to splitting by sentence for old wall-of-text content
-                        const raw = bodyText as string
-                        const hasParagraphs = /\n\n/.test(raw)
-                        const paragraphs = hasParagraphs
-                          ? raw.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
-                          : raw
-                              // Auto-split old one-liner content at sentence boundaries
-                              .split(/(?<=[\.\!\?])\s+(?=[A-Z])/)
-                              .reduce<string[]>((acc, sentence, i) => {
-                                // Group every ~3 sentences into a paragraph
-                                if (i % 3 === 0) acc.push(sentence)
-                                else acc[acc.length - 1] += " " + sentence
-                                return acc
-                              }, [])
-
-                        return paragraphs.map((para, i) => {
-                          // Bullet list lines
-                          if (para.startsWith("•")) {
-                            const items = para.split("\n").filter(Boolean)
-                            return (
-                              <ul key={i} className="ml-4 space-y-1 list-none">
-                                {items.map((item, j) => (
-                                  <li key={j} className="flex gap-2">
-                                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" />
-                                    <span>{item.replace(/^•\s*/, "")}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )
-                          }
-                          // Regular paragraph — render inline line breaks within it
-                          const lines = para.split("\n")
-                          return (
-                            <p key={i} className="text-zinc-700">
-                              {lines.map((line, j) => (
-                                <span key={j}>
-                                  {line}
-                                  {j < lines.length - 1 && <br />}
-                                </span>
-                              ))}
-                            </p>
-                          )
-                        })
-                      })()}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-5 py-10 text-center">
-                    <p className="text-[13px] font-semibold text-zinc-500">Full content is not available yet.</p>
-                    {errorReason ? (
-                      <p className="mx-auto mt-2 max-w-md text-[12px] font-medium leading-relaxed text-zinc-400">{errorReason}</p>
-                    ) : (
-                      <p className="mx-auto mt-2 max-w-md text-[12px] font-medium leading-relaxed text-zinc-400">
-                        We still show citation, prompt, and brand metadata for this source. Run source enrichment again if you want the full page text.
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -863,8 +775,7 @@ export function SourcesTab() {
   const [search, setSearch] = useState("")
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null)
   const [selectedSource, setSelectedSource] = useState<UrlSourceRow | SourceGapRow | null>(null)
-  const [sourceContent, setSourceContent] = useState<SourceContent | null>(null)
-  const [sourceContentLoading, setSourceContentLoading] = useState(false)
+  const [readingSource, setReadingSource] = useState<UrlSourceRow | SourceGapRow | null>(null)
   const [page, setPage] = useState(1)
   const { domains, urls, gaps, top, trend, domainTotal, urlTotal, gapTotal, domainTotalPages, urlTotalPages, gapTotalPages, isLoading, refresh } = useSources(projectId, queryString, {
     mode,
@@ -923,31 +834,7 @@ export function SourcesTab() {
         ? `URLs from ${selectedDomain} that appear in AI answers.`
         : "All source URLs found across tracked AI answers."
 
-  useEffect(() => {
-    if (!selectedSource || !projectId) {
-      setSourceContent(null)
-      return
-    }
 
-    let cancelled = false
-    setSourceContentLoading(true)
-    setSourceContent(null)
-
-    api.get<SourceContent>(`/sources/${projectId}/url-content`, { params: { url: selectedSource.url } })
-      .then((response) => {
-        if (!cancelled) setSourceContent(response.data)
-      })
-      .catch(() => {
-        if (!cancelled) setSourceContent(null)
-      })
-      .finally(() => {
-        if (!cancelled) setSourceContentLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [projectId, selectedSource])
 
   useEffect(() => {
     setPage(1)
@@ -1243,10 +1130,25 @@ export function SourcesTab() {
       {selectedSource && (
         <SourceDetailsDrawer
           row={selectedSource}
-          content={sourceContent}
-          contentLoading={sourceContentLoading}
           ownBrand={ownBrand}
           onClose={() => setSelectedSource(null)}
+          onReadArticle={() => {
+            setReadingSource(selectedSource)
+            setSelectedSource(null)
+          }}
+        />
+      )}
+
+      {readingSource && (
+        <ArticleReaderView
+          url={readingSource.url}
+          domain={readingSource.domain}
+          title={readingSource.title}
+          projectId={projectId}
+          onClose={() => {
+            setSelectedSource(readingSource)
+            setReadingSource(null)
+          }}
         />
       )}
     </div>
