@@ -103,6 +103,7 @@ export function BillingTab() {
   const [total, setTotal]               = useState(0)
   const [page, setPage]                 = useState(1)
   const [loading, setLoading]           = useState(true)
+  const [loadError, setLoadError]       = useState<string | null>(null)
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null)
   const [customCredits, setCustomCredits] = useState("1000")
   const [activePlan, setActivePlan] = useState<PaidPlan | null>(() => {
@@ -122,20 +123,27 @@ export function BillingTab() {
 
   const fetchTransactions = useCallback(async (p = 1) => {
     const res = await api.get<{ transactions: Transaction[]; total: number }>(`/payments/transactions?page=${p}&limit=20`)
-    setTransactions(res.data.transactions)
-    setTotal(res.data.total)
+    setTransactions(res.data.transactions ?? [])
+    setTotal(res.data.total ?? 0)
     setPage(p)
   }, [])
 
   useEffect(() => {
     async function init() {
       setLoading(true)
-      await Promise.all([
-        fetchBalance(),
-        api.get<{ packs: CreditPack[] }>("/payments/packs").then(r => setPacks(r.data.packs)),
-        fetchTransactions(1),
-      ])
-      setLoading(false)
+      setLoadError(null)
+      try {
+        await Promise.all([
+          fetchBalance(),
+          api.get<{ packs: CreditPack[] }>("/payments/packs").then(r => setPacks(r.data.packs ?? [])),
+          fetchTransactions(1),
+        ])
+      } catch (error) {
+        console.error("Billing data failed to load", error)
+        setLoadError("Billing routes are not available on this backend deployment yet. Please redeploy the latest backend image.")
+      } finally {
+        setLoading(false)
+      }
     }
     void init()
   }, [fetchBalance, fetchTransactions])
@@ -272,6 +280,11 @@ export function BillingTab() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-6 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700">Workspace finance</p><h1 className="mt-2 text-3xl font-bold tracking-[-0.04em] text-slate-950">Billing &amp; credits</h1><p className="mt-2 text-sm text-slate-500">Choose a monthly capacity bundle or add credits whenever you need them.</p></div><span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-500">Secure payments by Razorpay</span></div>
+      {loadError && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">
+          {loadError}
+        </div>
+      )}
       {/* ── Low-balance Warning ── */}
       {balance?.low_balance && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">

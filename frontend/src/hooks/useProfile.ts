@@ -19,11 +19,11 @@ export type ProfileResponse = {
     created_at: string
     updated_at: string
   }[]
-  wallet: {
+  wallet?: {
     balance: number
     used: number
   }
-  usage: {
+  usage?: {
     prompt_count: number
     project_count: number
     competitor_count: number
@@ -43,7 +43,28 @@ export function useProfile() {
     setError(null)
     try {
       const response = await api.get<ProfileResponse>("/profile/me")
-      setData(response.data)
+      const profile = response.data
+      const fallbackBalance =
+        profile.wallet?.balance ??
+        (profile.user as typeof profile.user & { credits_balance?: number }).credits_balance ??
+        0
+
+      setData({
+        ...profile,
+        projects: profile.projects ?? [],
+        wallet: {
+          balance: fallbackBalance,
+          used: profile.wallet?.used ?? 0,
+        },
+        usage: profile.usage ?? {
+          prompt_count: 0,
+          project_count: profile.projects?.length ?? 0,
+          competitor_count: 0,
+          monthly_runs_used: 0,
+          period_start: null,
+          period_end: null,
+        },
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile")
     } finally {

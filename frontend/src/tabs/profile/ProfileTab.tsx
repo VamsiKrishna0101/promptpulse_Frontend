@@ -112,7 +112,17 @@ export function ProfileTab() {
     )
   }
 
-  const primaryProject = data.projects[0]
+  const projects = data.projects ?? []
+  const wallet = data.wallet ?? { balance: 0, used: 0 }
+  const usage = data.usage ?? {
+    prompt_count: 0,
+    project_count: projects.length,
+    competitor_count: 0,
+    monthly_runs_used: 0,
+    period_start: null,
+    period_end: null,
+  }
+  const primaryProject = projects[0]
 
   return (
     <div className="space-y-5">
@@ -175,15 +185,15 @@ export function ProfileTab() {
 
       {/* ── Stats ── */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<CreditCard size={15} />} label="Wallet balance" value={data.wallet.balance.toLocaleString()} caption="Credits available to use" />
+        <StatCard icon={<CreditCard size={15} />} label="Wallet balance" value={wallet.balance.toLocaleString()} caption="Credits available to use" />
         <StatCard
           icon={<Sparkles size={15} />}
           label="Credits used"
-          value={data.wallet.used.toLocaleString()}
+          value={wallet.used.toLocaleString()}
           caption="All-time wallet usage"
         />
-        <StatCard icon={<FolderKanban size={15} />} label="Projects" value={data.usage.project_count} caption={`${data.projects.length} workspace records`} />
-        <StatCard icon={<Sparkles size={15} />} label="Prompts" value={data.usage.prompt_count} caption="Tracked prompts in this period" />
+        <StatCard icon={<FolderKanban size={15} />} label="Projects" value={usage.project_count} caption={`${projects.length} workspace records`} />
+        <StatCard icon={<Sparkles size={15} />} label="Prompts" value={usage.prompt_count} caption="Tracked prompts in this period" />
       </section>
 
       {/* ── Details + Workspaces ── */}
@@ -218,13 +228,13 @@ export function ProfileTab() {
           </div>
 
           <div className="space-y-2.5">
-            {data.projects.length === 0 ? (
+            {projects.length === 0 ? (
               <div className="rounded-md border border-dashed border-[#E2E5EA] bg-[#FAFBFC] px-4 py-8 text-center">
                 <p className="text-[13px] font-semibold text-[#344054]">No projects yet</p>
                 <p className="mt-1 text-[12px] text-[#98A2B3]">Create a brand workspace to start tracking visibility.</p>
               </div>
             ) : (
-              data.projects.map((project) => (
+              projects.map((project) => (
                 <div key={project.id} className="profile-project-row flex items-center justify-between gap-4 rounded-md border border-[#E2E5EA] bg-white px-4 py-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <BrandLogo domain={project.brand_url} name={project.brand_name} />
