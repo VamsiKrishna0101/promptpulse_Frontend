@@ -22,20 +22,6 @@ function formatDate(value: string | null | undefined) {
   return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 }
 
-function formatMoney(amountCents?: number, currency = "usd") {
-  if (amountCents === undefined) return "$0"
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-    maximumFractionDigits: 0,
-  }).format(amountCents / 100)
-}
-
-function formatStatus(status?: string) {
-  if (!status) return "Free"
-  return status.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
-}
-
 function BrandLogo({ domain, name, size = "md" }: { domain?: string | null; name: string; size?: "md" | "lg" }) {
   const [failed, setFailed] = useState(false)
   const logoDomain = domain?.trim() || "promptpulse.com"
@@ -126,13 +112,6 @@ export function ProfileTab() {
     )
   }
 
-  const subscription = data.subscription
-  const activePlan = data.trial.trial_active ? "FREE TRIAL" : data.user.plan ?? "FREE"
-  const status = data.trial.trial_active
-    ? `${data.user.effective_plan ?? "GROWTH"} preview - ${data.trial.trial_days_left}d left`
-    : data.trial.trial_starts_at && !data.trial.trial_active && data.user.plan === "FREE"
-      ? "Trial ended"
-      : subscription?.status ?? "FREE"
   const primaryProject = data.projects[0]
 
   return (
@@ -176,7 +155,7 @@ export function ProfileTab() {
                 </span>
               )}
               <span className="profile-plan-pill inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
-                {activePlan}
+                PAYG WALLET
               </span>
             </div>
             <p className="mt-1 truncate text-[13px] font-medium text-[#667085]">{data.user.email}</p>
@@ -196,12 +175,12 @@ export function ProfileTab() {
 
       {/* ── Stats ── */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={<CreditCard size={15} />} label="Current plan" value={activePlan} caption={formatStatus(status)} />
+        <StatCard icon={<CreditCard size={15} />} label="Wallet balance" value={data.wallet.balance.toLocaleString()} caption="Credits available to use" />
         <StatCard
-          icon={<CalendarDays size={15} />}
-          label="Trial"
-          value={data.trial.trial_active ? `${data.trial.trial_days_left}d` : "Ended"}
-          caption={data.trial.trial_active ? `Ends ${formatDate(data.trial.trial_ends_at)}` : `Started ${formatDate(data.trial.trial_starts_at)}`}
+          icon={<Sparkles size={15} />}
+          label="Credits used"
+          value={data.wallet.used.toLocaleString()}
+          caption="All-time wallet usage"
         />
         <StatCard icon={<FolderKanban size={15} />} label="Projects" value={data.usage.project_count} caption={`${data.projects.length} workspace records`} />
         <StatCard icon={<Sparkles size={15} />} label="Prompts" value={data.usage.prompt_count} caption="Tracked prompts in this period" />
@@ -213,7 +192,7 @@ export function ProfileTab() {
           <div className="mb-1 flex items-center justify-between">
             <div>
               <p className="text-[14px] font-semibold tracking-[-0.005em] text-[#101828]">Account details</p>
-              <p className="mt-0.5 text-[12px] font-medium text-[#98A2B3]">Identity and billing status</p>
+              <p className="mt-0.5 text-[12px] font-medium text-[#98A2B3]">Identity and wallet access</p>
             </div>
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#F9FAFB] text-[#667085]">
               <UserRound size={15} />
@@ -223,8 +202,8 @@ export function ProfileTab() {
           <DetailRow icon={<Mail size={14} />} label="Email" value={data.user.email} />
           <DetailRow icon={<ShieldCheck size={14} />} label="Account type" value={data.user.account_type} />
           <DetailRow icon={<CalendarDays size={14} />} label="Joined" value={formatDate(data.user.created_at)} />
-          <DetailRow icon={<CreditCard size={14} />} label="Billing" value={`${formatMoney(subscription?.amount_cents, subscription?.currency)} / month`} />
-          <DetailRow icon={<Sparkles size={14} />} label="Trial started" value={formatDate(data.trial.trial_starts_at)} />
+          <DetailRow icon={<CreditCard size={14} />} label="Billing model" value="Pay-As-You-Go" />
+          <DetailRow icon={<Sparkles size={14} />} label="Trial allowance" value="105 credits" />
         </div>
 
         <div className="rounded-lg border border-[#E2E5EA] bg-white p-5">

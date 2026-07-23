@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
-import type { PlanName } from "@/hooks/useSubscription"
 
 export type SettingsResponse = {
   account: {
@@ -8,7 +7,7 @@ export type SettingsResponse = {
     email: string
     is_verified: boolean
     account_type: "SINGLE" | "AGENCY"
-    plan: PlanName
+    plan: string
     created_at: string
     updated_at: string
   }

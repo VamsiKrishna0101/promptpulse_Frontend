@@ -6,6 +6,8 @@ import { useAuth } from './hooks/useAuth'
 const Navbar = lazy(() => import('./components/navbar/navbar').then(module => ({ default: module.Navbar })))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage').then(module => ({ default: module.LoginPage })))
 const SignupPage = lazy(() => import('./pages/auth/SignupPage').then(module => ({ default: module.SignupPage })))
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then(module => ({ default: module.ForgotPasswordPage })))
+const AgencyInvitationPage = lazy(() => import('./pages/auth/AgencyInvitationPage').then(module => ({ default: module.AgencyInvitationPage })))
 const AppShell = lazy(() => import('./components/layout/AppShell').then(module => ({ default: module.AppShell })))
 const OverviewTab = lazy(() => import('./tabs/overview/overview').then(module => ({ default: module.OverviewTab })))
 const PromptsTab = lazy(() => import('./tabs/prompts/prompts').then(module => ({ default: module.PromptsTab })))
@@ -21,6 +23,8 @@ const HelpTab = lazy(() => import('./tabs/help/HelpTab').then(module => ({ defau
 const OpportunitiesTab = lazy(() => import('./tabs/opportunities/OpportunitiesTab').then(module => ({ default: module.OpportunitiesTab })))
 const AIWorkspaceTab = lazy(() => import('./tabs/aiworkspace/AIWorkspaceTab').then(module => ({ default: module.AIWorkspaceTab })))
 const AdminTab = lazy(() => import('./tabs/admin/AdminTab').then(module => ({ default: module.AdminTab })))
+const BillingTab = lazy(() => import('./tabs/billing/BillingTab').then(module => ({ default: module.BillingTab })))
+const AgencyTab = lazy(() => import('./tabs/agency/AgencyTab').then(module => ({ default: module.AgencyTab })))
 const PricingPage = lazy(() => import('./pages/homepage/PricingPage').then(module => ({ default: module.PricingPage })))
 const BookDemoPage = lazy(() => import('./pages/homepage/BookDemoPage').then(module => ({ default: module.BookDemoPage })))
 const ProductPage = lazy(() => import('./pages/homepage/ProductPage').then(module => ({ default: module.ProductPage })))
@@ -60,6 +64,8 @@ function App() {
           <Route path="/changelog" element={<ChangelogPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/agency/invitations/:token" element={<AgencyInvitationPage />} />
           <Route
             path="/onboarding"
             element={
@@ -225,6 +231,26 @@ function App() {
             <ProtectedRoute>
               <AppShell>
                 <AdminTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/billing"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <BillingTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agency"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <AgencyTab />
               </AppShell>
             </ProtectedRoute>
           }

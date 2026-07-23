@@ -19,7 +19,7 @@ interface ChatMessage {
 const QUICK_QUESTIONS = [
   "What plan should I choose?",
   "Which AI engines do you track?",
-  "How does the 14-day trial work?",
+  "How does the 7-day trial work?",
   "How is PromptPulse different?",
 ]
 

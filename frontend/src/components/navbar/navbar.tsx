@@ -146,7 +146,7 @@ export function NavHeader() {
         <header className="sticky top-0 z-50 w-full">
             <div className="border-b border-black bg-black px-3 py-2 text-center text-[12px] font-bold leading-snug text-white sm:text-[13px]">
                 <a href="/signup" className="flex items-center justify-center gap-1.5 text-white no-underline transition hover:text-zinc-200">
-                    Track your brand across AI search - free for 14 days<ArrowRight className="h-3.5 w-3.5" />
+                    Track your brand across AI search - free for 7 days<ArrowRight className="h-3.5 w-3.5" />
                 </a>
             </div>
 

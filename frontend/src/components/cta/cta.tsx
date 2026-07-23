@@ -243,7 +243,7 @@ export function FinalCTA() {
               Ready to see what AI says about your brand?
             </h3>
             <div className="mt-3 grid gap-1.5 text-[13px] font-medium text-zinc-600 sm:grid-cols-3">
-              {["14-day trial", "Setup in minutes", "No fake dashboards"].map((item) => (
+              {["7-day trial", "Setup in minutes", "No fake dashboards"].map((item) => (
                 <div key={item} className="flex items-center gap-1.5">
                   <Check size={14} strokeWidth={2.5} className="text-zinc-950" />
                   {item}

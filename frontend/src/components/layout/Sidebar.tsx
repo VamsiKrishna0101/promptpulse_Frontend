@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import * as Tooltip from "@radix-ui/react-tooltip"
 import { useAuth } from "@/hooks/useAuth"
 import { useProjects } from "@/hooks/useProjects"
-import { PROJECT_LIMIT_BY_PLAN } from "@/pages/onboarding/types"
 import { countryByName, countryFlagUrl, countryLabel } from "@/lib/countries"
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -24,6 +23,7 @@ const icons = {
     chat: <O><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5Z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /></O>,
     profile: <O><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></O>,
     subscription: <O><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /><path d="M7 15h4" /><path d="M15 15h2" /></O>,
+    agency: <O><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M9 21v-7h6v7" /></O>,
     admin: <O><path d="M12 3l8 4v5c0 5-3.4 8.7-8 9-4.6-.3-8-4-8-9V7l8-4Z" /><path d="M9.5 12.5l1.6 1.6 3.6-4.1" /></O>,
     settings: <O><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></O>,
     help: <O><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></O>,
@@ -31,6 +31,7 @@ const icons = {
     plus: <O><path d="M12 5v14" /><path d="M5 12h14" /></O>,
     chevron: <O width="11" height="11"><polyline points="6 9 12 15 18 9" /></O>,
     check: <O width="12" height="12"><polyline points="20 6 9 17 4 12" /></O>,
+    billing: <O><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" /></O>,
 }
 
 // ── NavItem ───────────────────────────────────────────────────────────────────
@@ -153,7 +154,7 @@ function ProjectCountry({ location }: { location?: string | null }) {
 // ── Workspace switcher (custom dropdown, replaces native <select>) ───────────
 function WorkspaceSwitcher() {
     const { projects, selectedProject, selectProject } = useProjects()
-    const { user } = useAuth()
+    useAuth()
     const [open, setOpen] = useState(false)
     const [logoFailed, setLogoFailed] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
@@ -161,8 +162,7 @@ function WorkspaceSwitcher() {
     const logoSrc = logoFailed
         ? "/favicon.svg"
         : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(logoDomain)}&sz=64`
-    const projectLimit = PROJECT_LIMIT_BY_PLAN[user?.effective_plan ?? user?.plan ?? "FREE"]
-    const canAddProject = projects.length < projectLimit
+    const canAddProject = true
 
     useEffect(() => {
         function onClickOutside(e: MouseEvent) {
@@ -252,7 +252,7 @@ function WorkspaceSwitcher() {
                         >
                             <span className="flex-shrink-0 text-[#9EE6C8]">{icons.plus}</span>
                             <span className="min-w-0 flex-1 truncate">Add project</span>
-                            <span className="text-[10px] font-semibold text-[#9BA8B8]">{projects.length}/{projectLimit}</span>
+                            <span className="text-[10px] font-semibold text-[#9BA8B8]">Unlimited</span>
                         </Link>
                     ) : (
                         <button
@@ -261,8 +261,8 @@ function WorkspaceSwitcher() {
                             className="flex w-full cursor-not-allowed items-center gap-2 px-3 py-2 text-left text-[12.5px] font-semibold text-[#9BA8B8]"
                         >
                             <span className="flex-shrink-0">{icons.plus}</span>
-                            <span className="min-w-0 flex-1 truncate">Project limit reached</span>
-                            <span className="text-[10px]">{projects.length}/{projectLimit}</span>
+                            <span className="min-w-0 flex-1 truncate">Add another project</span>
+                            <span className="text-[10px]">PAYG</span>
                         </button>
                     )}
                 </div>
@@ -276,6 +276,15 @@ export function Sidebar() {
     const { logout, user } = useAuth()
     const navigate = useNavigate()
     const isAdmin = user?.role === "ADMIN"
+    const [creditsBalance, setCreditsBalance] = useState<number | null>(user?.credits_balance ?? null)
+
+    useEffect(() => {
+        import("@/lib/api").then(({ api }) => {
+            api.get<{ credits_balance: number; low_balance: boolean }>("/payments/balance")
+                .then(res => setCreditsBalance(res.data.credits_balance))
+                .catch(() => null)
+        })
+    }, [])
 
     return (
         <Tooltip.Provider delayDuration={50}>
@@ -338,8 +347,14 @@ export function Sidebar() {
 
                 <SectionLabel label="Settings" />
                 <NavItem icon={icons.profile} label="Profile" href="/profile" />
-                <NavItem icon={icons.subscription} label="Subscription" href="/subscription" />
+                <NavItem
+                    icon={icons.billing}
+                    label="Billing & Credits"
+                    href="/billing"
+                    badge={creditsBalance !== null ? `${creditsBalance.toLocaleString()} cr` : undefined}
+                />
                 <NavItem icon={icons.settings} label="Settings" href="/settings" />
+                {user?.account_type === "AGENCY" && <NavItem icon={icons.agency} label="Agency" href="/agency" />}
                 {isAdmin && <NavItem icon={icons.admin} label="Admin Panel" href="/admin" badge="Admin" />}
             </nav>
 

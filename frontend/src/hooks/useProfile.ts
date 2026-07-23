@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
-import type { PlanName } from "@/hooks/useSubscription"
 
 export type ProfileResponse = {
   user: {
@@ -8,8 +7,8 @@ export type ProfileResponse = {
     email: string
     is_verified: boolean
     account_type: "SINGLE" | "AGENCY"
-    plan: PlanName
-    effective_plan?: PlanName
+    plan: "PAYG"
+    effective_plan?: "PAYG"
     created_at: string
   }
   projects: {
@@ -20,24 +19,9 @@ export type ProfileResponse = {
     created_at: string
     updated_at: string
   }[]
-  subscription: {
-    id: string
-    plan: PlanName
-    status: string
-    amount_cents: number
-    currency: string
-    current_period_start: string | null
-    current_period_end: string | null
-    cancel_at_period_end: boolean
-    trial_starts_at: string | null
-    trial_ends_at: string | null
-    created_at: string
-  } | null
-  trial: {
-    trial_starts_at: string | null
-    trial_ends_at: string | null
-    trial_active: boolean
-    trial_days_left: number
+  wallet: {
+    balance: number
+    used: number
   }
   usage: {
     prompt_count: number

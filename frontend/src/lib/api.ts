@@ -70,4 +70,8 @@ function expireLocalSession() {
   localStorage.removeItem("promptpulse_user")
   localStorage.removeItem("promptpulse_selected_project_id")
   window.dispatchEvent(new CustomEvent("promptpulse:auth-expired"))
+  const publicAuthPaths = ["/login", "/signup", "/forgot-password"]
+  if (!publicAuthPaths.includes(window.location.pathname)) {
+    window.location.assign("/login?session=expired")
+  }
 }

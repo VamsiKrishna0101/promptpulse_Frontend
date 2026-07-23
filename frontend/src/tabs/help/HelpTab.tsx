@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     question: "How often is visibility data refreshed?",
-    answer: "Refresh frequency depends on your plan. Starter has weekly refresh capacity, while Growth and Pro are designed for daily monitoring.",
+    answer: "All accounts get daily refresh. There are no plan-based refresh limits — your data is always kept up to date automatically.",
   },
   {
     question: "Why does Sara need project data first?",
@@ -54,7 +54,7 @@ const FAQS = [
   },
   {
     question: "How does billing and trial work?",
-    answer: "New subscriptions start with a 14-day trial. After that, billing follows the plan selected in Stripe unless cancelled before renewal.",
+    answer: "PromptPulse is credit-first. Starter, Growth, and Pro are monthly credit bundles with the full product included; Growth and Pro include bonus credits. Your 7-day trial includes 5 prompts across 3 engines, 2 AI reports, and limited Sara access. Top up anytime via UPI or card with Razorpay.",
   },
 ]
 

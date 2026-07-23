@@ -408,11 +408,11 @@ export function SettingsTab() {
                 Choose which AI engines PromptPulse tracks for <span className="font-semibold text-[#344054]">{selectedProject.brand_name}</span>.
                 {enginesData && (
                   <span className="ml-1">
-                    Your plan allows{" "}
+                    Your workspace can track{" "}
                     <span className="font-semibold text-[#344054]">
                       {enginesData.limit === "all" ? "all 5" : `up to ${enginesData.limit}`}
                     </span>{" "}
-                    engines.
+                    engines. Trial workspaces start with 3 engines; add credits to unlock the full set.
                   </span>
                 )}
               </p>

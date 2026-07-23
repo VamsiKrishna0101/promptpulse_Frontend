@@ -5,10 +5,11 @@ import { ResourceCard, ResourceShell, SectionTitle } from "./ResourceShared"
 
 const faqs = [
   ["What does PromptPulse track?", "Brand mentions, visibility, answer position, sentiment, competitors, cited sources, and improvement opportunities across AI engines."],
-  ["Which models are included?", "Starter focuses on ChatGPT, Gemini, and Perplexity. Growth and Pro add higher-tier AI search surfaces like Google AI experiences and Copilot."],
+  ["Which models are included?", "All 5 AI surfaces are included for every account — ChatGPT, Gemini, Perplexity, Google AI Mode, and Copilot. There are no per-plan model restrictions."],
   ["When does Sara work?", "Sara is most useful after the project has enough evidence, usually at least seven days of prompt and answer data."],
   ["Do I need technical setup?", "No heavy setup is needed for visibility tracking. Add your brand, competitors, prompts, and sources, then start collecting evidence."],
 ]
+
 
 export function PublicHelpPage() {
   const { isAuthenticated } = useAuth()
@@ -41,7 +42,7 @@ export function PublicHelpPage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white"><ShieldCheck size={18} /></div>
               <div>
                 <p className="text-[15px] font-black text-zinc-950">Trial and billing</p>
-                <p className="mt-1 text-[12px] font-medium text-zinc-600">Start with a 14-day trial and upgrade when the data is useful.</p>
+                <p className="mt-1 text-[12px] font-medium text-zinc-600">Start with a 7-day trial and upgrade when the data is useful.</p>
               </div>
             </div>
           </div>

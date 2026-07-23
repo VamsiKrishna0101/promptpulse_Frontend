@@ -1,6 +1,6 @@
 import { Check, Cpu, Lock } from "lucide-react"
 import { faviconUrl } from "@/lib/aiModels"
-import type { Plan, ProjectEngine } from "../types"
+import type { ProjectEngine } from "../types"
 
 type EngineOption = {
   id: ProjectEngine
@@ -26,12 +26,10 @@ function engineLimitLabel(limit: number | "all") {
 export function EngineSelectionCard({
   selected,
   limit,
-  plan,
   onToggle,
 }: {
   selected: ProjectEngine[]
   limit: number | "all"
-  plan: Plan
   onToggle: (engine: ProjectEngine) => void
 }) {
   const numericLimit = limit === "all" ? ENGINE_OPTIONS.length : limit
@@ -49,7 +47,7 @@ export function EngineSelectionCard({
             Choose where PromptPulse should track your brand.
           </h2>
           <p className="mt-1.5 max-w-2xl text-[13px] font-medium leading-6 text-[#52525b]">
-            Your {plan.toLowerCase()} plan can track {engineLimitLabel(limit)} per project. We recommend ChatGPT, Gemini, and Perplexity for the first benchmark.
+            Your PAYG workspace can track {engineLimitLabel(limit)} per project. We recommend ChatGPT, Gemini, and Perplexity for the first benchmark.
           </p>
         </div>
 

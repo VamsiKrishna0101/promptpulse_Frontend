@@ -198,21 +198,26 @@ function BrandFilterIcon({ domain, name }: { domain?: string | null; name: strin
 
 function CreditsPill() {
   const { data, isLoading } = useSubscription()
-  const remaining = data?.usage.credits_remaining ?? 0
-  const total = data?.limits.credits ?? 0
-  const plan = data?.plan ?? "FREE"
+  const balance = data?.credits_balance ?? 0
+  const isLow = data?.low_balance ?? false
 
   return (
     <div
-      title={isLoading ? "Loading credits" : `${remaining} of ${total} credits remaining on ${plan}`}
-      className="flex h-8 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 text-[12px] font-semibold text-amber-900 shadow-sm"
+      title={isLoading ? "Loading credits" : `${balance.toLocaleString()} credits remaining`}
+      className={[
+        "flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold shadow-sm",
+        isLow
+          ? "border-red-200 bg-red-50 text-red-900"
+          : "border-amber-200 bg-amber-50 text-amber-900",
+      ].join(" ")}
     >
-      <Coins size={13} className="text-amber-600" />
-      <span>{isLoading ? "Credits" : `${remaining}/${total}`}</span>
+      <Coins size={13} className={isLow ? "text-red-500" : "text-amber-600"} />
+      <span>{isLoading ? "Credits" : balance.toLocaleString()}</span>
       <span className="hidden text-amber-700 sm:inline">credits</span>
     </div>
   )
 }
+
 
 function AppShellContent({ children }: { children: ReactNode }) {
   const { projects, selectedProject, isLoading } = useProjects()

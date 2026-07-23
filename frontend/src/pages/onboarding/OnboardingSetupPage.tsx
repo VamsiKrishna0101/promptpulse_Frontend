@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import type { FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowRight, Loader2, Rocket, ShieldCheck, Upload } from "lucide-react"
-import { useAuth } from "@/hooks/useAuth"
 import { useToast } from "@/components/ui/Toast"
 import { GEO_COUNTRIES, countryFlagUrl } from "@/lib/countries"
 import { BrandReviewCard } from "./components/BrandReviewCard"
@@ -12,18 +11,15 @@ import { SetupProgress } from "./components/SetupProgress"
 import {
   createProject,
   enqueueInitialRun,
-  getPlanQuota,
   generatePrompts,
   researchBrand,
 } from "./onboardingApi"
-import type { PlanQuota } from "./onboardingApi"
 import type {
   BrandResearchData,
   BrandResearchResult,
   ProjectEngine,
   SuggestedPrompt,
 } from "./types"
-import { PROMPT_LIMIT_BY_PLAN, PROJECT_LIMIT_BY_PLAN } from "./types"
 
 type Step = "brand" | "review" | "prompts" | "engines" | "launch"
 
@@ -36,7 +32,6 @@ const stepIndex: Record<Step, number> = {
 }
 
 export function OnboardingSetupPage() {
-  const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -53,47 +48,14 @@ export function OnboardingSetupPage() {
   const [customBrief, setCustomBrief] = useState("")
   const [customPromptText, setCustomPromptText] = useState("")
   const [customPromptTopic, setCustomPromptTopic] = useState("Custom")
-  const [quota, setQuota] = useState<PlanQuota | null>(null)
-  const [isQuotaLoading, setIsQuotaLoading] = useState(true)
-
-  const plan = user?.plan ?? "FREE"
-  const totalPromptLimit = quota?.limits.prompts ?? PROMPT_LIMIT_BY_PLAN[plan]
-  const promptLimit = quota?.remaining.prompts ?? totalPromptLimit
-  const projectLimit = quota?.limits.projects ?? PROJECT_LIMIT_BY_PLAN[plan]
-  const engineLimit = quota?.limits.engine_limit ?? 3
-  const projectCount = quota?.usage.project_count ?? 0
-  const canCreateProject = (quota?.remaining.projects ?? Math.max(0, projectLimit - projectCount)) > 0
+  const promptLimit = 999999
+  const engineLimit = "all" as const
+  const canCreateProject = true
 
   const selectedPrompts = useMemo(
     () => prompts.filter((_, index) => selected.has(index)),
     [prompts, selected],
   )
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadQuota() {
-      setIsQuotaLoading(true)
-      try {
-        const nextQuota = await getPlanQuota()
-        if (!cancelled) setQuota(nextQuota)
-      } catch (error) {
-        toast({
-          title: "Plan usage unavailable",
-          description: getErrorMessage(error, "We could not load your plan capacity yet."),
-          type: "warning",
-        })
-      } finally {
-        if (!cancelled) setIsQuotaLoading(false)
-      }
-    }
-
-    void loadQuota()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   async function handleResearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -294,13 +256,13 @@ export function OnboardingSetupPage() {
 
               <div className="mt-4 flex flex-wrap gap-2 text-[11.5px] font-semibold text-[#52525b]">
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  Projects {projectCount} / {projectLimit}
+                  Unlimited projects
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  Prompts {quota?.usage.prompt_count ?? 0} / {totalPromptLimit}
+                  Unlimited prompts
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  {promptLimit} prompts available
+                  Credits apply only to paid actions
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
                   {engineLimit === "all" ? "All engines" : `${engineLimit} engines`} per project
@@ -310,11 +272,9 @@ export function OnboardingSetupPage() {
           </div>
         </header>
 
-        {!isQuotaLoading && !canCreateProject && (
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] font-medium leading-6 text-amber-800">
-            Your {plan} plan already has {projectCount} / {projectLimit} projects. Upgrade or remove a project before adding another.
-          </section>
-        )}
+        <section className="rounded-2xl border border-[#DDE4EE] bg-[#F8FAFC] px-4 py-3 text-[12.5px] font-medium leading-6 text-[#667085]">
+          Pay-As-You-Go workspace · all projects, prompts, and engines are available without subscription tiers.
+        </section>
 
         {step === "brand" && canCreateProject && (
           <form
@@ -399,9 +359,6 @@ export function OnboardingSetupPage() {
               prompts={prompts}
               selected={selected}
               limit={promptLimit}
-              plan={plan}
-              totalLimit={totalPromptLimit}
-              usedAcrossProjects={quota?.usage.prompt_count ?? 0}
               onToggle={togglePrompt}
               onSelectionChange={setSelected}
               customPromptText={customPromptText}
@@ -431,7 +388,6 @@ export function OnboardingSetupPage() {
             <EngineSelectionCard
               selected={selectedEngines}
               limit={engineLimit}
-              plan={plan}
               onToggle={toggleEngine}
             />
 

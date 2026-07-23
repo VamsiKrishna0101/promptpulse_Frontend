@@ -27,13 +27,13 @@ export function SupportContextCard({
             <p className="mt-4 text-[11px] font-black uppercase tracking-[0.16em] text-[#12A875]">Support context</p>
             <h3 className="mt-1 text-[18px] font-black tracking-[-0.02em] text-[#101828]">Account-aware help</h3>
             <p className="mt-2 text-[12.5px] leading-5 text-[#667085]">
-              The agent can read your plan, usage, selected project, and support history. It cannot change billing or modify data.
+              The agent can read your wallet usage, selected project, and support history. It cannot change billing or modify data.
             </p>
           </div>
         </div>
 
         <div className="grid border-t border-[#EEF2F6]">
-          <ContextRow icon={<CreditCard size={15} />} label="Plan" value={plan ?? "FREE"} />
+          <ContextRow icon={<CreditCard size={15} />} label="Billing model" value={plan ?? "PAYG"} />
           <ContextRow icon={<Sparkles size={15} />} label="Email" value={email ?? "Signed in"} />
           <ContextRow icon={<Layers3 size={15} />} label="Project" value={selectedProject?.brand_name ?? "No project selected"} />
           <ContextRow icon={<MapPin size={15} />} label="Market" value={selectedProject?.brand_location ?? "Not selected"} />

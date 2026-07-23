@@ -9,6 +9,7 @@ type User = {
   effective_plan?: "FREE" | "STARTER" | "GROWTH" | "PRO"
   role?: "USER" | "ADMIN"
   is_verified?: boolean
+  credits_balance?: number
 }
 
 type AuthContextValue = {

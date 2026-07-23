@@ -7,9 +7,6 @@ export function PromptSelectionCard({
   prompts,
   selected,
   limit,
-  plan,
-  totalLimit,
-  usedAcrossProjects,
   onToggle,
   onSelectionChange,
   customPromptText,
@@ -23,9 +20,6 @@ export function PromptSelectionCard({
   prompts: SuggestedPrompt[]
   selected: Set<number>
   limit: number
-  plan: string
-  totalLimit?: number
-  usedAcrossProjects?: number
   onToggle: (index: number) => void
   onSelectionChange: (indices: Set<number>) => void
   customPromptText: string
@@ -76,9 +70,9 @@ export function PromptSelectionCard({
             <CheckCheck size={13} /> Balance across topics
           </button>
           <div className="rounded-xl border border-[#e4e4e7] bg-white px-4 py-2 text-right">
-            <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-[#a1a1aa]">{plan} active pool</p>
-            <p className="mt-0.5 text-[22px] font-semibold tracking-[-0.04em] text-[#18181b]">{selected.size} / {limit}</p>
-            {typeof totalLimit === "number" && typeof usedAcrossProjects === "number" && <p className="text-[10px] text-[#71717a]">{usedAcrossProjects} / {totalLimit} already active</p>}
+            <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-[#a1a1aa]">PAYG active pool</p>
+            <p className="mt-0.5 text-[22px] font-semibold tracking-[-0.04em] text-[#18181b]">{selected.size} selected</p>
+            <p className="text-[10px] text-[#71717a]">No subscription prompt cap</p>
           </div>
         </div>
       </div>

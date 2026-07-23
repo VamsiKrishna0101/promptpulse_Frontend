@@ -1,137 +1,47 @@
+/**
+ * useSubscription.ts
+ * Simplified to PAYG — fetches credit balance and transaction history.
+ * The old Stripe plan/checkout/invoice API calls are removed.
+ */
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 
-export type PlanName = "FREE" | "STARTER" | "GROWTH" | "PRO"
-export type BillingInterval = "monthly" | "annual"
-
-export type BillingInvoice = {
-  id: string
-  invoice_number: string | null
-  status: string
-  currency: string
-  amount_paid: number
-  created_at: string
-  hosted_invoice_url: string | null
-  invoice_pdf_url: string | null
+export type CreditTransaction = {
+  id:          string
+  amount:      number
+  action:      string
+  description: string | null
+  created_at:  string
 }
 
-export type PlanLimits = {
-  projects: number
-  prompts: number
-  competitors: number | "unlimited"
-  refreshes_per_week: number | "daily"
-  sara: "none" | "basic" | "full" | "advanced"
-  exports: "none" | "basic" | "full"
-  credits: number
-  engine_limit: number | "all"
-}
-
-export type MyPlanResponse = {
-  plan: PlanName
-  effective_plan: PlanName
-  status: string
-  subscription: {
-    id: string
-    plan: PlanName
-    status: string
-    current_period_start: string | null
-    current_period_end: string | null
-    cancel_at_period_end: boolean
-    trial_starts_at: string | null
-    trial_ends_at: string | null
-  } | null
-  trial: {
-    active: boolean
-    expired: boolean
-    starts_at: string | null
-    ends_at: string | null
-    days_left: number
-  }
-  limits: PlanLimits
-  usage: {
-    prompt_count: number
-    project_count: number
-    competitor_count: number
-    monthly_runs_used: number
-    credits_used: number
-    credits_remaining: number
-    period_start: string | null
-    period_end: string | null
-  }
+export type BalanceData = {
+  credits_balance: number
+  low_balance:     boolean
 }
 
 export function useSubscription() {
-  const [data, setData] = useState<MyPlanResponse | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [checkoutPlan, setCheckoutPlan] = useState<PlanName | null>(null)
+  const [data, setData]         = useState<BalanceData | null>(null)
+  const [isLoading, setLoading] = useState(true)
+  const [error, setError]       = useState<string | null>(null)
 
   async function refresh() {
-    setIsLoading(true)
+    setLoading(true)
     setError(null)
     try {
-      const response = await api.get<MyPlanResponse>("/subscription/me")
-      setData(response.data)
+      const res = await api.get<BalanceData>("/payments/balance")
+      setData(res.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load subscription")
+      setError(err instanceof Error ? err.message : "Failed to load balance")
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
-  }
-
-  async function startCheckout(plan: Exclude<PlanName, "FREE">, billingInterval: BillingInterval) {
-    setCheckoutPlan(plan)
-    setError(null)
-    try {
-      const response = await api.post<{ checkout_url: string }>("/subscription/create", {
-        plan,
-        billing_interval: billingInterval,
-        request_id: crypto.randomUUID(),
-      })
-      window.location.href = response.data.checkout_url
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start checkout")
-    } finally {
-      setCheckoutPlan(null)
-    }
-  }
-
-  async function verifyCheckout(sessionId: string) {
-    const response = await api.get<{ status: string; payment_status: string; plan: PlanName | null }>(`/subscription/checkout/${encodeURIComponent(sessionId)}`)
-    await refresh()
-    return response.data
-  }
-
-  async function openBillingPortal() {
-    const response = await api.post<{ url: string }>("/subscription/portal")
-    window.location.href = response.data.url
-  }
-
-  async function getInvoices() {
-    const response = await api.get<{ invoices: BillingInvoice[] }>("/subscription/invoices")
-    return response.data.invoices
   }
 
   useEffect(() => {
     void refresh()
-
-    function handleCreditsChanged() {
-      void refresh()
-    }
-
-    window.addEventListener("credits:changed", handleCreditsChanged)
-    return () => window.removeEventListener("credits:changed", handleCreditsChanged)
+    window.addEventListener("credits:changed", () => void refresh())
+    return () => window.removeEventListener("credits:changed", () => void refresh())
   }, [])
 
-  return {
-    data,
-    isLoading,
-    error,
-    checkoutPlan,
-    refresh,
-    startCheckout,
-    verifyCheckout,
-    openBillingPortal,
-    getInvoices,
-  }
+  return { data, isLoading, error, refresh }
 }
