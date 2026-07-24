@@ -71,7 +71,7 @@ function FilterDropdown({
   }
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative z-[80]" ref={ref}>
       <button
         onClick={() => setOpen(o => !o)}
         className={[
@@ -91,7 +91,7 @@ function FilterDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-50 min-w-[160px] rounded-xl border border-zinc-200 bg-white py-1 shadow-[0_4px_20px_rgba(0,0,0,0.10)]">
+        <div className="absolute left-0 top-[calc(100%+4px)] z-[120] min-w-[160px] rounded-xl border border-zinc-200 bg-white py-1 shadow-[0_4px_20px_rgba(0,0,0,0.10)]">
           <button
             onClick={() => pick("")}
             className="flex w-full items-center justify-between px-3 py-1.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50"
@@ -141,7 +141,7 @@ function AdvancedFiltersButton({
   }, [])
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative z-[80]" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen(value => !value)}
@@ -153,7 +153,7 @@ function AdvancedFiltersButton({
         <ChevronDown size={11} />
       </button>
       {open && (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-50 w-[278px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.14)]">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-[120] w-[278px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.14)]">
           <div className="mb-2 flex items-center justify-between px-1">
             <div>
               <p className="text-[12px] font-bold text-zinc-900">Refine the view</p>
@@ -281,10 +281,10 @@ function AppShellContent({ children }: { children: ReactNode }) {
 
         {/* Top filters */}
         {showTopbar && (
-        <div className="premium-topbar z-40 min-w-0 flex-shrink-0">
+        <div className="premium-topbar relative z-[70] min-w-0 flex-shrink-0">
           {/* Filter bar */}
-          <div data-product-tour-id="top-filters" className="premium-filterbar flex min-w-0 flex-nowrap items-center gap-2 overflow-hidden px-3 py-2.5 lg:px-4 lg:py-3 xl:px-5">
-            <div className="topbar-controls flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden scrollbar-none">
+          <div data-product-tour-id="top-filters" className="premium-filterbar flex min-w-0 flex-nowrap items-center gap-2 overflow-visible px-3 py-2.5 lg:px-4 lg:py-3 xl:px-5">
+            <div className="topbar-controls flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-visible scrollbar-none">
             {filtersEnabled && (
               <>
               {/* Brand chip — static, always active */}
