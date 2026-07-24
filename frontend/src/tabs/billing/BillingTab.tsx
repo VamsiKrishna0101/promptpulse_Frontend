@@ -25,6 +25,13 @@ type Transaction = {
   amount: number
   action: string
   description: string | null
+  metadata?: {
+    run_id?: string
+    batch_id?: string
+    source?: string
+    successful_checks?: number
+    engines?: string[]
+  } | null
   created_at: string
 }
 
@@ -100,10 +107,14 @@ export function BillingTab() {
   const [balance, setBalance]           = useState<BalanceResponse | null>(null)
   const [packs, setPacks]               = useState<CreditPack[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [deductions, setDeductions]     = useState<Transaction[]>([])
   const [total, setTotal]               = useState(0)
+  const [deductionTotal, setDeductionTotal] = useState(0)
   const [page, setPage]                 = useState(1)
   const [loading, setLoading]           = useState(true)
   const [loadError, setLoadError]       = useState<string | null>(null)
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false)
+  const [deductionsLoading, setDeductionsLoading] = useState(false)
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null)
   const [customCredits, setCustomCredits] = useState("1000")
   const [activePlan, setActivePlan] = useState<PaidPlan | null>(() => {
@@ -126,6 +137,17 @@ export function BillingTab() {
     setTransactions(res.data.transactions ?? [])
     setTotal(res.data.total ?? 0)
     setPage(p)
+  }, [])
+
+  const fetchDeductions = useCallback(async () => {
+    setDeductionsLoading(true)
+    try {
+      const res = await api.get<{ transactions: Transaction[]; total: number }>("/payments/transactions?days=30&type=debit&page=1&limit=100")
+      setDeductions(res.data.transactions ?? [])
+      setDeductionTotal(res.data.total ?? 0)
+    } finally {
+      setDeductionsLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -199,6 +221,11 @@ export function BillingTab() {
     } finally {
       setPurchaseLoading(null)
     }
+  }
+
+  async function openCreditsModal() {
+    setCreditsModalOpen(true)
+    await fetchDeductions()
   }
 
   async function handlePlanPurchase(plan: PaidPlan) {
@@ -302,8 +329,23 @@ export function BillingTab() {
         <div className="relative grid gap-6 lg:grid-cols-[1.1fr_1.9fr] lg:items-center">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700">Available wallet</p>
-            <p className="mt-2 text-5xl font-bold tracking-[-0.05em] text-slate-950 sm:text-6xl">{(balance?.credits_balance ?? 0).toLocaleString()}<span className="ml-2 text-xl font-semibold tracking-normal text-slate-400">credits</span></p>
+            <button
+              type="button"
+              onClick={() => void openCreditsModal()}
+              className="mt-2 block text-left transition hover:opacity-80"
+              aria-label="View deducted credits from the last 30 days"
+            >
+              <span className="text-5xl font-bold tracking-[-0.05em] text-slate-950 sm:text-6xl">{(balance?.credits_balance ?? 0).toLocaleString()}</span>
+              <span className="ml-2 text-xl font-semibold tracking-normal text-slate-400">credits</span>
+            </button>
             <p className="mt-2 text-sm text-slate-500">Use your balance across brands, prompts, and engines.</p>
+            <button
+              type="button"
+              onClick={() => void openCreditsModal()}
+              className="mt-3 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-sky-700 hover:border-sky-200 hover:bg-sky-50"
+            >
+              View deductions
+            </button>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-amber-100 bg-amber-50/70 p-4"><p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">Starter</p><p className="mt-2 text-sm font-semibold text-slate-800">Resets monthly</p><p className="mt-1 text-xs leading-5 text-slate-500">Unused included credits expire at period end.</p></div>
@@ -508,6 +550,83 @@ export function BillingTab() {
           </div>
         )}
       </div>
+
+      {creditsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700">Last 30 days</p>
+                <h3 className="mt-1 text-xl font-bold tracking-[-0.03em] text-slate-950">Deducted credits</h3>
+                <p className="mt-1 text-sm text-slate-500">Only usage deductions are shown here. Top-ups and plan credits are excluded.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCreditsModalOpen(false)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+            <div className="max-h-[62vh] overflow-auto p-6">
+              {deductionsLoading ? (
+                <div className="flex h-32 items-center justify-center">
+                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                </div>
+              ) : deductions.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+                  <p className="text-sm font-bold text-slate-700">No credit deductions in the last 30 days.</p>
+                  <p className="mt-1 text-xs text-slate-500">Successful daily runs and paid actions will appear here.</p>
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-slate-200">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <th className="px-4 py-3 text-left">Reason</th>
+                        <th className="px-4 py-3 text-left">Details</th>
+                        <th className="px-4 py-3 text-right">Credits</th>
+                        <th className="px-4 py-3 text-right">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deductions.map((tx, index) => (
+                        <tr key={tx.id} className={`border-b border-slate-100 ${index % 2 === 0 ? "bg-white" : "bg-slate-50/60"}`}>
+                          <td className="px-4 py-3 font-semibold text-slate-800">{tx.description ?? tx.action}</td>
+                          <td className="px-4 py-3 text-xs text-slate-500">
+                            {formatDeductionDetails(tx)}
+                          </td>
+                          <td className="px-4 py-3 text-right font-bold tabular-nums text-rose-600">{tx.amount}</td>
+                          <td className="px-4 py-3 text-right text-xs font-semibold text-slate-500">
+                            {new Date(tx.created_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
+              <p className="text-xs font-semibold text-slate-500">{deductionTotal.toLocaleString("en-IN")} deduction record{deductionTotal === 1 ? "" : "s"} in 30 days</p>
+              <p className="text-sm font-bold text-slate-950">
+                {deductions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0).toLocaleString("en-IN")} credits used
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function formatDeductionDetails(tx: Transaction) {
+  const metadata = tx.metadata
+  if (!metadata) return tx.action
+  const parts = [
+    metadata.successful_checks ? `${metadata.successful_checks} successful checks` : null,
+    metadata.engines?.length ? metadata.engines.join(", ") : null,
+    metadata.source === "brightdata_batch" ? "BrightData daily run" : metadata.source,
+  ].filter(Boolean)
+  return parts.length ? parts.join(" · ") : tx.action
 }
