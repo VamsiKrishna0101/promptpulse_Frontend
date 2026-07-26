@@ -13,6 +13,7 @@ const OverviewTab = lazy(() => import('./tabs/overview/overview').then(module =>
 const PromptsTab = lazy(() => import('./tabs/prompts/prompts').then(module => ({ default: module.PromptsTab })))
 const PromptDetailTab = lazy(() => import('./tabs/prompts/PromptDetailTab').then(module => ({ default: module.PromptDetailTab })))
 const SourcesTab = lazy(() => import('./tabs/sources/SourcesTab').then(module => ({ default: module.SourcesTab })))
+const SeoTab = lazy(() => import('./tabs/seo/SeoTab').then(module => ({ default: module.SeoTab })))
 const CompetitorsTab = lazy(() => import('./tabs/competitors/CompetitorsTab').then(module => ({ default: module.CompetitorsTab })))
 const WebAnalyticsTab = lazy(() => import('./tabs/webanalytics/WebAnalyticsTab').then(module => ({ default: module.WebAnalyticsTab })))
 const ChatHistoryPage = lazy(() => import('./tabs/chat/ChatHistoryPage').then(module => ({ default: module.ChatHistoryPage })))
@@ -151,6 +152,16 @@ function App() {
             <ProtectedRoute>
               <AppShell>
                 <SourcesTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seo"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <SeoTab />
               </AppShell>
             </ProtectedRoute>
           }

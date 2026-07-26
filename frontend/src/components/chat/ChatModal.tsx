@@ -97,6 +97,21 @@ function cleanRawResponse(value: string) {
     return text
 }
 
+function sourceRankLabel(source: NonNullable<RecentChat["sources"]>[number]) {
+    const rank = source.answer_position ?? source.source_position ?? null
+    const prefix = source.is_cited ? "Cited" : "Search"
+    return rank ? `${prefix} #${rank}` : prefix
+}
+
+function sourceRankTitle(source: NonNullable<RecentChat["sources"]>[number]) {
+    const parts = [
+        source.is_cited ? "Directly cited by the AI answer" : "Returned as a supporting search source",
+        source.answer_position ? `answer position #${source.answer_position}` : null,
+        source.source_position ? `source rank #${source.source_position}` : null,
+    ].filter(Boolean)
+    return parts.join(" · ")
+}
+
 function isDividerOnly(value: string) {
     const compact = value.replace(/\s/g, "")
     return compact.length >= 3 && /^[-*_]+$/.test(compact)
@@ -799,13 +814,31 @@ export function ChatModal({ chat, onClose }: { chat: RecentChat; onClose: () => 
                                             </div>
 
                                             <div className="min-w-0 flex-1">
-                                                <p className="line-clamp-1 text-[12px] font-semibold leading-5 text-[#27272a]">
-                                                    {source.title || source.domain}
-                                                </p>
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <p className="line-clamp-1 min-w-0 text-[12px] font-semibold leading-5 text-[#27272a]">
+                                                        {source.title || source.domain}
+                                                    </p>
+                                                    <span
+                                                        title={sourceRankTitle(source)}
+                                                        className={cn(
+                                                            "shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]",
+                                                            source.is_cited
+                                                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                                                                : "bg-sky-50 text-sky-700 ring-1 ring-sky-200",
+                                                        )}
+                                                    >
+                                                        {sourceRankLabel(source)}
+                                                    </span>
+                                                </div>
 
                                                 <p className="line-clamp-2 break-all text-[11px] font-medium leading-4 text-[#a1a1aa]">
                                                     {source.url || source.domain}
                                                 </p>
+                                                {source.snippet && (
+                                                    <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-4 text-[#71717a]">
+                                                        {source.snippet}
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <ArrowUpRight

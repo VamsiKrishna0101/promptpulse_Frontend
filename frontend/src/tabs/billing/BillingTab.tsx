@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
+import { useSearchParams } from "react-router-dom"
 import { api } from "@/lib/api"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -111,9 +112,12 @@ export function BillingTab() {
   const [total, setTotal]               = useState(0)
   const [deductionTotal, setDeductionTotal] = useState(0)
   const [page, setPage]                 = useState(1)
+  const [deductionsPage, setDeductionsPage] = useState(1)
   const [loading, setLoading]           = useState(true)
   const [loadError, setLoadError]       = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
   const [creditsModalOpen, setCreditsModalOpen] = useState(false)
+  const autoOpened = useRef(false)
   const [deductionsLoading, setDeductionsLoading] = useState(false)
   const [deductionsError, setDeductionsError] = useState<string | null>(null)
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null)
@@ -140,13 +144,14 @@ export function BillingTab() {
     setPage(p)
   }, [])
 
-  const fetchDeductions = useCallback(async () => {
+  const fetchDeductions = useCallback(async (p = 1) => {
     setDeductionsLoading(true)
     setDeductionsError(null)
     try {
-      const res = await api.get<{ transactions: Transaction[]; total: number }>("/payments/transactions?days=30&type=debit&page=1&limit=100")
+      const res = await api.get<{ transactions: Transaction[]; total: number }>(`/payments/transactions?days=30&type=debit&page=${p}&limit=10`)
       setDeductions(res.data.transactions ?? [])
       setDeductionTotal(res.data.total ?? 0)
+      setDeductionsPage(p)
     } catch (error) {
       console.error("Credit deductions failed to load", error)
       setDeductions([])
@@ -172,10 +177,20 @@ export function BillingTab() {
         setLoadError("Billing routes are not available on this backend deployment yet. Please redeploy the latest backend image.")
       } finally {
         setLoading(false)
+        if (searchParams.get("showDeductions") === "true" && !autoOpened.current) {
+          autoOpened.current = true
+          setCreditsModalOpen(true)
+          void fetchDeductions(1)
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev)
+            next.delete("showDeductions")
+            return next
+          }, { replace: true })
+        }
       }
     }
     void init()
-  }, [fetchBalance, fetchTransactions])
+  }, [fetchBalance, fetchTransactions, searchParams, fetchDeductions, setSearchParams])
 
   async function handlePurchase(pack: CreditPack, customAmount?: number) {
     if (!razorpayReady || !window.Razorpay) { alert("Razorpay is still loading. Please wait a moment."); return }
@@ -232,7 +247,7 @@ export function BillingTab() {
 
   async function openCreditsModal() {
     setCreditsModalOpen(true)
-    await fetchDeductions()
+    await fetchDeductions(1)
   }
 
   async function handlePlanPurchase(plan: PaidPlan) {
@@ -625,6 +640,23 @@ export function BillingTab() {
                 </div>
               )}
             </div>
+            {!deductionsLoading && !deductionsError && deductions.length > 0 && Math.ceil(deductionTotal / 10) > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-3">
+                <p className="text-xs text-slate-500">Page {deductionsPage} of {Math.ceil(deductionTotal / 10)}</p>
+                <div className="flex gap-2">
+                  <button
+                    disabled={deductionsPage <= 1}
+                    onClick={() => void fetchDeductions(deductionsPage - 1)}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                  >← Prev</button>
+                  <button
+                    disabled={deductionsPage >= Math.ceil(deductionTotal / 10)}
+                    onClick={() => void fetchDeductions(deductionsPage + 1)}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                  >Next →</button>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-4">
               <p className="text-xs font-semibold text-slate-500">{deductionTotal.toLocaleString("en-IN")} deduction record{deductionTotal === 1 ? "" : "s"} in 30 days</p>
               <p className="text-sm font-bold text-slate-950">
@@ -639,8 +671,13 @@ export function BillingTab() {
 }
 
 function formatDeductionDetails(tx: Transaction) {
-  const metadata = tx.metadata
+  const metadata = tx.metadata as any
   if (!metadata) return tx.action
+
+  if (tx.action === "seo_audit" && metadata.url) {
+    return `Audit: ${metadata.url.replace(/^https?:\/\//, "")}`
+  }
+
   const parts = [
     metadata.successful_checks ? `${metadata.successful_checks} successful checks` : null,
     metadata.engines?.length ? metadata.engines.join(", ") : null,

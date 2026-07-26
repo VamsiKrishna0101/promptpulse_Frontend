@@ -79,9 +79,41 @@ function sourceType(type?: string | null) {
   return type?.toUpperCase() || "OTHER"
 }
 
+type SourceActionability = "HIGH" | "MEDIUM" | "LOW" | "MONITOR"
+
+function sourceActionability(domain: string, type?: string | null): { label: string; value: SourceActionability; cls: string; action: string } {
+  const normalized = domain.toLowerCase().replace(/^www\./, "")
+  const kind = sourceType(type)
+  const high = ["practo.com", "justdial.com", "sulekha.com", "lybrate.com", "credihealth.com", "apollo247.com", "medindia.net", "mouthshut.com", "g2.com", "capterra.com", "clutch.co", "goodfirms.co", "trustpilot.com", "producthunt.com"]
+  const monitor = ["google.", "chatgpt.com", "openai.com", "gemini.google.com", "perplexity.ai", "copilot.microsoft.com", "bing.com", "youtube.com", "youtu.be"]
+
+  if (monitor.some((item) => normalized.includes(item))) {
+    return { label: "Monitor", value: "MONITOR", cls: "bg-slate-100 text-slate-500 border-slate-200", action: "Monitor only; this is not a practical outreach target." }
+  }
+  if (high.some((item) => normalized.includes(item))) {
+    return { label: "High", value: "HIGH", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", action: "Claim/optimize the listing, categories, reviews, proof, and service details." }
+  }
+  if (kind === "UGC" || kind === "SOCIAL" || kind === "EDITORIAL") {
+    return { label: "Medium", value: "MEDIUM", cls: "bg-blue-50 text-blue-700 border-blue-200", action: "Earn mentions through useful answers, comparisons, quotes, PR, or community participation." }
+  }
+  if (kind === "REFERENCE" || kind === "INSTITUTIONAL") {
+    return { label: "Low", value: "LOW", cls: "bg-amber-50 text-amber-700 border-amber-200", action: "Use it as authority context; direct influence is slow or limited." }
+  }
+  return { label: "Medium", value: "MEDIUM", cls: "bg-blue-50 text-blue-700 border-blue-200", action: "Review for listing, update, partnership, or source-backed outreach options." }
+}
+
 function Badge({ type }: { type?: string | null }) {
   const cfg = TCFG[sourceType(type)] ?? TCFG.OTHER
   return <span className={`inline-flex items-center rounded px-1.5 py-[2px] text-[10.5px] font-semibold leading-none ${cfg.tw}`}>{cfg.label}</span>
+}
+
+function ActionabilityBadge({ domain, type }: { domain: string; type?: string | null }) {
+  const meta = sourceActionability(domain, type)
+  return (
+    <span title={meta.action} className={`inline-flex items-center rounded px-1.5 py-[2px] text-[10.5px] font-semibold leading-none border ${meta.cls}`}>
+      {meta.label}
+    </span>
+  )
 }
 
 function SegmentButton({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
@@ -978,7 +1010,7 @@ export function SourcesTab() {
 
         {mode === "domains" ? (
           <div className="overflow-x-auto">
-            <table className="peec-table w-full min-w-[900px] text-left text-[12px]">
+            <table className="peec-table w-full min-w-[980px] text-left text-[12px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                   <th className="w-12 px-4 py-3">#</th>
@@ -986,6 +1018,7 @@ export function SourcesTab() {
                     <span className="flex items-center justify-between"><span className="flex items-center gap-1.5"><GlobeIcon /> Source</span><SortIcon /></span>
                   </th>
                   <th className="px-4 py-3">Domain Type</th>
+                  <th className="px-4 py-3">Actionability</th>
                   <th className="px-4 py-3 text-right">
                     <span className="flex items-center justify-end gap-2">Used <SortIcon /></span>
                   </th>
@@ -994,7 +1027,7 @@ export function SourcesTab() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading && Array.from({ length: 7 }).map((_, index) => <RowSkeleton key={index} cols={6} />)}
+                {isLoading && Array.from({ length: 7 }).map((_, index) => <RowSkeleton key={index} cols={7} />)}
 
                 {!isLoading && paginatedDomains.map((row, index) => (
                   <tr
@@ -1013,6 +1046,7 @@ export function SourcesTab() {
                       </div>
                     </td>
                     <td className="px-4 py-2.5"><Badge type={row.source_type} /></td>
+                    <td className="px-4 py-2.5"><ActionabilityBadge domain={row.domain} type={row.source_type} /></td>
                     <td className="px-4 py-2.5 text-right text-[13px] font-bold tabular-nums text-zinc-800">{sourcePct(row).toFixed(0)}%</td>
                     <td className="px-4 py-2.5 text-right text-[13px] font-semibold tabular-nums text-zinc-600">{sourceCitations(row).toFixed(1)}</td>
                     <td className="px-4 py-2.5 text-right text-[13px] font-semibold tabular-nums text-zinc-500">{row.unique_urls ?? "-"}</td>
@@ -1021,7 +1055,7 @@ export function SourcesTab() {
 
                 {!isLoading && paginatedDomains.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-5 py-14 text-center text-sm text-zinc-500">No sources found.</td>
+                    <td colSpan={7} className="px-5 py-14 text-center text-sm text-zinc-500">No sources found.</td>
                   </tr>
                 )}
               </tbody>
@@ -1038,11 +1072,12 @@ export function SourcesTab() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="peec-table w-full min-w-[1180px] text-left text-[12px]">
+            <table className="peec-table w-full min-w-[1260px] text-left text-[12px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/90 text-[11px] font-semibold text-slate-400">
                   <th className="w-[34%] px-4 py-3">URL</th>
                   <th className="px-4 py-3">URL Type</th>
+                  <th className="px-4 py-3">Actionability</th>
                   <th className="px-4 py-3">{ownBrand} mentioned</th>
                   <th className="px-4 py-3">Mentions</th>
                   <th className="px-4 py-3 text-right">
@@ -1056,7 +1091,7 @@ export function SourcesTab() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading && Array.from({ length: 8 }).map((_, index) => <RowSkeleton key={index} cols={8} />)}
+                {isLoading && Array.from({ length: 8 }).map((_, index) => <RowSkeleton key={index} cols={9} />)}
 
                 {!isLoading && paginatedUrls.map((row, index) => {
                   const mentions = rowMentions(row)
@@ -1077,6 +1112,9 @@ export function SourcesTab() {
                       </td>
                       <td className="px-4 py-2.5">
                         <Badge type={row.url_type || row.source_type} />
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <ActionabilityBadge domain={row.domain} type={row.url_type || row.source_type} />
                       </td>
                       <td className="px-4 py-2.5">
                         <span className={`inline-flex rounded-md px-2 py-1 text-[11px] font-semibold ${hasOwnBrand(row, ownBrand) ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
@@ -1106,7 +1144,7 @@ export function SourcesTab() {
 
                 {!isLoading && paginatedUrls.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-5 py-14 text-center text-sm text-zinc-500">No URLs found.</td>
+                    <td colSpan={9} className="px-5 py-14 text-center text-sm text-zinc-500">No URLs found.</td>
                   </tr>
                 )}
               </tbody>

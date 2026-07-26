@@ -5,7 +5,7 @@ import { useFilters } from "@/hooks/useFilters"
 import { useOpportunities, type OpportunityImpact, type OpportunityItem, type OpportunityType } from "@/hooks/useOpportunities"
 import { useProjects } from "@/hooks/useProjects"
 import { Fav, Sk } from "@/tabs/overview/overview"
-import type { OpportunityConfidence } from "@/hooks/useOpportunities"
+import type { OpportunityBucket, OpportunityConfidence, SourceActionability } from "@/hooks/useOpportunities"
 
 type Segment = "ALL" | OpportunityType
 
@@ -37,6 +37,27 @@ function confidenceMeta(confidence: OpportunityConfidence) {
   if (confidence === "MEDIUM") return { label: "Medium confidence", cls: "bg-[#EFF6FF] text-[#1D4ED8] ring-[#DCE8FD]" }
   if (confidence === "LOW") return { label: "Low confidence", cls: "bg-[#FFFAEB] text-[#B54708] ring-[#FEDF89]/60" }
   return { label: "Needs review", cls: "bg-[#FFF7ED] text-[#C2410C] ring-[#FDBA74]/70" }
+}
+
+function actionabilityMeta(actionability: SourceActionability) {
+  if (actionability === "HIGH") return { label: "High actionability", cls: "bg-[#D1FAE5] text-[#047857] ring-[#86EFAC]" }
+  if (actionability === "MEDIUM") return { label: "Medium actionability", cls: "bg-[#EFF6FF] text-[#1D4ED8] ring-[#BFDBFE]" }
+  if (actionability === "LOW") return { label: "Low actionability", cls: "bg-[#FFFAEB] text-[#B54708] ring-[#FEDF89]" }
+  return { label: "Monitor only", cls: "bg-[#F1F3F6] text-[#667085] ring-[#E2E5EA]" }
+}
+
+function bucketMeta(bucket: OpportunityBucket) {
+  if (bucket === "QUICK_WIN") return { label: "Quick win", cls: "bg-[#D1FAE5] text-[#047857] ring-[#86EFAC]" }
+  if (bucket === "SOURCE_GAP") return { label: "Source gap", cls: "bg-[#E0F2FE] text-[#0369A1] ring-[#BAE6FD]" }
+  if (bucket === "CONTENT_GAP") return { label: "Content gap", cls: "bg-[#EFF6FF] text-[#1D4ED8] ring-[#BFDBFE]" }
+  if (bucket === "AUTHORITY_GAP") return { label: "Authority gap", cls: "bg-[#FFF7ED] text-[#C2410C] ring-[#FDBA74]" }
+  return { label: "Monitor", cls: "bg-[#F1F3F6] text-[#667085] ring-[#E2E5EA]" }
+}
+
+function sourceRank(source: OpportunityItem["top_sources"][number]) {
+  if (source.avg_rank) return `Avg #${source.avg_rank}`
+  if (source.citations > 0) return `${source.citations} cited`
+  return `${source.mentions} seen`
 }
 
 function scoreBar(score: number) {
@@ -99,6 +120,8 @@ function SegmentButton({ active, children, onClick }: { active: boolean; childre
 function OpportunityCard({ item }: { item: OpportunityItem }) {
   const meta = typeMeta(item.type)
   const confidence = confidenceMeta(item.confidence)
+  const actionability = actionabilityMeta(item.actionability)
+  const bucket = bucketMeta(item.opportunity_bucket)
   const actionClass = item.content_gap.action === "CREATE"
     ? "bg-black text-white"
     : item.content_gap.action === "REFRESH"
@@ -122,6 +145,12 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
             </span>
             <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${actionClass}`}>
               {item.content_gap.action}
+            </span>
+            <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ring-1 ${bucket.cls}`}>
+              {bucket.label}
+            </span>
+            <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ring-1 ${actionability.cls}`}>
+              {actionability.label}
             </span>
             <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ring-1 ${confidence.cls}`}>
               {confidence.label}
@@ -154,6 +183,11 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
             </div>
             <p className="mt-1 text-[13px] font-semibold leading-snug text-[#0F172A]">{item.content_gap.suggested_title}</p>
             <p className="mt-1.5 text-[11.5px] leading-relaxed text-[#667085]">{item.content_gap.gap_reason}</p>
+            {item.source_pattern && (
+              <p className="mt-2 rounded-lg border border-[#DCE8FD] bg-[#EFF6FF] px-2.5 py-2 text-[11.5px] font-medium leading-relaxed text-[#1D4ED8]">
+                {item.source_pattern}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -202,10 +236,13 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
           {item.top_sources.length ? (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {item.top_sources.map((source) => (
-                <span key={source.domain} className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E5EA] bg-white px-2 py-1 text-[10.5px] font-medium text-[#344054]">
+                <span key={source.domain} title={source.recommended_action} className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E5EA] bg-white px-2 py-1 text-[10.5px] font-medium text-[#344054]">
                   <Fav domain={source.domain} />
                   {source.domain}
-                  <span className="text-[#98A2B3]">{source.mentions}</span>
+                  <span className="rounded-full bg-[#F1F5F9] px-1.5 py-0.5 text-[9.5px] font-semibold text-[#64748B]">{sourceRank(source)}</span>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold ring-1 ${actionabilityMeta(source.actionability).cls}`}>
+                    {source.actionability === "NOT_ACTIONABLE" ? "Monitor" : source.actionability}
+                  </span>
                 </span>
               ))}
             </div>
@@ -239,6 +276,17 @@ function OpportunityCard({ item }: { item: OpportunityItem }) {
           <p className="mt-2 text-[11px] leading-relaxed text-[#98A2B3]">{item.content_gap.priority_reason}</p>
         </div>
       </div>
+
+      {item.content_gap.source_actions.length > 0 && (
+        <div className="mt-3.5 rounded-xl border border-[#CFFAFE] bg-[#ECFEFF] px-3 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#0891B2]">Actionable source plan</p>
+          <div className="mt-2 flex flex-col gap-1.5">
+            {item.content_gap.source_actions.map((action) => (
+              <p key={action} className="text-[11.5px] font-medium leading-relaxed text-[#155E75]">{action}</p>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="mt-3.5 rounded-xl border border-[#B7EFCF] bg-[#ECFDF3] px-3 py-2.5">
         <div className="flex items-start gap-2">

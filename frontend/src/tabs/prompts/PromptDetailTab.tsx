@@ -2,7 +2,8 @@ import { useParams, Link } from "react-router-dom"
 import { useProjects } from "@/hooks/useProjects"
 import { useDashboard } from "@/hooks/useDashboard"
 import { useVisibilityTimeSeries } from "@/hooks/useVisibilityTimeSeries"
-import { SearchVolumeIndicator } from "@/components/ui/SearchVolumeIndicator"
+import { ObservedDemandIndicator } from "@/components/ui/ObservedDemandIndicator"
+import { usePrompts } from "@/hooks/usePrompts"
 import { VisibilityChart } from "../overview/VisibilityChart"
 import { Avatar, Fav, Sk, timeAgo } from "../overview/overview"
 
@@ -15,7 +16,8 @@ export function PromptDetailTab() {
     const { selectedProject } = useProjects()
     const projectId = selectedProject?.id ?? null
 
-    const prompt = selectedProject?.prompts?.find((p) => p.id === promptId)
+    const { prompts: promptRows, isLoading: promptsLoading } = usePrompts(projectId)
+    const prompt = promptRows.find((p) => p.id === promptId)
     
     // We append the prompt_id to any other existing query string filters we want
     // But for this isolated view, we primarily filter by prompt_id.
@@ -44,7 +46,7 @@ export function PromptDetailTab() {
     const even = "premium-row-even"
     const odd  = "premium-row-odd"
 
-    if (!prompt && selectedProject) {
+    if (!prompt && selectedProject && !promptsLoading) {
         return <div className="p-8 text-zinc-500">Prompt not found in this project.</div>
     }
 
@@ -94,8 +96,14 @@ export function PromptDetailTab() {
                         <div className="text-[13px] font-medium text-zinc-800">{prompt?.topic || "Uncategorized"}</div>
                     </div>
                     <div>
-                        <div className="text-[11.5px] font-medium text-zinc-400 mb-1">Search volume</div>
-                        <SearchVolumeIndicator volume={3} />
+                        <div className="text-[11.5px] font-medium text-zinc-400 mb-1">AI demand</div>
+                        {prompt ? (
+                            <ObservedDemandIndicator
+                                label={prompt.observed_demand_label}
+                                score={prompt.observed_demand_score}
+                                runs={prompt.observed_runs_30d}
+                            />
+                        ) : <span className="text-[13px] text-zinc-400">Loading...</span>}
                     </div>
                     <div>
                         <div className="text-[11.5px] font-medium text-zinc-400 mb-1">Location</div>

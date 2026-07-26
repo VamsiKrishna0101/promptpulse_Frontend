@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { useFilters } from "@/hooks/useFilters"
 import { useProjects } from "@/hooks/useProjects"
-import { usePrompts, type PromptStatus } from "@/hooks/usePrompts"
+import { usePrompts, type PromptRow, type PromptStatus } from "@/hooks/usePrompts"
 import { downloadCsvExport } from "@/lib/exportDownload"
 
 const SortIcon = () => (
@@ -151,6 +151,67 @@ function StatusTab({
 
 function topicLabel(topic: string | null | undefined) {
     return topic?.trim() || "No topic"
+}
+
+function tagValue(prompt: PromptRow, prefix: string) {
+    return prompt.tags?.find((tag) => tag.startsWith(prefix))?.slice(prefix.length) ?? null
+}
+
+function readableTag(value: string | null) {
+    if (!value) return null
+    return value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function promptIntentLabel(prompt: PromptRow) {
+    return readableTag(tagValue(prompt, "intent:")) ?? readableTag(prompt.type) ?? "Prompt"
+}
+
+function promptFunnel(prompt: PromptRow) {
+    const value = tagValue(prompt, "funnel:")?.toUpperCase()
+    if (value === "HIGH" || value === "MEDIUM" || value === "LOW") return value
+    const score = prompt.priority_score ?? 0
+    if (score >= 82) return "HIGH"
+    if (score >= 65) return "MEDIUM"
+    return "LOW"
+}
+
+function promptFrequency(prompt: PromptRow) {
+    return tagValue(prompt, "frequency:") ?? (promptFunnel(prompt) === "HIGH" ? "daily" : "weekly")
+}
+
+function funnelClass(value: string) {
+    if (value === "HIGH") return "bg-emerald-50 text-emerald-700 border-emerald-200"
+    if (value === "MEDIUM") return "bg-blue-50 text-blue-700 border-blue-200"
+    return "bg-slate-100 text-slate-500 border-slate-200"
+}
+
+function IntelligenceChips({ prompt }: { prompt: PromptRow }) {
+    const funnel = promptFunnel(prompt)
+    const intent = promptIntentLabel(prompt)
+    const frequency = promptFrequency(prompt)
+    const score = prompt.priority_score !== null ? Math.round(prompt.priority_score) : null
+
+    return (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex rounded-md border border-violet-200 bg-violet-50 px-1.5 py-[2px] text-[10.5px] font-bold text-violet-700">
+                {intent}
+            </span>
+            <span className={`inline-flex rounded-md border px-1.5 py-[2px] text-[10.5px] font-bold ${funnelClass(funnel)}`}>
+                {funnel} value
+            </span>
+            <span className="inline-flex rounded-md border border-cyan-200 bg-cyan-50 px-1.5 py-[2px] text-[10.5px] font-bold capitalize text-cyan-700">
+                {frequency}
+            </span>
+            {score !== null && (
+                <span className="inline-flex rounded-md border border-slate-200 bg-white px-1.5 py-[2px] text-[10.5px] font-bold text-slate-600">
+                    Score {score}
+                </span>
+            )}
+            <span className="inline-flex rounded-md border border-sky-200 bg-sky-50 px-1.5 py-[2px] text-[10.5px] font-bold text-sky-700">
+                {prompt.observed_demand_label === "NOT_ENOUGH_DATA" ? "Demand: collecting" : `Demand: ${prompt.observed_demand_label.toLowerCase()}`}
+            </span>
+        </div>
+    )
 }
 
 function TopicSearchDropdown({
@@ -497,9 +558,9 @@ export function PromptsTab() {
                             <button
                                 onClick={() => void runDiscovery()}
                                 disabled={isDiscoveringPrompts}
-                                className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="cursor-pointer rounded-lg border border-slate-950 bg-slate-950 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {isDiscoveringPrompts ? "Discovering..." : "Discover prompts"}
+                                {isDiscoveringPrompts ? "Discovering..." : "Prompt Intelligence"}
                             </button>
                             <button
                                 onClick={openAddPrompt}
@@ -534,8 +595,27 @@ export function PromptsTab() {
                     </div>
 
                     {discoveryMessage && (
-                        <div className="border-b border-slate-200/80 bg-emerald-50 px-4 py-2.5 text-[12px] font-semibold text-emerald-800">
+                        <div className="border-b border-slate-200/80 bg-gradient-to-r from-emerald-50 via-cyan-50 to-white px-4 py-2.5 text-[12px] font-semibold text-emerald-800">
                             {discoveryMessage}
+                        </div>
+                    )}
+
+                    {tab === "SUGGESTED" && (
+                        <div className="border-b border-slate-200/80 bg-slate-50 px-4 py-3">
+                            <div className="grid gap-2 md:grid-cols-3">
+                                <div className="rounded-xl border border-emerald-200 bg-white px-3 py-2">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-600">High intent first</p>
+                                    <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">Buyer, local, emergency, service and comparison prompts beat generic keyword prompts.</p>
+                                </div>
+                                <div className="rounded-xl border border-blue-200 bg-white px-3 py-2">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-blue-600">Review before credits</p>
+                                    <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">Suggestions stay inactive until you click Track, so weak prompts do not waste runs.</p>
+                                </div>
+                                <div className="rounded-xl border border-violet-200 bg-white px-3 py-2">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-violet-600">Prompt mix</p>
+                                    <p className="mt-0.5 text-[11.5px] font-medium text-slate-500">Each suggestion has intent, funnel value, priority score, and tracking frequency.</p>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -543,7 +623,7 @@ export function PromptsTab() {
                         <table className="peec-table w-full min-w-[1080px] text-left text-[12px]">
                             <thead>
                                 <tr className="border-b border-slate-200/80 bg-slate-50/90 text-[11.5px] font-medium text-slate-400">
-                                    <th className="w-[42%] px-4 py-3">
+                                    <th className="w-[46%] px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <input type="checkbox" className="cursor-pointer rounded-sm border-zinc-300 text-zinc-900 focus:ring-0" />
                                             <ColumnHeader label="Prompt" />
@@ -561,10 +641,7 @@ export function PromptsTab() {
                                     <th className="px-4 py-3 text-zinc-400">Mentions</th>
                                     <th className="px-4 py-3">
                                         <span className="flex items-center gap-1.5 text-zinc-400">
-                                            Volume
-                                            <span className="rounded bg-brand-50 px-1.5 py-[2px] text-[9.5px] font-bold text-brand-600">
-                                                Beta
-                                            </span>
+                                            Priority
                                         </span>
                                     </th>
                                     <th className="w-10 px-4 py-3" />
@@ -591,7 +668,7 @@ export function PromptsTab() {
                                         onClick={() => navigate(`/prompts/${prompt.id}`)}
                                     >
                                         <td className="px-4 py-3">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-start gap-3">
                                                 <input
                                                     type="checkbox"
                                                     onClick={(event) => event.stopPropagation()}
@@ -603,12 +680,13 @@ export function PromptsTab() {
                                                     </div>
                                                     <div className="mt-0.5 text-[11px] font-medium text-zinc-400">
                                                         {topicLabel(prompt.topic)}
-                                                        {tab === "SUGGESTED" && prompt.tags?.length ? (
+                                                        {false && tab === "SUGGESTED" && prompt.tags?.length ? (
                                                             <span className="ml-2 text-zinc-300">
                                                                 {prompt.tags.filter(tag => tag.startsWith("source:") || tag.startsWith("intent:")).slice(0, 2).join(" · ")}
                                                             </span>
                                                         ) : null}
                                                     </div>
+                                                    {tab === "SUGGESTED" && <IntelligenceChips prompt={prompt} />}
                                                 </div>
                                             </div>
                                         </td>
@@ -642,7 +720,22 @@ export function PromptsTab() {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <VolumeBars value={prompt.visibility} />
+                                            {tab === "SUGGESTED" ? (
+                                                <div className="min-w-[120px]">
+                                                    <div className="mb-1 flex items-center justify-between text-[10.5px] font-bold text-slate-500">
+                                                        <span>{promptFunnel(prompt)}</span>
+                                                        <span>{prompt.priority_score !== null ? Math.round(prompt.priority_score) : "-"}</span>
+                                                    </div>
+                                                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                                                        <div
+                                                            className={promptFunnel(prompt) === "HIGH" ? "h-full rounded-full bg-emerald-500" : promptFunnel(prompt) === "MEDIUM" ? "h-full rounded-full bg-blue-500" : "h-full rounded-full bg-slate-400"}
+                                                            style={{ width: `${Math.max(8, prompt.priority_score ?? 0)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <VolumeBars value={prompt.visibility} />
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             {tab === "ACTIVE" ? (

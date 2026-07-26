@@ -20,7 +20,18 @@ export type RecentChat = {
     sentiment_score: number | null
     brands: string[]
     brand_details?: { brand_name: string, domain?: string | null, sentiment_score: number | null, position: number | null }[]
-    sources?: { url: string, domain: string, title: string | null }[]
+    sources?: {
+        url: string
+        domain: string
+        title: string | null
+        snippet?: string | null
+        is_cited?: boolean
+        source_type?: string
+        url_type?: string
+        source_kind?: string | null
+        source_position?: number | null
+        answer_position?: number | null
+    }[]
     screenshot_path?: string | null
     has_screenshot?: boolean
     ran_at: string

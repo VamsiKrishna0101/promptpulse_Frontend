@@ -40,6 +40,15 @@ type AdminOverview = {
     active_subscriptions: number
     estimated_mrr_cents: number
   }
+  today_jobs?: {
+    total: number
+    queued: number
+    running: number
+    success: number
+    failed: number
+    manual_needed: number
+    rate_limited: number
+  }
   users_by_plan: Array<{ plan: Plan; count: number }>
   subscriptions_by_status: Array<{ status: SubscriptionStatus; count: number }>
   revenue_by_plan: Array<{ plan: Plan; subscriptions: number; amount_cents: number }>
@@ -453,6 +462,16 @@ function AdminOverviewPage() {
   if (loading) return <LoadingCard />
   if (error || !data) return <ErrorCard message={error || "No overview data"} onRetry={load} />
 
+  const todayJobs = data.today_jobs ?? {
+    total: 0,
+    queued: 0,
+    running: 0,
+    success: 0,
+    failed: 0,
+    manual_needed: 0,
+    rate_limited: 0,
+  }
+
   return (
     <AdminShell title="Admin command center" eyebrow="Platform health">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -461,6 +480,25 @@ function AdminOverviewPage() {
         <MetricCard label="Projects" value={data.summary.total_projects} helper={`${data.summary.total_prompts} prompts tracked`} icon={<FolderKanban size={18} />} />
         <MetricCard label="Open tickets" value={data.summary.open_tickets} helper={`${data.summary.chats_30d} chats in 30 days`} icon={<LifeBuoy size={18} />} />
       </div>
+
+      <section className="mt-5 rounded-2xl border border-[#E2E5EA] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-[14px] font-semibold text-[#0F172A]">Today&apos;s job health</h2>
+            <p className="mt-1 text-[12px] font-medium text-[#98A2B3]">Scrape jobs created since today&apos;s server day started.</p>
+          </div>
+          <span className="rounded-full bg-[#F7F8FA] px-2.5 py-1 text-[11px] font-semibold text-[#667085]">{todayJobs.total} total jobs</span>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          <JobHealthMetric label="Queued" value={todayJobs.queued} tone="amber" />
+          <JobHealthMetric label="Running" value={todayJobs.running} tone="blue" />
+          <JobHealthMetric label="Succeeded" value={todayJobs.success} tone="green" />
+          <JobHealthMetric label="Failed" value={todayJobs.failed} tone="red" />
+          <JobHealthMetric label="Manual needed" value={todayJobs.manual_needed} tone="slate" />
+          <JobHealthMetric label="Rate limited" value={todayJobs.rate_limited} tone="amber" />
+          <JobHealthMetric label="Total" value={todayJobs.total} tone="dark" />
+        </div>
+      </section>
 
       <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_400px]">
         <div className="rounded-2xl border border-[#E2E5EA] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
@@ -499,6 +537,18 @@ function AdminOverviewPage() {
       </div>
     </AdminShell>
   )
+}
+
+function JobHealthMetric({ label, value, tone }: { label: string; value: number; tone: "amber" | "blue" | "green" | "red" | "slate" | "dark" }) {
+  const styles = {
+    amber: "border-amber-100 bg-amber-50 text-amber-700",
+    blue: "border-blue-100 bg-blue-50 text-blue-700",
+    green: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    red: "border-rose-100 bg-rose-50 text-rose-700",
+    slate: "border-[#E2E5EA] bg-[#F7F8FA] text-[#667085]",
+    dark: "border-[#0F172A] bg-[#0F172A] text-white",
+  }[tone]
+  return <div className={`rounded-xl border px-3.5 py-3 ${styles}`}><p className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-75">{label}</p><p className="mt-1 text-[22px] font-semibold tracking-[-0.04em]">{value.toLocaleString()}</p></div>
 }
 
 function AdminListPage<T>({

@@ -18,6 +18,7 @@ const icons = {
     geoArticles: <O><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" /><path d="M14 2v5h5" /><path d="M8 13h8" /><path d="M8 17h5" /><path d="M9 9h1" /></O>,
     prompts: <O><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></O>,
     sources: <O><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></O>,
+    seo: <O><path d="M4 19V5" /><path d="M4 19h16" /><path d="M8 15l3-3 2 2 5-6" /><path d="M17 8h1v1" /></O>,
     competitors: <O><path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M17 6h3a3 3 0 0 1-3 3" /><path d="M7 6H4a3 3 0 0 0 3 3" /></O>,
     analytics: <O><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></O>,
     chat: <O><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5Z" /><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1" /></O>,
@@ -341,6 +342,7 @@ export function Sidebar() {
                 <NavItem icon={icons.opportunities} label="Opportunities" href="/opportunities" tourId="nav-opportunities" />
                 <NavItem icon={icons.prompts} label="Prompts" href="/prompts" tourId="nav-prompts" />
                 <NavItem icon={icons.sources} label="Sources" href="/sources" tourId="nav-sources" />
+                <NavItem icon={icons.seo} label="AI SEO" href="/seo" tourId="nav-seo" />
                 <NavItem icon={icons.competitors} label="Competitors" href="/competitors" tourId="nav-competitors" />
                 <NavItem icon={icons.analytics} label="Web Analytics" href="/analytics" tourId="nav-analytics" />
                 <NavItem icon={icons.chat} label="Chat" href="/chat" tourId="nav-chat" />

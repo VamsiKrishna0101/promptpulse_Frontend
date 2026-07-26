@@ -13,6 +13,11 @@ export type PromptRow = {
     source: string
     priority_score: number | null
     volume_score: number | null
+    observed_demand_score: number | null
+    observed_demand_label: "HIGH" | "MODERATE" | "LOW" | "NOT_ENOUGH_DATA"
+    observed_runs_30d: number
+    observed_demand_basis: string
+    last_run_at: string | null
     total_chats: number
     visibility: number | null
     avg_sentiment: number | null

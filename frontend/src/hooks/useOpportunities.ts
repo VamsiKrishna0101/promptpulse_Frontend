@@ -5,12 +5,19 @@ export type OpportunityType = "MISSING" | "OUTRANKED" | "SOURCE_GAP" | "SENTIMEN
 export type OpportunityImpact = "HIGH" | "MEDIUM" | "LOW"
 export type OpportunityEffort = "LOW" | "MEDIUM" | "HIGH"
 export type OpportunityConfidence = "HIGH" | "MEDIUM" | "LOW" | "NEEDS_REVIEW"
+export type SourceActionability = "HIGH" | "MEDIUM" | "LOW" | "NOT_ACTIONABLE"
+export type OpportunityBucket = "QUICK_WIN" | "SOURCE_GAP" | "CONTENT_GAP" | "AUTHORITY_GAP" | "MONITOR"
 
 export type OpportunitySource = {
   domain: string
   title: string | null
   source_type: string | null
   mentions: number
+  citations: number
+  avg_rank: number | null
+  source_kind: string | null
+  actionability: SourceActionability
+  recommended_action: string
 }
 
 export type ContentGapPlan = {
@@ -21,6 +28,7 @@ export type ContentGapPlan = {
   priority_reason: string
   missing_angles: string[]
   optimization_focus: string[]
+  source_actions: string[]
 }
 
 export type OpportunityItem = {
@@ -46,6 +54,9 @@ export type OpportunityItem = {
   confidence: OpportunityConfidence
   confidence_reasons: string[]
   prompt_intent_warning: string | null
+  opportunity_bucket: OpportunityBucket
+  actionability: SourceActionability
+  source_pattern: string | null
   top_sources: OpportunitySource[]
   content_gap: ContentGapPlan
   next_step: string

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react"
 import type { ReactNode } from "react"
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { Sidebar } from "./Sidebar"
 import { ProjectsProvider, useProjects } from "@/hooks/useProjects"
 import { DAYS_OPTIONS, MODEL_OPTIONS, useFilterOptions } from "@/hooks/useFilters"
@@ -13,6 +13,7 @@ import { TodayRunStatus } from "@/components/status/TodayRunStatus"
 import { MODEL_ICON_DOMAINS, modelIconUrl } from "@/lib/aiModels"
 import { useToast } from "@/components/ui/Toast"
 import { useAuth } from "@/hooks/useAuth"
+import { api } from "@/lib/api"
 
 type DropdownOption = { label: string; value: string }
 
@@ -196,24 +197,116 @@ function BrandFilterIcon({ domain, name }: { domain?: string | null; name: strin
   )
 }
 
+type RecentTransaction = {
+  id: string
+  amount: number
+  action: string
+  description: string | null
+  metadata?: any
+  created_at: string
+}
+
+function formatShortDeduction(tx: RecentTransaction) {
+  if (tx.action === "seo_audit" && tx.metadata?.url) {
+    return `Audit: ${tx.metadata.url.replace(/^https?:\/\//, "")}`
+  }
+  const parts = [
+    tx.metadata?.successful_checks ? `${tx.metadata.successful_checks} checks` : null,
+    tx.metadata?.source === "brightdata_batch" ? "Daily run" : null,
+  ].filter(Boolean)
+  return parts.length ? parts.join(" · ") : tx.action
+}
+
 function CreditsPill() {
-  const { data, isLoading } = useSubscription()
+  const { data, isLoading: subLoading } = useSubscription()
   const balance = data?.credits_balance ?? 0
   const isLow = data?.low_balance ?? false
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const [deductions, setDeductions] = useState<RecentTransaction[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    setIsLoading(true)
+    api.get<{ transactions: RecentTransaction[] }>("/payments/transactions?days=30&type=debit&page=1&limit=5")
+      .then(res => setDeductions(res.data.transactions ?? []))
+      .catch(console.error)
+      .finally(() => setIsLoading(false))
+  }, [isOpen])
 
   return (
-    <div
-      title={isLoading ? "Loading credits" : `${balance.toLocaleString()} credits remaining`}
-      className={[
-        "flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold shadow-sm",
-        isLow
-          ? "border-red-200 bg-red-50 text-red-900"
-          : "border-amber-200 bg-amber-50 text-amber-900",
-      ].join(" ")}
-    >
-      <Coins size={13} className={isLow ? "text-red-500" : "text-amber-600"} />
-      <span>{isLoading ? "Credits" : balance.toLocaleString()}</span>
-      <span className="hidden text-amber-700 sm:inline">credits</span>
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        title={subLoading ? "Loading credits" : `${balance.toLocaleString()} credits remaining`}
+        className={[
+          "flex h-8 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold shadow-sm transition hover:opacity-80",
+          isLow
+            ? "border-red-200 bg-red-50 text-red-900 hover:bg-red-100"
+            : "border-amber-200 bg-amber-50 text-amber-900 hover:bg-amber-100",
+          isOpen ? "ring-2 ring-amber-500/20" : ""
+        ].join(" ")}
+      >
+        <Coins size={13} className={isLow ? "text-red-500" : "text-amber-600"} />
+        <span>{subLoading ? "Credits" : balance.toLocaleString()}</span>
+        <span className="hidden text-amber-700 sm:inline">credits</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-72 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5">
+          <div className="border-b border-slate-100 bg-slate-50 px-4 py-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Recent deductions</h4>
+          </div>
+          
+          <div className="max-h-64 overflow-y-auto p-2">
+            {isLoading ? (
+              <div className="flex h-20 items-center justify-center">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+              </div>
+            ) : deductions.length === 0 ? (
+              <div className="px-3 py-6 text-center">
+                <p className="text-xs font-semibold text-slate-500">No recent deductions.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                {deductions.map(tx => (
+                  <div key={tx.id} className="flex items-start justify-between gap-3 rounded-lg p-2 transition hover:bg-slate-50">
+                    <div>
+                      <p className="text-[13px] font-semibold text-slate-900">{tx.description ?? tx.action}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{formatShortDeduction(tx)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[13px] font-bold tabular-nums text-rose-600">{tx.amount}</p>
+                      <p className="text-[10px] font-medium text-slate-400">
+                        {new Date(tx.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="border-t border-slate-100 bg-slate-50 p-2">
+            <Link
+              to="/billing"
+              onClick={() => setIsOpen(false)}
+              className="block w-full rounded-lg bg-white px-3 py-2 text-center text-xs font-bold text-sky-700 shadow-sm transition hover:bg-sky-50"
+            >
+              View all in billing
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

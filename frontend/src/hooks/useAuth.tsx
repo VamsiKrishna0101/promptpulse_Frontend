@@ -50,6 +50,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("promptpulse:auth-expired", handleExpired)
   }, [])
 
+  // Refresh the cached user on every session start. This is important for
+  // role changes made by an administrator while the browser still has an old
+  // USER object in localStorage.
+  useEffect(() => {
+    if (!token) return
+    let active = true
+    api.get<{ user?: User }>("/profile/me")
+      .then(response => {
+        if (!active || !response.data.user) return
+        setUser(previous => previous ? { ...previous, ...response.data.user } : response.data.user ?? null)
+      })
+      .catch(() => {
+        // The API interceptor handles expired sessions. Keep the cached user
+        // during temporary network failures so the app remains usable.
+      })
+    return () => {
+      active = false
+    }
+  }, [token])
+
   const value = useMemo<AuthContextValue>(() => ({
     user,
     token,
