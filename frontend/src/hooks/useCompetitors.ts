@@ -16,6 +16,7 @@ export type TrackedCompetitor = {
 
 export type DiscoveredCompetitor = {
   brand_name: string
+  domain?: string | null
   visibility: number
   avg_position: number | null
   avg_sentiment: number | null
@@ -67,7 +68,7 @@ export function useCompetitors(projectId: string | null, queryString = "") {
     const optimistic: TrackedCompetitor = {
       id: `pending-${normalizedName}`,
       name: input.name,
-      url: input.url,
+      url: input.url ?? (discoveredMatch?.domain ? `https://${discoveredMatch.domain}` : undefined),
       visibility: discoveredMatch?.visibility ?? 0,
       avg_position: discoveredMatch?.avg_position ?? null,
       avg_sentiment: discoveredMatch?.avg_sentiment ?? null,

@@ -7,9 +7,11 @@ export type OpportunityEffort = "LOW" | "MEDIUM" | "HIGH"
 export type OpportunityConfidence = "HIGH" | "MEDIUM" | "LOW" | "NEEDS_REVIEW"
 export type SourceActionability = "HIGH" | "MEDIUM" | "LOW" | "NOT_ACTIONABLE"
 export type OpportunityBucket = "QUICK_WIN" | "SOURCE_GAP" | "CONTENT_GAP" | "AUTHORITY_GAP" | "MONITOR"
+export type RecommendationOutcome = "RECOMMENDED" | "LISTED" | "ABSENT" | "NEGATIVE"
 
 export type OpportunitySource = {
   domain: string
+  url: string | null
   title: string | null
   source_type: string | null
   mentions: number
@@ -39,7 +41,17 @@ export type OpportunityItem = {
   prompt_id: string
   prompt_text: string
   topic: string | null
+  buyer_intent: {
+    key: string
+    label: string
+    stage: "DISCOVERY" | "CONSIDERATION" | "DECISION" | "REPUTATION"
+    value: "HIGH" | "MEDIUM" | "LOW"
+    reason: string
+  }
   competitor_name: string
+  brand_outcome: RecommendationOutcome
+  competitor_outcome: RecommendationOutcome
+  outcome_explanation: string
   own_visibility: number
   competitor_visibility: number
   own_position: number | null
@@ -59,8 +71,30 @@ export type OpportunityItem = {
   source_pattern: string | null
   top_sources: OpportunitySource[]
   content_gap: ContentGapPlan
+  target_page: {
+    status: "EXISTING_PAGE" | "NEW_PAGE" | "REVIEW"
+    url: string | null
+    label: string
+    reason: string
+  }
+  supporting_urls: string[]
+  business_reason: string
+  verification: {
+    baseline: {
+      visibility: number
+      position: number | null
+      outcome: RecommendationOutcome
+    }
+    success_metric: string
+    recheck_after_days: number
+  }
   next_step: string
   sample_response: string | null
+}
+
+export async function createActionFromOpportunity(projectId: string, opportunityId: string, queryString = "") {
+  const response = await api.post(`/opportunities/${projectId}/${opportunityId}/actions${queryString}`)
+  return response.data
 }
 
 export type OpportunitiesResponse = {

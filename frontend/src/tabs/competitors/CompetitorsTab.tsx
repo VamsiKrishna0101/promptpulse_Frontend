@@ -39,6 +39,7 @@ function brandName(row: CompetitorLike) {
 
 function brandUrl(row: CompetitorLike) {
   if ("url" in row && row.url) return row.url
+  if ("domain" in row && row.domain) return row.domain
   return `${brandName(row).toLowerCase().replace(/[^a-z0-9]/g, "")}.com`
 }
 
@@ -342,7 +343,10 @@ export function CompetitorsTab() {
       if (confirmAction.type === "remove") {
         await removeCompetitor(confirmAction.row.id)
       } else if (confirmAction.type === "track") {
-        await addCompetitor({ name: confirmAction.row.brand_name })
+        await addCompetitor({
+          name: confirmAction.row.brand_name,
+          url: confirmAction.row.domain ? `https://${confirmAction.row.domain}` : undefined,
+        })
         setTab("tracked")
       } else {
         await addCompetitor({ name: confirmAction.name, url: confirmAction.url })

@@ -127,6 +127,16 @@ function App() {
           }
         />
         <Route
+          path="/ai-workspace/actions"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <AIWorkspaceTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/prompts"
           element={
             <ProtectedRoute>

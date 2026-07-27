@@ -11,7 +11,12 @@ export type WorkspaceView = "hub" | "reports" | "contentBriefs" | "actionQueue" 
 export function AIWorkspaceTab() {
   const location = useLocation()
   const navigate = useNavigate()
-  const routeView: WorkspaceView = location.pathname === "/ai-workspace/content-briefs" ? "contentBriefs" : "hub"
+  const routeView: WorkspaceView =
+    location.pathname === "/ai-workspace/content-briefs"
+      ? "contentBriefs"
+      : location.pathname === "/ai-workspace/actions"
+        ? "actionQueue"
+        : "hub"
   const [view, setView] = useState<WorkspaceView>(routeView)
 
   useEffect(() => {
@@ -23,7 +28,7 @@ export function AIWorkspaceTab() {
   }
 
   if (view === "actionQueue") {
-    return <ActionQueuePage onBack={() => setView("hub")} />
+    return <ActionQueuePage onBack={() => navigate("/ai-workspace")} />
   }
 
   if (view === "reddit") {
