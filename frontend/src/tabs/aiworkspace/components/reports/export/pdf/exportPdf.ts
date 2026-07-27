@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf"
 import type { ReportViewModel } from "../../utils/reportMapper"
-import { createExportData } from "../reportExportData"
+import { createEnterpriseReportModel } from "../enterprise/enterpriseReportModel"
+import { loadAssetAsDataUrl } from "../shared/reportAssets"
 
 const C = {
   ink: "#0b1720",
@@ -228,14 +229,19 @@ function addTwoColumnCards(
   state.y = Math.max(leftY, rightY)
 }
 
-function cover(doc: jsPDF, report: ReportViewModel, state: PdfState) {
+function cover(doc: jsPDF, report: ReportViewModel, state: PdfState, logoDataUrl: string | null) {
   drawPageChrome(doc, state)
-  const data = createExportData(report)
+  const model = createEnterpriseReportModel(report)
+  const data = model.data
 
   doc.setFillColor(C.dark)
   doc.roundedRect(16, 24, 178, 64, 4, 4, "F")
   doc.setFillColor(C.dark2)
   doc.circle(179, 27, 26, "F")
+
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, "PNG", 25, 29, 13, 13, undefined, "FAST")
+  }
 
   label(doc, "AI Visibility Report", 26, 40, "#d7e4e1")
   setFont(doc, "bold", 24, "#ffffff")
@@ -438,8 +444,43 @@ function recommendations(doc: jsPDF, report: ReportViewModel, state: PdfState) {
   }
 }
 
-export function exportReportPdf(report: ReportViewModel) {
-  const data = createExportData(report)
+function methodology(doc: jsPDF, model: ReturnType<typeof createEnterpriseReportModel>, state: PdfState) {
+  newPage(doc, state, "Methodology & Coverage")
+  addParagraph(doc, state, model.methodology, "Methodology & Coverage")
+  addSectionTitle(doc, state, "Report standards", "Methodology & Coverage")
+  addCard(
+    doc,
+    state,
+    "How to interpret the findings",
+    "The report is designed to support decisions while keeping observed evidence separate from recommendations.",
+    [
+      "Scores reflect the selected reporting period.",
+      "Position and mention metrics depend on successful runs.",
+      "Source influence is based on observed citations and references.",
+      "Recommendations are prioritized by the available evidence.",
+      "Missing data is shown as unavailable rather than estimated.",
+    ],
+    "neutral",
+    "Methodology & Coverage",
+  )
+  addCard(
+    doc,
+    state,
+    "Data coverage",
+    `Generated ${new Date(model.generatedAt).toLocaleDateString()}. ${model.data.metrics.length} headline metrics and ${model.data.sections.length} analysis sections were included in this export.`,
+    [],
+    "good",
+    "Methodology & Coverage",
+  )
+}
+
+export async function exportReportPdf(report: ReportViewModel) {
+  const model = createEnterpriseReportModel(report)
+  const data = model.data
+  if (!model.validation.hasUsableContent) {
+    throw new Error(model.validation.warnings.join(" "))
+  }
+  const logoDataUrl = await loadAssetAsDataUrl(model.profile.logoUrl)
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" })
   const state: PdfState = {
     y: PAGE.top,
@@ -447,13 +488,14 @@ export function exportReportPdf(report: ReportViewModel) {
     title: data.title,
   }
 
-  cover(doc, report, state)
+  cover(doc, report, state, logoDataUrl)
   visibility(doc, report, state)
   modelAnalysis(doc, report, state)
   promptAnalysis(doc, report, state)
   competitorAnalysis(doc, report, state)
   sourcesAndSentiment(doc, report, state)
   recommendations(doc, report, state)
+  methodology(doc, model, state)
 
   doc.setProperties({
     title: data.title,

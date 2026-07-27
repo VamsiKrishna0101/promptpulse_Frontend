@@ -3,7 +3,7 @@ import type { ExportReportData } from "../../reportExportData"
 import { addBackground, addCard, addEyebrow, addFooter, addMetricCard } from "../pptxHelpers"
 import { bodyText, PPTX } from "../pptxTheme"
 
-export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData) {
+export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData, logoDataUrl?: string | null) {
   const slide = pptx.addSlide()
   addBackground(slide)
 
@@ -25,7 +25,11 @@ export function addCoverSlide(pptx: PptxGenJS, data: ExportReportData) {
     line: { color: PPTX.colors.dark2, transparency: 100 },
   })
 
-  addEyebrow(slide, "AI Visibility Report", 0.95, 0.98)
+  if (logoDataUrl) {
+    slide.addImage({ data: logoDataUrl, x: 0.95, y: 0.78, w: 0.46, h: 0.46 })
+  }
+
+  addEyebrow(slide, "AI Visibility Report", 1.58, 0.98)
   slide.addText(data.title, {
     x: 0.92,
     y: 1.42,

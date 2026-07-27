@@ -317,7 +317,7 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const toast = useToast()
-  const [exporting, setExporting] = useState<"pdf" | "csv" | null>(null)
+  const [exporting, setExporting] = useState<"pdf" | "csv" | "pptx" | null>(null)
   const location = useLocation()
   const navigate = useNavigate()
   const mainRef = useRef<HTMLElement>(null)
@@ -335,14 +335,14 @@ function AppShellContent({ children }: { children: ReactNode }) {
   const advancedFilterCount = advancedFilterKeys.filter(key => searchParams.has(key)).length
   const hideSaraAssistant = ["/chat", "/settings", "/profile", "/subscription", "/help", "/ai-workspace"].includes(location.pathname) || location.pathname.startsWith("/admin")
 
-  async function handleExport(format: "pdf" | "csv") {
+  async function handleExport(format: "pdf" | "csv" | "pptx") {
     if (!selectedProject?.id || !exportResource || exporting) return
 
     setExporting(format)
     try {
       await downloadCsvExport(selectedProject.id, exportResource, filterQuery, format)
       toast.success(
-        format === "pdf" ? "PDF ready" : "CSV ready",
+        format === "pdf" ? "PDF ready" : format === "pptx" ? "PowerPoint ready" : "Excel ready",
         "Your export has started downloading.",
       )
     } catch (error: any) {
@@ -472,18 +472,18 @@ function AppShellContent({ children }: { children: ReactNode }) {
                     {exporting === "pdf" ? "Preparing..." : "PDF"}
                   </button>
                 )}
-                {/* CSV export — all resources */}
+                {/* Overview gets an executive PPTX; detailed tabs retain the data workbook. */}
                 {exportResource && (
                   <button
                     type="button"
-                    onClick={() => void handleExport("csv")}
+                    onClick={() => void handleExport(exportResource === "overview" ? "pptx" : "csv")}
                     disabled={Boolean(exporting)}
                     className={[
                       "flex h-8 items-center gap-1.5 rounded-lg bg-slate-950 px-3 text-[12px] font-semibold text-white shadow-[0_8px_16px_-8px_rgba(15,23,42,0.5)] transition hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-70",
-                      exporting === "csv" ? "cursor-wait" : "",
+                      exporting === (exportResource === "overview" ? "pptx" : "csv") ? "cursor-wait" : "",
                     ].join(" ")}
                   >
-                    {exporting === "csv" ? (
+                    {exporting === (exportResource === "overview" ? "pptx" : "csv") ? (
                       <Loader2 size={13} className="animate-spin text-emerald-400" />
                     ) : (
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
@@ -492,7 +492,9 @@ function AppShellContent({ children }: { children: ReactNode }) {
                         <line x1="12" y1="15" x2="12" y2="3"/>
                       </svg>
                     )}
-                    {exporting === "csv" ? "Preparing..." : "CSV"}
+                    {exporting === (exportResource === "overview" ? "pptx" : "csv")
+                      ? "Preparing..."
+                      : exportResource === "overview" ? "PPTX" : "Excel"}
                   </button>
                 )}
               </div>

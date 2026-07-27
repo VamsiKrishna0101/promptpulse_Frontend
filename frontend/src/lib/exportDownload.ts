@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/lib/api"
+import type { OverviewPptxModel } from "@/lib/overviewPptx/overviewPptxTypes"
 
 export type ExportResource =
   | "overview"
@@ -11,15 +12,29 @@ export type ExportResource =
 /**
  * Downloads an export file from the backend.
  * format="csv" actually downloads an .xlsx (Excel) file for best quality.
- * format="pdf" downloads a PDF.
+ * format="pdf" downloads a PDF. Overview format="pptx" builds an editable
+ * presentation from the authenticated, aggregated report model.
  */
 export async function downloadCsvExport(
   projectId: string | null,
   resource: ExportResource,
   queryString = "",
-  format: "csv" | "pdf" = "csv",
+  format: "csv" | "pdf" | "pptx" = "csv",
 ) {
   if (!projectId) return
+
+  if (format === "pptx") {
+    if (resource !== "overview") throw new Error("PowerPoint export is only available for the overview report.")
+    const token = localStorage.getItem("promptpulse_access_token")
+    const response = await fetch(
+      `${API_BASE_URL}/exports/${projectId}/overview.json${queryString}`,
+      { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } },
+    )
+    if (!response.ok) throw new Error(await readError(response, "PowerPoint export failed"))
+    const { exportOverviewPptx } = await import("@/lib/overviewPptx/exportOverviewPptx")
+    await exportOverviewPptx(await response.json() as OverviewPptxModel)
+    return
+  }
 
   // "csv" requests are routed to .xlsx for professional Excel output
   const ext = format === "pdf" ? "pdf" : "xlsx"

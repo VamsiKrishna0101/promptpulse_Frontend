@@ -6,6 +6,7 @@ import type { Project } from "@/hooks/useProjects"
 import type { CompetitorRow, DashboardData, SourceRow } from "@/hooks/useDashboard"
 import type { TimeSeriesDay } from "@/hooks/useVisibilityTimeSeries"
 import type { RecentChat } from "@/hooks/useRecentChats"
+import { loadBrandLogoDataUrl } from "@/lib/overviewExportAssets"
 
 type ReportData = {
   dashboard: DashboardData | null
@@ -56,11 +57,15 @@ export async function exportOverviewPdf(project: Project | null, queryString: st
   if (!project) return
 
   const report = await loadOverviewReport(project.id, queryString)
+  const brandLogo = await loadBrandLogoDataUrl(project.brand_url)
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
   const W = doc.internal.pageSize.getWidth()
   const margin = 40
   const brand = buildBrandRows(project, report)[0]
   const dateStr = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date())
+
+  drawExecutiveCover(doc, project, brand, report, dateStr, brandLogo)
+  doc.addPage()
 
   // Header Bar
   doc.setFillColor(PDF_COLORS.navy)
@@ -73,7 +78,7 @@ export async function exportOverviewPdf(project: Project | null, queryString: st
 
   doc.setTextColor(PDF_COLORS.white)
   doc.setFontSize(22)
-  doc.text("AI Visibility Overview", margin, 52)
+  doc.text("AI Visibility Executive Overview", margin, 52)
 
   doc.setTextColor("#94A3B8")
   doc.setFontSize(9)
@@ -190,16 +195,97 @@ export async function exportOverviewPdf(project: Project | null, queryString: st
     doc.setTextColor(PDF_COLORS.muted)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(7.5)
-    doc.text(`Confidential — Generated for ${project.brand_name}`, margin, doc.internal.pageSize.getHeight() - 16)
+    doc.text(`Confidential — Prepared for ${project.brand_name}`, margin, doc.internal.pageSize.getHeight() - 16)
     
     doc.setFont("helvetica", "bold")
-    doc.text("PromptPulse", W / 2, doc.internal.pageSize.getHeight() - 16, { align: "center" })
+    doc.text("Powered by PromptPulse", W / 2, doc.internal.pageSize.getHeight() - 16, { align: "center" })
     
     doc.setFont("helvetica", "normal")
     doc.text(`Page ${i} of ${totalPages}`, W - margin, doc.internal.pageSize.getHeight() - 16, { align: "right" })
   }
 
   doc.save(`${slug(project.brand_name)}-visibility-report.pdf`)
+}
+
+function drawExecutiveCover(
+  doc: jsPDF,
+  project: Project,
+  brand: BrandSnapshot | undefined,
+  report: ReportData,
+  dateStr: string,
+  brandLogo: string | null,
+) {
+  const W = doc.internal.pageSize.getWidth()
+  const H = doc.internal.pageSize.getHeight()
+  const margin = 48
+
+  doc.setFillColor(PDF_COLORS.navy)
+  doc.rect(0, 0, W, H, "F")
+  doc.setFillColor("#173B66")
+  doc.circle(W - 36, 44, 150, "F")
+  doc.setFillColor("#1D4E89")
+  doc.circle(W - 78, H - 54, 105, "F")
+
+  if (brandLogo) {
+    doc.setFillColor(PDF_COLORS.white)
+    doc.roundedRect(margin, 54, 56, 56, 12, 12, "F")
+    doc.addImage(brandLogo, "PNG", margin + 10, 64, 36, 36, undefined, "FAST")
+  }
+
+  doc.setTextColor("#B7D9FF")
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(9)
+  doc.text("AI VISIBILITY EXECUTIVE REPORT", margin, 150)
+
+  doc.setTextColor(PDF_COLORS.white)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(31)
+  const titleLines = doc.splitTextToSize(`${project.brand_name} visibility report`, W - margin * 2 - 20)
+  doc.text(titleLines, margin, 204)
+
+  doc.setTextColor("#C9D7EA")
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(12)
+  doc.text("AI search performance, competitive position, and source influence.", margin, 260, { maxWidth: W - margin * 2 })
+
+  const infoY = H - 176
+  doc.setDrawColor("#3A5C83")
+  doc.setLineWidth(0.7)
+  doc.line(margin, infoY, W - margin, infoY)
+
+  doc.setTextColor("#8FB8E4")
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(8)
+  doc.text("PREPARED FOR", margin, infoY + 30)
+  doc.setTextColor(PDF_COLORS.white)
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(13)
+  doc.text(project.brand_name, margin, infoY + 50)
+
+  doc.setTextColor("#8FB8E4")
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(8)
+  doc.text("GENERATED", W / 2, infoY + 30)
+  doc.setTextColor(PDF_COLORS.white)
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(11)
+  doc.text(dateStr, W / 2, infoY + 50)
+
+  doc.setTextColor("#B7D9FF")
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(8)
+  doc.text("CURRENT VISIBILITY", margin, H - 84)
+  doc.setTextColor(PDF_COLORS.white)
+  doc.setFontSize(25)
+  doc.text(`${brand?.visibility.toFixed(1) ?? "-"}%`, margin, H - 52)
+  doc.setTextColor("#AFC6DF")
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(8)
+  doc.text(`${report.sources.length} influencing source domains observed`, margin + 92, H - 54)
+
+  doc.setTextColor("#8FA8C2")
+  doc.setFontSize(8)
+  doc.text("Powered by PromptPulse", W - margin, H - 30, { align: "right" })
 }
 
 function drawSectionHeader(doc: jsPDF, title: string, margin: number, y: number, W: number) {
