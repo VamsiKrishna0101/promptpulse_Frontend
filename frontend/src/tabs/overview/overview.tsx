@@ -86,10 +86,6 @@ export function timeAgo(iso: string) {
     return `${Math.floor(h / 24)} d ago`
 }
 
-function brandDomain(name?: string | null) {
-    return name ? `${name.toLowerCase().replace(/[^a-z0-9]/g, "")}.com` : undefined
-}
-
 export function EngIcon({ model }: { model: string }) {
     const k = engineKey(model)
     const color = ENGINE_COLORS[k]
@@ -289,7 +285,7 @@ export function OverviewTab() {
     }
     const competitors = tracked.map(c => ({
         name: (c.name ?? c.brand_name) ?? "—",
-        url: c.url || brandDomain(c.name ?? c.brand_name),
+        url: c.url || undefined,
         vis: c.visibility,
         sent: c.avg_sentiment,
         pos: c.avg_position,

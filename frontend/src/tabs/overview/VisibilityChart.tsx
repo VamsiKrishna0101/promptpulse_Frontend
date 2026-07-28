@@ -44,6 +44,15 @@ export function VisibilityChart({ data, height = 220 }: { data: TimeSeriesDay[];
     const chartW = W - PAD_L - PAD_R
 
     const brands = useMemo(() => (data.length ? Object.keys(data[0].brands) : []), [data])
+    const brandDomains = useMemo(() => {
+        const domains: Record<string, string | null> = {}
+        for (const day of data) {
+            for (const [brand, domain] of Object.entries(day.brand_domains ?? {})) {
+                if (domain && !domains[brand]) domains[brand] = domain
+            }
+        }
+        return domains
+    }, [data])
 
     const maxVal = useMemo(() => {
         let m = 10
@@ -248,12 +257,18 @@ export function VisibilityChart({ data, height = 220 }: { data: TimeSeriesDay[];
                                 <div key={brand} className="flex items-center justify-between gap-3" style={{ opacity: dimmed ? 0.35 : 1 }}>
                                     <div className="flex items-center gap-1.5">
                                         <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: COLORS[bi % COLORS.length] }} />
-                                        <img
-                                            src={`https://www.google.com/s2/favicons?domain=${brand.toLowerCase().replace(/[^a-z0-9]/g, "")}.com&sz=32`}
-                                            alt="" width={13} height={13}
-                                            className="flex-shrink-0 rounded-[2px] object-contain"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
-                                        />
+                                        {brandDomains[brand] ? (
+                                            <img
+                                                src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(brandDomains[brand] as string)}&sz=32`}
+                                                alt="" width={13} height={13}
+                                                className="flex-shrink-0 rounded-[2px] object-contain"
+                                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                                            />
+                                        ) : (
+                                            <span className="flex h-[13px] w-[13px] flex-shrink-0 items-center justify-center rounded-[2px] bg-zinc-700 text-[7px] font-bold text-white">
+                                                {brand[0]?.toUpperCase() ?? "?"}
+                                            </span>
+                                        )}
                                     <span className="truncate text-[11.5px] text-zinc-300">{brand}</span>
                                 </div>
                                     <span className="text-[11.5px] font-semibold tabular-nums text-white">

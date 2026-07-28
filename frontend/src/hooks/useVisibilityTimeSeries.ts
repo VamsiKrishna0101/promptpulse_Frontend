@@ -5,6 +5,7 @@ export type TimeSeriesDay = {
     date: string
     total_chats: number
     brands: Record<string, number>
+    brand_domains?: Record<string, string | null>
 }
 
 export function useVisibilityTimeSeries(projectId: string | null, queryString: string = "") {
