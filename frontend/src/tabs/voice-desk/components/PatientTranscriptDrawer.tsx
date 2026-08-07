@@ -9,11 +9,9 @@ import {
     Clock,
     AlertTriangle,
     ShieldAlert,
-    User,
     Stethoscope,
     MessageSquare,
     Volume2,
-    Share2,
     Copy,
     Check,
 } from "lucide-react"

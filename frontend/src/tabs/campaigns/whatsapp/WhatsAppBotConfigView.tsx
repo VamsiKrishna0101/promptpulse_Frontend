@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react"
-import {
-    Sparkles,
+import { useState, useEffect } from "react"
+import { Sparkles,
     Save,
     Plus,
     Trash2,
@@ -16,8 +15,7 @@ import {
     ArrowLeft,
     Users,
 } from "lucide-react"
-import {
-    fetchBotConfig,
+import { fetchBotConfig,
     updateBotConfig,
     type WhatsAppBotConfig,
     type DepartmentService,
@@ -37,7 +35,7 @@ export const WhatsAppBotConfigView: React.FC<Props> = ({ projectId, onBack, onOp
     const [savedNotice, setSavedNotice] = useState(false)
     const [activeTab, setActiveTab] = useState<"services" | "identity" | "escalation" | "faqs" | "simulator" | "widget">("services")
 
-    const [config, setConfig] = useState<WhatsAppBotConfig>({
+    const [ setConfig] = useState<WhatsAppBotConfig>({
         id: "",
         account_id: "",
         is_enabled: true,
@@ -969,7 +967,7 @@ export const WhatsAppBotConfigView: React.FC<Props> = ({ projectId, onBack, onOp
 
             {/* ─── TAB 6: Website Widget & Webhook Debug ─────────────────────── */}
             {activeTab === "widget" && (
-                <WidgetAndDebugTab config={config} />
+                <WidgetAndDebugTab config={} />
             )}
         </div>
     )
@@ -977,10 +975,10 @@ export const WhatsAppBotConfigView: React.FC<Props> = ({ projectId, onBack, onOp
 
 // ─── Website Widget & Webhook Debug Panel ─────────────────────────────────────
 
-function WidgetAndDebugTab({ config }: { config: WhatsAppBotConfig }) {
+function WidgetAndDebugTab({}: { config: WhatsAppBotConfig }) {
     const [btnText, setBtnText] = useState("💬 Chat on WhatsApp")
     const [copied, setCopied] = useState(false)
-    const [webhookUrl, setWebhookUrl] = useState("")
+    const [ setWebhookUrl] = useState("")
 
     // Derive phone from account_id placeholder (user sets this in identity tab or we read from account)
     const waPhone = "919951064098" // pulled from connected account - replace with prop if needed

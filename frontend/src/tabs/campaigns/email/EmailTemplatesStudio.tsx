@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ArrowLeft, Save, Plus, FileCode2, Eye } from "lucide-react"
+import { ArrowLeft, Save, Plus, FileCode2, Eye, LayoutTemplate } from "lucide-react"
 import { listEmailTemplates, createEmailTemplate, type EmailTemplate } from "@/lib/emailApi"
 
 interface Props {

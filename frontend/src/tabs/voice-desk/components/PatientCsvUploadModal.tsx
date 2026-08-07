@@ -32,7 +32,7 @@ export const PatientCsvUploadModal: React.FC<PatientCsvUploadModalProps> = ({
     onUploadSuccess,
 }) => {
     const [dragActive, setDragActive] = useState(false)
-    const [rawText, setRawText] = useState("")
+    const [, setRawText] = useState("")
     const [parsedRows, setParsedRows] = useState<ParsedPatientRow[]>([])
     const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)

@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react"
-import {
-    PhoneCall,
-    Plus,
-    Sparkles,
+import { useState, useEffect } from "react"
+import { Plus,
+    
     Bot,
     Clock,
     CheckCircle2,
-    Calendar,
-    XCircle,
+    
+    
     ShieldAlert,
     ArrowRight,
     RefreshCw,
-    Play,
-    Sliders,
+    
+    
 } from "lucide-react"
 import type { VoiceAccount, VoiceCampaign, VoicePlaybookDefinition, VoiceTimeStatus } from "@/lib/voiceApi"
 import { getVoiceAccount, listVoiceCampaigns, getVoicePlaybooks } from "@/lib/voiceApi"
@@ -31,7 +29,7 @@ type ViewMode = "hub" | "wizard" | "studio" | "live-desk" | "playbooks"
 export function VoiceHub({ projectId, onBackToChannels }: Props) {
     const [viewMode, setViewMode] = useState<ViewMode>("hub")
     const [account, setAccount] = useState<VoiceAccount | null>(null)
-    const [timeStatus, setTimeStatus] = useState<VoiceTimeStatus | null>(null)
+    const [ setTimeStatus] = useState<VoiceTimeStatus | null>(null)
     const [campaigns, setCampaigns] = useState<VoiceCampaign[]>([])
     const [playbooks, setPlaybooks] = useState<VoicePlaybookDefinition[]>([])
     const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null)

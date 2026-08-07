@@ -1,5 +1,5 @@
 import React from "react"
-import { ArrowRight, Bot, PhoneCall, Mail, MessageSquare } from "lucide-react"
+import { Bot, PhoneCall, Mail, MessageSquare } from "lucide-react"
 import { useProjects } from "@/hooks/useProjects"
 import type { WhatsAppAccount } from "@/lib/whatsappApi"
 

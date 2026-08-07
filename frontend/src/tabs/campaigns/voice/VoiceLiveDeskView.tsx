@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from "react"
-import {
-    ArrowLeft,
+import { useState, useEffect } from "react"
+import { ArrowLeft,
     CheckCircle2,
-    Clock,
+    
     XCircle,
     Calendar,
-    PhoneCall,
-    Volume2,
+    
+    
     MessageSquare,
     Play,
     RefreshCw,
     ShieldAlert,
-    User,
-    ChevronRight,
+    
+    
     Square,
 } from "lucide-react"
-import type { VoiceCampaign, VoiceCallRecord, VoiceOutcomeIntent } from "@/lib/voiceApi"
+import type { VoiceCampaign, VoiceCallRecord,} from "@/lib/voiceApi"
 import { getVoiceCampaign, listVoiceCallRecords, processVoiceBatch } from "@/lib/voiceApi"
 
 interface Props {

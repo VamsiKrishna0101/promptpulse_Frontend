@@ -1,6 +1,6 @@
-import React, { useState } from "react"
-import { Volume2, Play, Square, Sparkles, PhoneForwarded, ShieldAlert, Save, RefreshCw, Check } from "lucide-react"
-import type { VoiceAgentConfig, VoicePlaybookType } from "@/lib/voiceApi"
+import { useState } from "react"
+import { Volume2,  Square, Sparkles,  ShieldAlert, Save, RefreshCw, Check } from "lucide-react"
+import type { VoiceAgentConfig,} from "@/lib/voiceApi"
 import { updateVoiceAgent, synthesizeVoicePreview } from "@/lib/voiceApi"
 
 interface Props {

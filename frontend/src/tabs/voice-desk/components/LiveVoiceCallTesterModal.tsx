@@ -3,15 +3,10 @@ import {
     X,
     Phone,
     PhoneCall,
-    Mic,
-    Volume2,
-    Play,
-    Pause,
     Send,
     ShieldAlert,
     CheckCircle2,
-    Sparkles,
-    RefreshCw,
+    RefreshCw, Volume2, Play,
     Radio,
 } from "lucide-react"
 
@@ -34,9 +29,9 @@ export const LiveVoiceCallTesterModal: React.FC<LiveVoiceCallTesterModalProps> =
     defaultHospitalName = "వికాస్ హాస్పిటల్స్ (Vikas Hospitals)",
 }) => {
     const [testMode, setTestMode] = useState<"BROWSER_CALL" | "PHONE_DIAL">("BROWSER_CALL")
-    const [hospitalName, setHospitalName] = useState(defaultHospitalName)
-    const [doctorName, setDoctorName] = useState("డాక్టర్ సురేష్ రెడ్డి (Dr. Suresh Reddy)")
-    const [patientName, setPatientName] = useState("వికాస్ గారు (Vikas)")
+    const [hospitalName] = useState(defaultHospitalName)
+    const [doctorName] = useState("డాక్టర్ సురేష్ రెడ్డి (Dr. Suresh Reddy)")
+    const [patientName] = useState("వికాస్ గారు (Vikas)")
     const [phoneNumber, setPhoneNumber] = useState("+91")
 
     // Browser Call State
@@ -44,7 +39,7 @@ export const LiveVoiceCallTesterModal: React.FC<LiveVoiceCallTesterModalProps> =
     const [isProcessingTurn, setIsProcessingTurn] = useState(false)
     const [userInputText, setUserInputText] = useState("")
     const [dialogueHistory, setDialogueHistory] = useState<ChatTurn[]>([])
-    const [lastIntent, setLastIntent] = useState<string | null>(null)
+    const [, setLastIntent] = useState<string | null>(null)
     const [isUrgentAlert, setIsUrgentAlert] = useState(false)
     const currentAudioRef = useRef<HTMLAudioElement | null>(null)
 

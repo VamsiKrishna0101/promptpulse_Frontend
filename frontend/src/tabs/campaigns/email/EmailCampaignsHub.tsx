@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { ArrowRight, ArrowLeft, Mail, LayoutTemplate, Settings, BarChart2 } from "lucide-react"
+import { ArrowRight, ArrowLeft, Mail, LayoutTemplate, Settings,} from "lucide-react"
 import { getEmailAccount, listEmailCampaigns, type EmailAccount, type EmailCampaign } from "@/lib/emailApi"
 
 const GLOW = "group-hover:shadow-[0_20px_40px_-24px_rgba(24,24,27,0.14)] group-hover:ring-zinc-300"

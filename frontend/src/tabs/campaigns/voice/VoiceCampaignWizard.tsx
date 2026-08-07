@@ -1,18 +1,17 @@
-import React, { useState } from "react"
-import {
-    ArrowRight,
+import { useState } from "react"
+import { ArrowRight,
     ArrowLeft,
     Upload,
-    FileSpreadsheet,
+    
     Users,
     Sliders,
     Clock,
     PhoneCall,
-    CheckCircle2,
-    ShieldCheck,
-    Sparkles,
+    
+    
+    
     AlertCircle,
-    FileText,
+    
 } from "lucide-react"
 import type { VoiceAccount, VoicePlaybookDefinition, VoicePlaybookType, ParsedVoiceRecipient } from "@/lib/voiceApi"
 import { createVoiceCampaign, parseVoiceCsv } from "@/lib/voiceApi"
@@ -39,7 +38,7 @@ export function VoiceCampaignWizard({ account, playbooks, onBack, onSuccess }: P
     const [recipients, setRecipients] = useState<ParsedVoiceRecipient[]>([])
     const [concurrentLimit, setConcurrentLimit] = useState(10)
     const [autoLaunch, setAutoLaunch] = useState(true)
-    const [parsing, setParsing] = useState(false)
+    const [ setParsing] = useState(false)
     const [launching, setLaunching] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
