@@ -26,9 +26,7 @@ const AIWorkspaceTab = lazy(() => import('./tabs/aiworkspace/AIWorkspaceTab').th
 const AdminTab = lazy(() => import('./tabs/admin/AdminTab').then(module => ({ default: module.AdminTab })))
 const BillingTab = lazy(() => import('./tabs/billing/BillingTab').then(module => ({ default: module.BillingTab })))
 const AgencyTab = lazy(() => import('./tabs/agency/AgencyTab').then(module => ({ default: module.AgencyTab })))
-const CampaignsTab = lazy(() => import('./tabs/campaigns/CampaignsTab').then(module => ({ default: module.CampaignsTab })))
-const VoiceAiHubPage = lazy(() => import('./tabs/voice-desk/VoiceAiHubPage').then(module => ({ default: module.VoiceAiHubPage })))
-const VoiceDeskPage = lazy(() => import('./tabs/voice-desk/VoiceDeskPage').then(module => ({ default: module.VoiceDeskPage })))
+
 const PricingPage = lazy(() => import('./pages/homepage/PricingPage').then(module => ({ default: module.PricingPage })))
 const BookDemoPage = lazy(() => import('./pages/homepage/BookDemoPage').then(module => ({ default: module.BookDemoPage })))
 const ProductPage = lazy(() => import('./pages/homepage/ProductPage').then(module => ({ default: module.ProductPage })))
@@ -285,9 +283,7 @@ function App() {
           path="/campaigns/*"
           element={
             <ProtectedRoute>
-              <AppShell>
-                <CampaignsTab />
-              </AppShell>
+              <Navigate to="/dashboard" replace />
             </ProtectedRoute>
           }
         />
@@ -295,9 +291,7 @@ function App() {
           path="/voice-ai"
           element={
             <ProtectedRoute>
-              <AppShell>
-                <VoiceAiHubPage />
-              </AppShell>
+              <Navigate to="/dashboard" replace />
             </ProtectedRoute>
           }
         />
@@ -305,9 +299,7 @@ function App() {
           path="/voice-ai/dashboard/*"
           element={
             <ProtectedRoute>
-              <AppShell>
-                <VoiceDeskPage />
-              </AppShell>
+              <Navigate to="/dashboard" replace />
             </ProtectedRoute>
           }
         />
@@ -315,9 +307,7 @@ function App() {
           path="/voice-desk/*"
           element={
             <ProtectedRoute>
-              <AppShell>
-                <VoiceDeskPage />
-              </AppShell>
+              <Navigate to="/dashboard" replace />
             </ProtectedRoute>
           }
         />

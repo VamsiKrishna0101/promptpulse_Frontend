@@ -27,5 +27,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/tabs/campaigns", "src/tabs/voice-desk"]
 }
