@@ -12,12 +12,8 @@ import {
     Filter,
     MessageSquare,
     ChevronRight,
-    Sparkles,
     RefreshCw,
     Users,
-    Stethoscope,
-    Activity,
-    HeartPulse,
 } from "lucide-react"
 import {
     PatientTranscriptDrawer,

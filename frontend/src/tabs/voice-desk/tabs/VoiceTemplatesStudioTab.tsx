@@ -1,18 +1,12 @@
 import React, { useState } from "react"
 import {
-    FileText,
-    Volume2,
     Play,
     Pause,
-    Sparkles,
     CheckCircle2,
     Save,
     RotateCcw,
-    Plus,
-    Copy,
     Building2,
     Check,
-    MessageSquare,
 } from "lucide-react"
 
 export interface VoiceTemplate {

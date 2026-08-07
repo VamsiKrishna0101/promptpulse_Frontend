@@ -1,16 +1,12 @@
 import React, { useState } from "react"
 import { synthesizePrimaryVoicePreview } from "@/lib/voiceApi"
 import {
-    Bot,
     Phone,
-    Volume2,
     Play,
     Pause,
     CheckCircle2,
-    ShieldAlert,
     Building2,
     Clock,
-    Sparkles,
     Save,
 } from "lucide-react"
 
