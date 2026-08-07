@@ -163,15 +163,15 @@ export function TodayRunStatus({ project }: { project: Project | null }) {
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-[12px] font-semibold shadow-[0_1px_2px_rgba(9,9,11,0.04)] transition hover:-translate-y-px hover:shadow-[0_3px_8px_rgba(9,9,11,0.08)]",
+          "inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-semibold whitespace-nowrap flex-shrink-0 shadow-[0_1px_2px_rgba(9,9,11,0.04)] transition hover:shadow-[0_2px_6px_rgba(9,9,11,0.06)]",
           tone,
         )}
         title="Open today's run status"
       >
         {icon}
-        <span>Today</span>
-        <span className="h-3.5 w-px bg-current/20" />
-        <span className="capitalize">{label}</span>
+        <span className="whitespace-nowrap leading-none">Today</span>
+        <span className="h-3 w-px bg-current/25" />
+        <span className="whitespace-nowrap capitalize leading-none">{label}</span>
       </button>
 
       {open && createPortal(

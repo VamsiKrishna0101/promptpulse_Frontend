@@ -1,12 +1,15 @@
 import { Check, CircleDashed } from "lucide-react"
 
-const steps = ["Brand", "Review", "Prompts", "Engines", "Launch"] as const
+const singleSteps = ["Brand", "Review", "Prompts", "Engines", "Launch"] as const
+const agencySteps = ["Client Brand", "Discovery", "Client Prompts", "AI Engines", "Launch"] as const
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
 }
 
-export function SetupProgress({ current }: { current: number }) {
+export function SetupProgress({ current, isAgency = false }: { current: number; isAgency?: boolean }) {
+  const steps = isAgency ? agencySteps : singleSteps
+
   return (
     <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#e4e4e7] bg-white p-1.5 shadow-[0_1px_2px_rgba(9,9,11,0.04)]">
       {steps.map((step, index) => {

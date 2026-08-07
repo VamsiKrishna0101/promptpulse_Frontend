@@ -16,7 +16,6 @@ export const DAYS_OPTIONS = [
     { label: "Last 14 days", value: "14" },
     { label: "Last 30 days", value: "30" },
     { label: "Last 90 days", value: "90" },
-    { label: "All time",     value: ""   },
 ]
 
 export const MODEL_OPTIONS = MODEL_FILTER_OPTIONS
@@ -24,7 +23,9 @@ export const MODEL_OPTIONS = MODEL_FILTER_OPTIONS
 export function useFilters() {
     const [searchParams, setSearchParams] = useSearchParams()
 
-    const days  = searchParams.get("days")  ?? "7"
+    // The time-range dropdown represents a missing `days` parameter as All Time.
+    // Keep the request semantics identical instead of silently restoring 7 days.
+    const days  = searchParams.get("days")  ?? ""
     const model = searchParams.get("model") ?? ""
     const topic = searchParams.get("topic") ?? ""
     const country = searchParams.get("country") ?? ""

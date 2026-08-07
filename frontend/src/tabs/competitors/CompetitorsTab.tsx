@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { useCompetitors, type DiscoveredCompetitor, type TrackedCompetitor } from "@/hooks/useCompetitors"
 import { useProjects } from "@/hooks/useProjects"
+import { useAuth } from "@/hooks/useAuth"
 import { useToast } from "@/components/ui/Toast"
 
 import { Avatar, Sk } from "@/tabs/overview/overview"
@@ -289,6 +290,9 @@ function CompetitorDetailsDrawer({
 }
 
 export function CompetitorsTab() {
+  const { user } = useAuth()
+  const isViewer = user?.agency_role === "CLIENT_VIEWER"
+
   const { selectedProject } = useProjects()
   const { toast } = useToast()
   const projectId = selectedProject?.id ?? null
@@ -370,12 +374,14 @@ export function CompetitorsTab() {
             <h1 className="dashboard-card-title">Competitors</h1>
             <p className="dashboard-card-subtitle mt-0.5">Manage brands tracked across AI answers for {ownBrand}</p>
           </div>
-          <button
-            onClick={() => setAddOpen(true)}
-            className="h-8 rounded-lg bg-slate-950 px-3 text-[11.5px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800"
-          >
-            + Add competitor
-          </button>
+          {!isViewer && (
+            <button
+              onClick={() => setAddOpen(true)}
+              className="h-8 rounded-lg bg-slate-950 px-3 text-[11.5px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800"
+            >
+              + Add competitor
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-4 divide-x divide-slate-200/80 border-b border-slate-200/80 bg-white/70">
@@ -462,17 +468,21 @@ export function CompetitorsTab() {
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => setDetails(row)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-50">View</button>
-                        {tab === "tracked" && "id" in row && (
-                          <button onClick={() => setConfirmAction({ type: "remove", row })} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-rose-600 hover:bg-rose-50">Remove</button>
-                        )}
-                        {tab === "discovered" && "brand_name" in row && (
+                        {!isViewer && (
                           <>
-                            <button onClick={() => setConfirmAction({ type: "track", row })} className="h-6 rounded-md bg-zinc-900 px-2 text-[11px] font-semibold text-white hover:bg-zinc-800">Track</button>
-                            <button onClick={() => ignoreCompetitor(row)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-500 hover:bg-zinc-50">Ignore</button>
+                            {tab === "tracked" && "id" in row && (
+                              <button onClick={() => setConfirmAction({ type: "remove", row })} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-rose-600 hover:bg-rose-50">Remove</button>
+                            )}
+                            {tab === "discovered" && "brand_name" in row && (
+                              <>
+                                <button onClick={() => setConfirmAction({ type: "track", row })} className="h-6 rounded-md bg-zinc-900 px-2 text-[11px] font-semibold text-white hover:bg-zinc-800">Track</button>
+                                <button onClick={() => ignoreCompetitor(row)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-500 hover:bg-zinc-50">Ignore</button>
+                              </>
+                            )}
+                            {tab === "ignored" && "brand_name" in row && (
+                              <button onClick={() => restoreIgnored(row.brand_name)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-50">Restore</button>
+                            )}
                           </>
-                        )}
-                        {tab === "ignored" && "brand_name" in row && (
-                          <button onClick={() => restoreIgnored(row.brand_name)} className="h-6 rounded-md border border-zinc-200 bg-white px-2 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-50">Restore</button>
                         )}
                       </div>
                     </td>

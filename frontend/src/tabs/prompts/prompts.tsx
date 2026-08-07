@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useFilters } from "@/hooks/useFilters"
 import { useProjects } from "@/hooks/useProjects"
 import { usePrompts, type PromptRow, type PromptStatus } from "@/hooks/usePrompts"
+import { useAuth } from "@/hooks/useAuth"
 import { downloadCsvExport } from "@/lib/exportDownload"
 
 const SortIcon = () => (
@@ -297,6 +298,9 @@ function TopicSearchDropdown({
 }
 
 export function PromptsTab() {
+    const { user } = useAuth()
+    const isViewer = user?.agency_role === "CLIENT_VIEWER"
+    
     const { selectedProject } = useProjects()
     const projectId = selectedProject?.id ?? null
     const { queryString } = useFilters()
@@ -469,16 +473,18 @@ export function PromptsTab() {
 
                     <div className="border-b border-slate-200/80 p-2">
                         {!isAddingTopic ? (
-                            <button
-                                onClick={() => {
-                                    setIsAddingTopic(true)
-                                    setTopicError(null)
-                                }}
-                                className="flex h-10 w-full cursor-pointer items-center justify-between rounded-md px-3 text-left text-[13px] font-semibold text-slate-900 hover:bg-white/80"
-                            >
-                                <span>Add topic</span>
-                                <span className="text-lg font-normal leading-none text-zinc-700">+</span>
-                            </button>
+                            !isViewer && (
+                                <button
+                                    onClick={() => {
+                                        setIsAddingTopic(true)
+                                        setTopicError(null)
+                                    }}
+                                    className="flex h-10 w-full cursor-pointer items-center justify-between rounded-md px-3 text-left text-[13px] font-semibold text-slate-900 hover:bg-white/80"
+                                >
+                                    <span>Add topic</span>
+                                    <span className="text-lg font-normal leading-none text-zinc-700">+</span>
+                                </button>
+                            )
                         ) : (
                             <form onSubmit={submitTopic} className="rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.65)]">
                                 <input
@@ -555,19 +561,23 @@ export function PromptsTab() {
                                 <span>Position </span>
                                 <strong className="text-zinc-900">{summary.position !== null ? `# ${summary.position.toFixed(1)}` : "-"}</strong>
                             </div>
-                            <button
-                                onClick={() => void runDiscovery()}
-                                disabled={isDiscoveringPrompts}
-                                className="cursor-pointer rounded-lg border border-slate-950 bg-slate-950 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                {isDiscoveringPrompts ? "Discovering..." : "Prompt Intelligence"}
-                            </button>
-                            <button
-                                onClick={openAddPrompt}
-                                className="cursor-pointer rounded-lg bg-slate-950 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800"
-                            >
-                                + Add Prompt
-                            </button>
+                            {!isViewer && (
+                                <>
+                                    <button
+                                        onClick={() => void runDiscovery()}
+                                        disabled={isDiscoveringPrompts}
+                                        className="cursor-pointer rounded-lg border border-slate-950 bg-slate-950 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {isDiscoveringPrompts ? "Discovering..." : "Prompt Intelligence"}
+                                    </button>
+                                    <button
+                                        onClick={openAddPrompt}
+                                        className="cursor-pointer rounded-lg bg-slate-950 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.8)] hover:bg-slate-800"
+                                    >
+                                        + Add Prompt
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -738,26 +748,28 @@ export function PromptsTab() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-right">
-                                            {tab === "ACTIVE" ? (
-                                                <button
-                                                    onClick={(event) => {
-                                                        event.stopPropagation()
-                                                        void deactivate(prompt.id)
-                                                    }}
-                                                    className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded border border-zinc-200 bg-white text-zinc-400 opacity-0 transition-colors hover:bg-zinc-50 hover:text-red-600 group-hover:opacity-100"
-                                                >
-                                                    <RemoveIcon />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={(event) => {
-                                                        event.stopPropagation()
-                                                        void activate(prompt.id)
-                                                    }}
-                                                    className="inline-flex h-6 cursor-pointer items-center justify-center rounded border border-zinc-900 bg-zinc-900 px-2.5 text-[10px] font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
-                                                >
-                                                    Track
-                                                </button>
+                                            {!isViewer && (
+                                                tab === "ACTIVE" ? (
+                                                    <button
+                                                        onClick={(event) => {
+                                                            event.stopPropagation()
+                                                            void deactivate(prompt.id)
+                                                        }}
+                                                        className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded border border-zinc-200 bg-white text-zinc-400 opacity-0 transition-colors hover:bg-zinc-50 hover:text-red-600 group-hover:opacity-100"
+                                                    >
+                                                        <RemoveIcon />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={(event) => {
+                                                            event.stopPropagation()
+                                                            void activate(prompt.id)
+                                                        }}
+                                                        className="inline-flex h-6 cursor-pointer items-center justify-center rounded border border-zinc-900 bg-zinc-900 px-2.5 text-[10px] font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
+                                                    >
+                                                        Track
+                                                    </button>
+                                                )
                                             )}
                                         </td>
                                     </tr>

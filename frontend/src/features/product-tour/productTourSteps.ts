@@ -145,15 +145,6 @@ export const productTourSteps: ProductTourStep[] = [
     placement: "bottom",
   },
   {
-    id: "analytics",
-    path: "/analytics",
-    targetId: "analytics-shell",
-    eyebrow: "Web Analytics",
-    title: "Connect website behavior to AI visibility",
-    body: "Web Analytics tracks site activity and setup signals. Later this becomes the home for AI crawler and bot visit evidence.",
-    placement: "bottom",
-  },
-  {
     id: "ai-workspace",
     path: "/ai-workspace",
     targetId: "ai-workspace-shell",

@@ -56,13 +56,13 @@ export function SupportAgentChat({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-[14px] font-semibold tracking-[-0.01em] text-white">Support Agent</h2>
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-[3px] text-[10px] font-semibold text-emerald-200">
+                <h2 className="text-[14px] font-semibold tracking-[-0.01em] text-slate-900">Support Agent</h2>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-[3px] text-[10px] font-semibold text-emerald-700">
                   <span className="h-[6px] w-[6px] rounded-full bg-[#12B76A]" />
                   Account aware
                 </span>
               </div>
-              <p className="truncate text-[11.5px] text-slate-400">
+              <p className="truncate text-[11.5px] text-slate-500">
                 {selectedProject?.brand_name ?? "Project"} / subscription, credits, reports, scraping
               </p>
             </div>

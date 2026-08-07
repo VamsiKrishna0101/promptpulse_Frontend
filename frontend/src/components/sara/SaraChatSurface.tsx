@@ -28,7 +28,6 @@ const pageLabels: Record<string, string> = {
     "/prompts": "Prompts",
     "/sources": "Sources",
     "/competitors": "Competitors",
-    "/analytics": "Web Analytics",
     "/chat": "Chat",
 }
 
@@ -45,7 +44,7 @@ function SaraAvatar({ size = 32 }: { size?: number }) {
 
 function ReadyBadge() {
     return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2 py-[3px] text-[10px] font-semibold text-emerald-200">
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-[3px] text-[10px] font-semibold text-emerald-700">
             <span className="relative flex h-[6px] w-[6px]">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#12B76A] opacity-60" />
                 <span className="relative inline-flex h-[6px] w-[6px] rounded-full bg-[#12B76A]" />
@@ -143,11 +142,11 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
         <div className={shellClass}>
             {historyOpen && (
                 <aside className="sara-history hidden w-[248px] flex-shrink-0 md:block">
-                    <div className="border-b border-white/[0.08] p-3">
+                    <div className="border-b border-slate-200 p-3">
                         <button
                             type="button"
                             onClick={sara.startNewConversation}
-                            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-blue-500 text-[12.5px] font-bold text-white shadow-[0_14px_30px_-20px_rgba(59,130,246,0.9)] transition hover:bg-blue-400"
+                            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 text-[12.5px] font-bold text-white shadow-[0_10px_20px_-10px_rgba(37,99,235,0.8)] transition hover:bg-blue-500"
                         >
                             <MessageSquarePlus size={14} strokeWidth={2.25} />
                             New chat
@@ -167,12 +166,12 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
                                     className={[
                                         "group relative mb-1 w-full rounded-xl py-2 pl-3 pr-2.5 text-left transition",
                                         sara.activeConversationId === conversation.id
-                                            ? "bg-blue-500/15 text-blue-200 ring-1 ring-blue-400/20"
-                                            : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100",
+                                            ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200 font-semibold"
+                                            : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900",
                                     ].join(" ")}
                                 >
                                     {sara.activeConversationId === conversation.id && (
-                                        <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-blue-400 shadow-[0_0_14px_rgba(96,165,250,0.8)]" />
+                                        <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                                     )}
                                     <span className="line-clamp-2 text-[12.5px] font-medium leading-snug">
                                         {conversation.title ?? "Sara conversation"}
@@ -184,7 +183,7 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
                 </aside>
             )}
 
-            <section className="flex min-w-0 flex-1 flex-col bg-white">
+            <section className="flex min-w-0 flex-1 flex-col bg-[#f8fafc]">
                 <header className="sara-header flex h-[64px] flex-shrink-0 items-center gap-3 px-4">
                     <button
                         type="button"
@@ -198,7 +197,7 @@ export function SaraChatSurface({ mode, onClose, onExpand, onMinimize }: SaraCha
                     <button
                         type="button"
                         onClick={onMinimize}
-                        className="flex h-8 items-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.06] px-2.5 text-[12px] font-semibold text-slate-200 transition hover:bg-white/[0.12]"
+                        className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-[12px] font-semibold text-slate-700 transition hover:bg-slate-100"
                     >
                         <Minimize2 size={13} strokeWidth={2} />
                         Minimize
@@ -266,10 +265,10 @@ function SaraTitle({ projectName, pageContext }: { projectName: string; pageCont
             <SaraAvatar size={32} />
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                    <h2 className="text-[14px] font-semibold tracking-[-0.01em] text-white">Sara</h2>
+                    <h2 className="text-[14px] font-semibold tracking-[-0.01em] text-slate-900">Sara</h2>
                     <ReadyBadge />
                 </div>
-                <p className="truncate text-[11.5px] text-slate-400">
+                <p className="truncate text-[11.5px] text-slate-500">
                     {projectName} / {pageContext}
                 </p>
             </div>
@@ -397,7 +396,7 @@ function SaraInput({
 }) {
     return (
         <form
-            className={compact ? "flex-shrink-0 border-t border-slate-200/80 bg-white p-3" : "border-t border-slate-200/80 bg-white p-4"}
+            className={compact ? "flex-shrink-0 border-t border-slate-200/80 bg-[#f8fafc] p-3" : "border-t border-slate-200/80 bg-[#f8fafc] p-4"}
             onSubmit={(event) => {
                 event.preventDefault()
                 onSubmit()

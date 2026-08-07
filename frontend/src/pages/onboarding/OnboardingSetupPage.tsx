@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import type { FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowRight, Loader2, Rocket, ShieldCheck, Upload } from "lucide-react"
+import { ArrowRight, Building2, Loader2, Rocket, ShieldCheck, Upload } from "lucide-react"
 import { useToast } from "@/components/ui/Toast"
+import { useAuth } from "@/hooks/useAuth"
 import { GEO_COUNTRIES, countryFlagUrl } from "@/lib/countries"
 import { BrandReviewCard } from "./components/BrandReviewCard"
 import { DEFAULT_ENGINE_SELECTION, EngineSelectionCard } from "./components/EngineSelectionCard"
@@ -32,6 +33,8 @@ const stepIndex: Record<Step, number> = {
 }
 
 export function OnboardingSetupPage() {
+  const { user } = useAuth()
+  const isAgency = user?.account_type === "AGENCY"
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -48,7 +51,7 @@ export function OnboardingSetupPage() {
   const [customBrief, setCustomBrief] = useState("")
   const [customPromptText, setCustomPromptText] = useState("")
   const [customPromptTopic, setCustomPromptTopic] = useState("Custom")
-  const promptLimit = 999999
+  const promptLimit = 10
   const engineLimit = "all" as const
   const canCreateProject = true
 
@@ -237,32 +240,33 @@ export function OnboardingSetupPage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4e4e7] pb-3">
               <p className="inline-flex items-center gap-2 rounded-full border border-[#e4e4e7] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
-                <ShieldCheck size={12} />
-                AI visibility setup
+                {isAgency ? <Building2 size={12} className="text-emerald-700" /> : <ShieldCheck size={12} />}
+                {isAgency ? "Agency client setup" : "AI visibility setup"}
               </p>
 
-              <SetupProgress current={stepIndex[step]} />
+              <SetupProgress current={stepIndex[step]} isAgency={isAgency} />
             </div>
 
             <div className="max-w-3xl">
               <h1 className="text-[30px] font-semibold leading-[1.05] tracking-[-0.045em] text-[#18181b] md:text-[38px]">
-                Build your first AI visibility benchmark.
+                {isAgency ? "Set up your first client workspace." : "Build your first AI visibility benchmark."}
               </h1>
 
               <p className="mt-2.5 max-w-2xl text-[13px] font-medium leading-6 text-[#52525b]">
-                Crawl your website, review the brand facts, select buyer-style prompts,
-                choose the AI engines that matter, then launch your first visibility run.
+                {isAgency
+                  ? "Crawl your client's website, extract their core offerings & competitors, select high-intent buyer prompts, and benchmark their AI engine visibility."
+                  : "Crawl your website, review the brand facts, select buyer-style prompts, choose the AI engines that matter, then launch your first visibility run."}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2 text-[11.5px] font-semibold text-[#52525b]">
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  Unlimited projects
+                  {isAgency ? "1 Free Client Workspace" : "1 Free Brand Workspace"}
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  Unlimited prompts
+                  10 Free Trial Prompts
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
-                  Credits apply only to paid actions
+                  Free Technical Site Audit
                 </span>
                 <span className="rounded-lg border border-[#e4e4e7] bg-white px-2.5 py-1.5">
                   {engineLimit === "all" ? "All engines" : `${engineLimit} engines`} per project
@@ -273,7 +277,9 @@ export function OnboardingSetupPage() {
         </header>
 
         <section className="rounded-2xl border border-[#DDE4EE] bg-[#F8FAFC] px-4 py-3 text-[12.5px] font-medium leading-6 text-[#667085]">
-          Pay-As-You-Go workspace · all projects, prompts, and engines are available without subscription tiers.
+          {isAgency
+            ? "Agency Free Trial · includes 1 client brand workspace, 10 AI discovery prompts, and free in-house site audit crawler."
+            : "Free Trial workspace · includes 1 brand workspace, 10 AI discovery prompts, and free in-house site audit crawler."}
         </section>
 
         {step === "brand" && canCreateProject && (
@@ -283,21 +289,21 @@ export function OnboardingSetupPage() {
           >
             <div className="grid gap-3 md:grid-cols-[1fr_1fr_230px_auto] md:items-end">
               <Field
-                label="Brand name"
+                label={isAgency ? "Client brand name" : "Brand name"}
                 value={brandName}
                 onChange={setBrandName}
-                placeholder="Acme AI"
+                placeholder={isAgency ? "Client Corp / Healthcare" : "Acme AI"}
               />
 
               <Field
-                label="Brand URL"
+                label={isAgency ? "Client website URL" : "Brand URL"}
                 value={brandUrl}
                 onChange={setBrandUrl}
                 placeholder="https://example.com"
               />
 
               <CountrySelect
-                label="Primary market"
+                label={isAgency ? "Client primary market" : "Primary market"}
                 value={brandLocation}
                 onChange={setBrandLocation}
               />
@@ -311,7 +317,7 @@ export function OnboardingSetupPage() {
                 ) : (
                   <ArrowRight size={14} />
                 )}
-                Crawl brand
+                {isAgency ? "Crawl client" : "Crawl brand"}
               </button>
             </div>
           </form>
@@ -319,12 +325,12 @@ export function OnboardingSetupPage() {
 
         {step === "review" && research && brandData && (
           <>
-            <BrandReviewCard research={research} data={brandData} onChange={setBrandData} />
+            <BrandReviewCard research={research} data={brandData} onChange={setBrandData} isAgency={isAgency} />
 
             <section className="rounded-2xl border border-dashed border-[#d4d4d8] bg-[#fafafa] p-4 shadow-[0_1px_3px_rgba(9,9,11,0.04)]">
               <div className="flex items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
                 <Upload size={12} />
-                Optional customer brief
+                {isAgency ? "Optional client brief / notes" : "Optional customer brief"}
               </div>
 
               <textarea

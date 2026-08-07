@@ -13,7 +13,7 @@ const OverviewTab = lazy(() => import('./tabs/overview/overview').then(module =>
 const PromptsTab = lazy(() => import('./tabs/prompts/prompts').then(module => ({ default: module.PromptsTab })))
 const PromptDetailTab = lazy(() => import('./tabs/prompts/PromptDetailTab').then(module => ({ default: module.PromptDetailTab })))
 const SourcesTab = lazy(() => import('./tabs/sources/SourcesTab').then(module => ({ default: module.SourcesTab })))
-const SeoTab = lazy(() => import('./tabs/seo/SeoTab').then(module => ({ default: module.SeoTab })))
+const SeoWorkspacePage = lazy(() => import('./tabs/seo/workspace/SeoWorkspacePage').then(module => ({ default: module.SeoWorkspacePage })))
 const CompetitorsTab = lazy(() => import('./tabs/competitors/CompetitorsTab').then(module => ({ default: module.CompetitorsTab })))
 const WebAnalyticsTab = lazy(() => import('./tabs/webanalytics/WebAnalyticsTab').then(module => ({ default: module.WebAnalyticsTab })))
 const ChatHistoryPage = lazy(() => import('./tabs/chat/ChatHistoryPage').then(module => ({ default: module.ChatHistoryPage })))
@@ -26,6 +26,9 @@ const AIWorkspaceTab = lazy(() => import('./tabs/aiworkspace/AIWorkspaceTab').th
 const AdminTab = lazy(() => import('./tabs/admin/AdminTab').then(module => ({ default: module.AdminTab })))
 const BillingTab = lazy(() => import('./tabs/billing/BillingTab').then(module => ({ default: module.BillingTab })))
 const AgencyTab = lazy(() => import('./tabs/agency/AgencyTab').then(module => ({ default: module.AgencyTab })))
+const CampaignsTab = lazy(() => import('./tabs/campaigns/CampaignsTab').then(module => ({ default: module.CampaignsTab })))
+const VoiceAiHubPage = lazy(() => import('./tabs/voice-desk/VoiceAiHubPage').then(module => ({ default: module.VoiceAiHubPage })))
+const VoiceDeskPage = lazy(() => import('./tabs/voice-desk/VoiceDeskPage').then(module => ({ default: module.VoiceDeskPage })))
 const PricingPage = lazy(() => import('./pages/homepage/PricingPage').then(module => ({ default: module.PricingPage })))
 const BookDemoPage = lazy(() => import('./pages/homepage/BookDemoPage').then(module => ({ default: module.BookDemoPage })))
 const ProductPage = lazy(() => import('./pages/homepage/ProductPage').then(module => ({ default: module.ProductPage })))
@@ -34,6 +37,7 @@ const ChangelogPage = lazy(() => import('./pages/resources/ChangelogPage').then(
 const GeoGuidePage = lazy(() => import('./pages/resources/GeoGuidePage').then(module => ({ default: module.GeoGuidePage })))
 const PublicHelpPage = lazy(() => import('./pages/resources/PublicHelpPage').then(module => ({ default: module.PublicHelpPage })))
 const OnboardingSetupPage = lazy(() => import('./pages/onboarding/OnboardingSetupPage').then(module => ({ default: module.OnboardingSetupPage })))
+const ClientPortalLivePage = lazy(() => import('./pages/client-portal/ClientPortalLivePage').then(module => ({ default: module.ClientPortalLivePage })))
 const LandingChatWidget = lazy(() => import('./components/landing-chat/LandingChatWidget').then(module => ({ default: module.LandingChatWidget })))
 
 function RootRoute() {
@@ -67,6 +71,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/agency/invitations/:token" element={<AgencyInvitationPage />} />
+          <Route path="/portal/:token" element={<ClientPortalLivePage />} />
           <Route
             path="/onboarding"
             element={
@@ -167,11 +172,11 @@ function App() {
           }
         />
         <Route
-          path="/seo"
+          path="/seo/*"
           element={
             <ProtectedRoute>
               <AppShell>
-                <SeoTab />
+                <SeoWorkspacePage />
               </AppShell>
             </ProtectedRoute>
           }
@@ -272,6 +277,46 @@ function App() {
             <ProtectedRoute>
               <AppShell>
                 <AgencyTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/campaigns/*"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <CampaignsTab />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/voice-ai"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <VoiceAiHubPage />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/voice-ai/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <VoiceDeskPage />
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/voice-desk/*"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <VoiceDeskPage />
               </AppShell>
             </ProtectedRoute>
           }

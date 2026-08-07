@@ -41,12 +41,26 @@ function Badge({ type }: { type: string }) {
 }
 
 export function Fav({ domain }: { domain: string }) {
+    // If stored value is a brand name like "The Wall Street Journal" rather than a real domain,
+    // try to extract something usable. Real domains always contain a dot.
+    const isRealDomain = domain.includes(".")
+    const faviconDomain = isRealDomain ? domain : domain.toLowerCase().replace(/\s+/g, "") + ".com"
+    const letter = domain.trim()[0]?.toUpperCase() ?? "?"
+
     return (
-        <img src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
-            alt="" width={15} height={15} className="flex-shrink-0 rounded-[2px] object-contain"
-            loading="lazy" decoding="async"
-            onError={e => { (e.target as HTMLImageElement).style.display = "none" }}
-        />
+        <span className="relative flex h-[15px] w-[15px] flex-shrink-0 items-center justify-center overflow-hidden rounded-[2px] bg-slate-100">
+            <img
+                src={`https://www.google.com/s2/favicons?domain=${faviconDomain}&sz=32`}
+                alt=""
+                width={15}
+                height={15}
+                className="absolute inset-0 h-full w-full object-contain"
+                loading="lazy"
+                decoding="async"
+                onError={e => { (e.target as HTMLImageElement).style.display = "none" }}
+            />
+            <span className="text-[7px] font-bold text-slate-400 select-none">{letter}</span>
+        </span>
     )
 }
 

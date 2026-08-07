@@ -6,16 +6,17 @@ import {
   Download,
   FileText,
   Loader2,
+  Presentation,
   Search,
 } from "lucide-react"
 import type { GeoArticleItem } from "@/hooks/useGeoArticle"
 import { Fav } from "@/tabs/overview/overview"
-import { downloadGeoArticlePdf } from "@/lib/exportDownload"
+import { downloadGeoArticlePdf, downloadGeoArticlePptx } from "@/lib/exportDownload"
 
-function cleanDemoText(text: string, brandName: string) {
+function cleanDemoText(text?: string | null, brandName: string = ""): string {
+  if (!text) return ""
   return text
-    .replace(/PromptPulse/gi, brandName)
-    .replace(/PromptPulse/gi, brandName)
+    .replace(/PromptPulse/gi, brandName || "Brand")
     .replace(/promptpulse\.com/gi, "yourbrand.com")
 }
 
@@ -39,7 +40,8 @@ function CopyButton({ value }: { value: string }) {
   )
 }
 
-function Markdown({ text }: { text: string }) {
+function Markdown({ text }: { text?: string }) {
+  if (!text) return null
   const nodes: React.ReactNode[] = []
   let listBuf: string[] = []
   let k = 0
@@ -87,24 +89,25 @@ function Markdown({ text }: { text: string }) {
   return <>{nodes}</>
 }
 
-function ArticleReader({
+export function MyArticlesDetail({
   item,
-  brandName,
   projectId,
+  brandName,
   onBack,
 }: {
   item: GeoArticleItem
-  brandName: string
   projectId: string
+  brandName: string
   onBack: () => void
 }) {
-  const article = item.article
+  const article = item?.article
   if (!article) return null
 
   const articleText = cleanDemoText(article.article_markdown, brandName)
-  const articleTitle = cleanDemoText(article.title, brandName)
-  const description = cleanDemoText(article.meta_description || item.brief.recommended_article.priority_reason, brandName)
+  const articleTitle = cleanDemoText(article.title || item.brief?.recommended_article?.title, brandName)
+  const description = cleanDemoText(article.meta_description || item.brief?.recommended_article?.priority_reason, brandName)
   const [isExporting, setIsExporting] = useState(false)
+  const [isExportingPpt, setIsExportingPpt] = useState(false)
 
   async function handleExportPdf() {
     setIsExporting(true)
@@ -114,6 +117,17 @@ function ArticleReader({
       alert(error instanceof Error ? error.message : "Failed to export PDF.")
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  async function handleExportPpt() {
+    setIsExportingPpt(true)
+    try {
+      await downloadGeoArticlePptx(brandName, item.brief, { ...article, article_markdown: articleText, title: articleTitle })
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to export PPTX.")
+    } finally {
+      setIsExportingPpt(false)
     }
   }
 
@@ -141,6 +155,15 @@ function ArticleReader({
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               Export PDF
             </button>
+            <button
+              type="button"
+              onClick={() => void handleExportPpt()}
+              disabled={isExportingPpt}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#e4e4e7] bg-white px-3 text-[12px] font-semibold text-[#52525b] shadow-[0_1px_2px_rgba(9,9,11,0.04)] transition hover:border-[#d4d4d8] hover:text-[#18181b]"
+            >
+              {isExportingPpt ? <Loader2 size={14} className="animate-spin" /> : <Presentation size={14} />}
+              Export PPT
+            </button>
           </div>
         </div>
       </div>
@@ -151,22 +174,26 @@ function ArticleReader({
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
               Saved article
             </span>
-            <span className="rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
-              {item.brief.recommended_article.content_type}
-            </span>
+            {item.brief?.recommended_article?.content_type && (
+              <span className="rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
+                {item.brief.recommended_article.content_type}
+              </span>
+            )}
           </div>
           <h1 className="max-w-4xl text-[34px] font-semibold leading-[1.04] tracking-[-0.055em] text-[#18181b] sm:text-[44px]">
             {articleTitle}
           </h1>
-          <p className="mt-4 max-w-3xl text-[16px] font-medium leading-8 text-[#52525b]">
-            {description}
-          </p>
+          {description && (
+            <p className="mt-4 max-w-3xl text-[16px] font-medium leading-8 text-[#52525b]">
+              {description}
+            </p>
+          )}
         </div>
 
         <article className="mx-auto max-w-4xl py-8">
           <Markdown text={articleText} />
 
-          {article.faq.length > 0 && (
+          {article.faq && article.faq.length > 0 && (
             <section className="mt-10 rounded-xl border border-[#e4e4e7] bg-white p-5">
               <h2 className="text-[22px] font-semibold tracking-[-0.04em] text-[#18181b]">
                 Questions this draft answers
@@ -193,12 +220,12 @@ export function MyArticlesView({
   projectId,
   onBack,
 }: {
-  items: GeoArticleItem[]
+  items?: GeoArticleItem[]
   brandName: string
   projectId: string
   onBack: () => void
 }) {
-  const articles = items.filter((item) => item.article)
+  const articles = (items || []).filter((item) => item?.article)
   const [activeId, setActiveId] = useState<string | number | null>(null)
   const activeArticle = activeId === null
     ? null
@@ -206,7 +233,7 @@ export function MyArticlesView({
 
   if (activeArticle) {
     return (
-      <ArticleReader
+      <MyArticlesDetail
         item={activeArticle}
         brandName={brandName}
         projectId={projectId}
@@ -257,6 +284,8 @@ export function MyArticlesView({
         <div className="grid gap-2.5">
           {articles.map((item) => {
             const article = item.article!
+            const sources = item.brief?.sources_to_reference || []
+            const metrics = item.brief?.metrics || { evidence_count: 0, own_visibility: 0 }
             return (
               <button
                 key={item.id ?? item.offset}
@@ -270,19 +299,21 @@ export function MyArticlesView({
                       <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
                         Article
                       </span>
-                      <span className="rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
-                        {item.brief.topic}
-                      </span>
+                      {item.brief?.topic && (
+                        <span className="rounded-full border border-[#e4e4e7] bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
+                          {item.brief.topic}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-[18px] font-semibold leading-tight tracking-[-0.035em] text-[#18181b] group-hover:text-[#09090b]">
-                      {cleanDemoText(article.title, brandName)}
+                      {cleanDemoText(article.title || item.brief?.recommended_article?.title, brandName)}
                     </h3>
                     <p className="mt-2 line-clamp-2 text-[13px] leading-6 text-[#52525b]">
-                      {cleanDemoText(article.meta_description || item.brief.recommended_article.priority_reason, brandName)}
+                      {cleanDemoText(article.meta_description || item.brief?.recommended_article?.priority_reason, brandName)}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-semibold text-[#71717a]">
-                      <span>{item.brief.metrics.evidence_count} evidence points</span>
-                      <span>{item.brief.metrics.own_visibility}% visibility</span>
+                      <span>{metrics.evidence_count} evidence points</span>
+                      <span>{metrics.own_visibility}% visibility</span>
                       {item.updated_at && <span>Updated {new Date(item.updated_at).toLocaleDateString()}</span>}
                     </div>
                   </div>
@@ -290,14 +321,14 @@ export function MyArticlesView({
                   <div className="flex flex-col items-end gap-2">
                     <Search size={16} className="text-[#a1a1aa] transition group-hover:text-[#18181b]" />
                     <div className="flex -space-x-1">
-                      {item.brief.sources_to_reference.slice(0, 3).map((source) => (
+                      {sources.slice(0, 3).map((source) => (
                         <span key={source.domain} className="rounded-full border border-white bg-white p-0.5">
                           <Fav domain={source.domain} />
                         </span>
                       ))}
-                      {item.brief.sources_to_reference.length > 3 && (
+                      {sources.length > 3 && (
                         <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white bg-[#f4f4f5] text-[9px] font-semibold text-[#71717a]">
-                          +{item.brief.sources_to_reference.length - 3}
+                          +{sources.length - 3}
                         </span>
                       )}
                     </div>

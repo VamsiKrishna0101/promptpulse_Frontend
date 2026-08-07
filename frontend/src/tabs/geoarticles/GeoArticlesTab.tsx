@@ -25,8 +25,7 @@ import {
   type GeoArticleItem,
 } from "@/hooks/useGeoArticle"
 import { useProjects } from "@/hooks/useProjects"
-import { Fav, Sk } from "@/tabs/overview/overview"
-import { downloadGeoArticlePdf } from "@/lib/exportDownload"
+import { downloadGeoArticlePdf, downloadGeoArticlePptx } from "@/lib/exportDownload"
 import { MyArticlesView } from "./MyArticlesView"
 
 type Action = GeoArticleBrief["recommended_article"]["action"]
@@ -42,15 +41,32 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
 }
 
+function Fav({ domain }: { domain: string }) {
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`}
+      alt=""
+      className="h-3.5 w-3.5 shrink-0 rounded"
+      onError={(e) => {
+        ;(e.target as HTMLElement).style.display = "none"
+      }}
+    />
+  )
+}
+
+function Sk({ cls = "" }: { cls?: string }) {
+  return <div className={`animate-pulse bg-[#f4f4f5] ${cls}`} />
+}
+
 function displayBrandName(name?: string | null) {
   if (!name || /refract/i.test(name)) return "Your Brand"
   return name
 }
 
-function cleanDemoText(text: string, brandName: string) {
+function cleanDemoText(text?: string | null, brandName: string = ""): string {
+  if (!text) return ""
   return text
-    .replace(/PromptPulse/gi, brandName)
-    .replace(/PromptPulse/gi, brandName)
+    .replace(/PromptPulse/gi, brandName || "Brand")
     .replace(/promptpulse\.com/gi, "yourbrand.com")
 }
 
@@ -415,21 +431,18 @@ function ArticlePreviewPage({
     }
   }
 
-  const handleExportPpt = () => {
+  const handleExportPpt = async () => {
     setIsExportingPpt(true)
 
     try {
-      // Connect your real PPT helper here later:
-      // generateGeoArticlePpt(projectId, brief, {
-      //   ...article,
-      //   article_markdown: articleText,
-      //   title: articleTitle,
-      // })
-
-      alert("PPT export UI is ready. Connect this button to generateGeoArticlePpt().")
+      await downloadGeoArticlePptx(brandName, brief, {
+        ...article,
+        article_markdown: articleText,
+        title: articleTitle,
+      })
     } catch (error) {
       console.error(error)
-      alert("Failed to export PPT.")
+      alert("Failed to export PPTX.")
     } finally {
       setIsExportingPpt(false)
     }
@@ -545,7 +558,7 @@ function ArticlePreviewPage({
         <article className="mx-auto max-w-4xl py-8">
           <Markdown text={articleText} />
 
-          {article.faq.length > 0 && (
+          {article.faq && article.faq.length > 0 && (
             <section className="mt-10 rounded-xl border border-[#e4e4e7] bg-white p-5">
               <div className="mb-4 flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#09090b] text-white">

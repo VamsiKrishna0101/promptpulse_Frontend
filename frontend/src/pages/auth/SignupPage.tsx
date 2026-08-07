@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { AuthShell } from "@/components/auth/AuthShell"
 import { AuthTestimonialPanel } from "@/components/auth/AuthTestimonialPanel"
-import { Search, Activity, Target } from "lucide-react"
+import { Search, Activity, Target, Building2, UserRound } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 
 export function SignupPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [accountType, setAccountType] = useState<"SINGLE" | "AGENCY">("SINGLE")
     const [otp, setOtp] = useState("")
     const [step, setStep] = useState<"email" | "otp">("email")
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -52,7 +53,7 @@ export function SignupPage() {
             await register({
                 email: email.trim().toLowerCase(),
                 password,
-                account_type: "SINGLE",
+                account_type: accountType,
             })
             setStep("otp")
             toast({
@@ -150,6 +151,22 @@ export function SignupPage() {
         >
             {step === "email" ? (
                 <form className="flex flex-col gap-4" onSubmit={handleEmailSubmit}>
+                    <fieldset>
+                        <legend className="mb-2 text-sm font-semibold text-ink-900">How will you use PromptPulse?</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                            {([
+                                { value: "SINGLE" as const, label: "My business", detail: "One company or brand", icon: UserRound },
+                                { value: "AGENCY" as const, label: "Agency", detail: "Multiple client brands", icon: Building2 },
+                            ]).map(option => {
+                                const Icon = option.icon
+                                const active = accountType === option.value
+                                return <button key={option.value} type="button" onClick={() => setAccountType(option.value)} className={`flex items-start gap-3 border p-3 text-left transition ${active ? "border-ink-900 bg-ink-900 text-white" : "border-ink-200 bg-white text-ink-900 hover:border-ink-400"}`}>
+                                    <Icon size={17} className="mt-0.5 shrink-0" />
+                                    <span><span className="block text-sm font-semibold">{option.label}</span><span className={`mt-0.5 block text-xs ${active ? "text-white/70" : "text-ink-500"}`}>{option.detail}</span></span>
+                                </button>
+                            })}
+                        </div>
+                    </fieldset>
                     <Input
                         label="Email"
                         type="email"

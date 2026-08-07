@@ -114,10 +114,12 @@ export function BrandReviewCard({
   research,
   data,
   onChange,
+  isAgency = false,
 }: {
   research: BrandResearchResult
   data: BrandResearchData
   onChange: (next: BrandResearchData) => void
+  isAgency?: boolean
 }) {
   function update(key: Field, value: string) {
     onChange({ ...data, [key]: value || null })
@@ -129,22 +131,23 @@ export function BrandReviewCard({
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-[#e4e4e7] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#71717a]">
             <Sparkles size={12} />
-            Review brand profile
+            {isAgency ? "Review Client Profile" : "Review Brand Profile"}
           </p>
 
           <h2 className="mt-3 text-[24px] font-semibold tracking-[-0.04em] text-[#18181b]">
-            Confirm what AI should know about your brand.
+            {isAgency ? "Confirm what AI should know about your client." : "Confirm what AI should know about your brand."}
           </h2>
 
           <p className="mt-2 max-w-2xl text-[13px] font-medium leading-6 text-[#52525b]">
-            Edit the important brand facts before generating prompts. This keeps your
-            benchmark accurate and prevents weak prompt recommendations.
+            {isAgency
+              ? "Verify key client offerings, competitor benchmarks, and target markets before generating buyer prompts."
+              : "Edit the important brand facts before generating prompts. This keeps your benchmark accurate and prevents weak prompt recommendations."}
           </p>
         </div>
 
         <div className="rounded-xl border border-[#e4e4e7] bg-white px-3 py-2 text-right">
           <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-[#a1a1aa]">
-            Website
+            {isAgency ? "Client Domain" : "Website"}
           </p>
           <p className="mt-0.5 max-w-[220px] truncate text-[12px] font-semibold text-[#18181b]">
             {research.brand_url}

@@ -240,7 +240,6 @@ export function Sidebar() {
                 <NavItem icon={icons.prompts} label="Prompts" href="/prompts" />
                 <NavItem icon={icons.sources} label="Sources" href="/sources" />
                 <NavItem icon={icons.competitors} label="Competitors" href="/competitors" />
-                <NavItem icon={icons.analytics} label="Web Analytics" href="/analytics" />
                 <NavItem icon={icons.chat} label="Chat" href="/chat" />
 
                 <SectionLabel label="Settings" />

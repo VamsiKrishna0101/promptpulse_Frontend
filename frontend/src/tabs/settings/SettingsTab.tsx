@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react"
 import {
   BadgeCheck,
   Bell,
+  Building2,
   CalendarDays,
   Check,
   Cpu,
@@ -16,6 +17,7 @@ import {
   UserCog,
 } from "lucide-react"
 import { useSettings } from "@/hooks/useSettings"
+import { useAuth } from "@/hooks/useAuth"
 import { useProjects } from "@/hooks/useProjects"
 import { getProjectEngines, updateProjectEngines } from "@/lib/projectEnginesApi"
 import type { ProjectEngine, ProjectEnginesResponse } from "@/lib/projectEnginesApi"
@@ -141,7 +143,10 @@ function ToggleRow({
 }
 
 export function SettingsTab() {
-  const { data, isLoading, error, isUpdatingPassword, refresh, updatePassword } = useSettings()
+  const { user } = useAuth()
+  const isViewer = user?.agency_role === "CLIENT_VIEWER"
+
+  const { data, isLoading, error, isUpdatingPassword, refresh, updatePassword, updateAccountType } = useSettings()
   const { selectedProject } = useProjects()
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -149,6 +154,7 @@ export function SettingsTab() {
   const [formError, setFormError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [accountTypeSaving, setAccountTypeSaving] = useState(false)
   const [preferences, setPreferences] = useState<Record<PreferenceKey, boolean>>(() => {
     const fallback = {
       weekly_email_reports: true,
@@ -258,6 +264,22 @@ export function SettingsTab() {
     }
   }
 
+  async function convertToAgency() {
+    if (!window.confirm("Convert this workspace to an agency account? The wallet will become shared across your team and client workspaces.")) return
+    setAccountTypeSaving(true)
+    setFormError(null)
+    try {
+      await updateAccountType("AGENCY")
+      const raw = localStorage.getItem("promptpulse_user")
+      if (raw) localStorage.setItem("promptpulse_user", JSON.stringify({ ...JSON.parse(raw), account_type: "AGENCY" }))
+      window.location.reload()
+    } catch (err: any) {
+      setFormError(err?.response?.data?.error ?? "Failed to convert the account.")
+    } finally {
+      setAccountTypeSaving(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
@@ -334,8 +356,15 @@ export function SettingsTab() {
 
           <InfoRow icon={<Mail size={14} />} label="Email" value={data.account.email} />
           <InfoRow icon={<ShieldCheck size={14} />} label="Verification" value={data.account.is_verified ? "Verified" : "Not verified"} />
+          <InfoRow icon={<Building2 size={14} />} label="Account type" value={data.account.account_type === "AGENCY" ? "Agency · shared wallet" : "Individual · private wallet"} />
           <InfoRow icon={<KeyRound size={14} />} label="Plan" value={data.account.plan} />
           <InfoRow icon={<CalendarDays size={14} />} label="Created" value={formatDate(data.account.created_at)} />
+          {data.account.account_type === "SINGLE" && (
+            <button type="button" onClick={() => void convertToAgency()} disabled={accountTypeSaving} className="mt-4 flex h-9 w-full items-center justify-center gap-2 border border-[#D0D5DD] bg-white px-3 text-[12px] font-semibold text-[#344054] hover:bg-[#F9FAFB] disabled:opacity-50">
+              {accountTypeSaving ? <Loader2 size={14} className="animate-spin" /> : <Building2 size={14} />}
+              Convert to agency account
+            </button>
+          )}
         </div>
 
         <form onSubmit={handlePasswordSubmit} className="rounded-lg border border-[#E2E5EA] bg-white p-5">
@@ -399,7 +428,7 @@ export function SettingsTab() {
       </section>
 
       {/* ── AI Engine Preferences ── */}
-      {selectedProject && (
+      {selectedProject && !isViewer && (
         <section className="rounded-lg border border-[#E2E5EA] bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>

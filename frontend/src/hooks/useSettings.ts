@@ -54,6 +54,11 @@ export function useSettings() {
     }
   }
 
+  async function updateAccountType(accountType: "SINGLE" | "AGENCY") {
+    await api.patch("/settings/account-type", { account_type: accountType })
+    await refresh()
+  }
+
   useEffect(() => {
     void refresh()
   }, [])
@@ -65,5 +70,6 @@ export function useSettings() {
     isUpdatingPassword,
     refresh,
     updatePassword,
+    updateAccountType,
   }
 }

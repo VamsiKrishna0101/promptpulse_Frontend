@@ -1,5 +1,4 @@
 import {
-    BarChart3,
     Bot,
     BriefcaseBusiness,
     ChevronDown,
@@ -42,7 +41,6 @@ const navGroups: NavGroup[] = [
             { label: "Prompts", icon: MessageSquare },
             { label: "Sources", icon: Globe2 },
             { label: "Competitors", icon: Trophy },
-            { label: "Web Analytics", icon: BarChart3 },
             { label: "Chat", icon: MessageSquare },
         ],
     },

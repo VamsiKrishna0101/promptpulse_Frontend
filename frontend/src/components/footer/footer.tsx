@@ -30,7 +30,6 @@ const footerGroups = [
         links: [
             { label: "Sources", href: "/sources" },
             { label: "Competitors", href: "/competitors" },
-            { label: "Web Analytics", href: "/analytics" },
             { label: "Chat Evidence", href: "/chat" },
         ],
     },

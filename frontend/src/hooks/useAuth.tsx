@@ -8,6 +8,7 @@ type User = {
   plan: "FREE" | "STARTER" | "GROWTH" | "PRO"
   effective_plan?: "FREE" | "STARTER" | "GROWTH" | "PRO"
   role?: "USER" | "ADMIN"
+  agency_role?: "OWNER" | "ADMIN" | "MANAGER" | "ANALYST" | "CLIENT_ADMIN" | "CLIENT_VIEWER" | null
   is_verified?: boolean
   credits_balance?: number
 }

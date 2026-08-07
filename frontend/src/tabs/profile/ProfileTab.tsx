@@ -213,7 +213,7 @@ export function ProfileTab() {
           <DetailRow icon={<ShieldCheck size={14} />} label="Account type" value={data.user.account_type} />
           <DetailRow icon={<CalendarDays size={14} />} label="Joined" value={formatDate(data.user.created_at)} />
           <DetailRow icon={<CreditCard size={14} />} label="Billing model" value="Pay-As-You-Go" />
-          <DetailRow icon={<Sparkles size={14} />} label="Trial allowance" value="105 credits" />
+          <DetailRow icon={<Sparkles size={14} />} label="Trial allowance" value={data.user.account_type === "AGENCY" ? "210 credits" : "315 credits"} />
         </div>
 
         <div className="rounded-lg border border-[#E2E5EA] bg-white p-5">

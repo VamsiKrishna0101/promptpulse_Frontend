@@ -9,17 +9,19 @@ export type ExportResource =
   | "competitors"
   | "web-analytics"
 
+export type ExportFormat = "pdf" | "pptx" | "csv"
+
 /**
  * Downloads an export file from the backend.
- * format="csv" actually downloads an .xlsx (Excel) file for best quality.
- * format="pdf" downloads a PDF. Overview format="pptx" builds an editable
- * presentation from the authenticated, aggregated report model.
+ * format="csv" downloads raw CSV data.
+ * format="pdf" downloads a styled PDF executive summary.
+ * format="pptx" builds an editable presentation from the overview report model.
  */
 export async function downloadCsvExport(
   projectId: string | null,
   resource: ExportResource,
   queryString = "",
-  format: "csv" | "pdf" | "pptx" = "csv",
+  format: ExportFormat = "pdf",
 ) {
   if (!projectId) return
 
@@ -36,8 +38,7 @@ export async function downloadCsvExport(
     return
   }
 
-  // "csv" requests are routed to .xlsx for professional Excel output
-  const ext = format === "pdf" ? "pdf" : "xlsx"
+  const ext = format === "pdf" ? "pdf" : "csv"
   const token = localStorage.getItem("promptpulse_access_token")
 
   const response = await fetch(
@@ -53,13 +54,13 @@ export async function downloadCsvExport(
     throw new Error(await readError(response, "Export failed"))
   }
 
-  const blob     = await response.blob()
+  const blob = await response.blob()
   const filename = readFilename(response.headers.get("Content-Disposition"))
     ?? `${resource}.${ext}`
 
-  const url  = URL.createObjectURL(blob)
+  const url = URL.createObjectURL(blob)
   const link = document.createElement("a")
-  link.href     = url
+  link.href = url
   link.download = filename
   document.body.appendChild(link)
   link.click()
@@ -111,6 +112,62 @@ export async function downloadGeoArticlePdf(
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+}
+
+/**
+ * Generates an executive PowerPoint presentation for the GEO article.
+ */
+export async function downloadGeoArticlePptx(
+  brandName: string,
+  brief: any,
+  article: any,
+) {
+  const { exportGeoArticlePptx } = await import("@/tabs/geoarticles/exportGeoArticlePptx")
+  await exportGeoArticlePptx(brandName, brief, article)
+}
+
+/**
+ * Generates an executive PowerPoint presentation for Keyword Research datasets.
+ */
+export async function downloadKeywordResearchPptx(
+  brandName: string,
+  result: any,
+) {
+  const { exportKeywordResearchPptx } = await import("@/tabs/seo/keyword-research/export")
+  await exportKeywordResearchPptx(brandName, result)
+}
+
+/**
+ * Generates an executive PDF report for Keyword Research datasets.
+ */
+export async function downloadKeywordResearchPdf(
+  brandName: string,
+  result: any,
+) {
+  const { exportKeywordResearchPdf } = await import("@/tabs/seo/keyword-research/export")
+  await exportKeywordResearchPdf(brandName, result)
+}
+
+/**
+ * Generates an executive PowerPoint presentation for Domain Research / Overview.
+ */
+export async function downloadDomainResearchPptx(
+  brandName: string,
+  data: any,
+) {
+  const { exportDomainResearchPptx } = await import("@/tabs/seo/domain-research/export")
+  await exportDomainResearchPptx(brandName, data)
+}
+
+/**
+ * Generates an executive PDF report for Domain Research / Overview.
+ */
+export async function downloadDomainResearchPdf(
+  brandName: string,
+  data: any,
+) {
+  const { exportDomainResearchPdf } = await import("@/tabs/seo/domain-research/export")
+  await exportDomainResearchPdf(brandName, data)
 }
 
 async function readError(response: Response, fallback: string) {
