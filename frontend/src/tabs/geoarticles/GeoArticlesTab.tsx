@@ -746,7 +746,7 @@ function EmptyState({ onGenerate, isLoading }: { onGenerate: () => void; isLoadi
   )
 }
 
-export function GeoArticlesTab() {
+export function GeoArticlesTab({ onBack }: { onBack?: () => void }) {
   const { selectedProject } = useProjects()
   const [searchParams] = useSearchParams()
   const [activeOffset, setActiveOffset] = useState<number | null>(null)
@@ -816,6 +816,16 @@ export function GeoArticlesTab() {
 
   return (
     <div className="space-y-2.5 pb-8">
+      {onBack && pageMode === "brief" && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#52525b] hover:text-[#18181b]"
+        >
+          <ChevronLeft size={14} />
+          Back to Hub
+        </button>
+      )}
       {pageMode === "brief" && (
         <div className="rounded-xl border border-[#e4e4e7] bg-[#fafafa] p-4 shadow-[0_1px_3px_rgba(9,9,11,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">

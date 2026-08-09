@@ -11,12 +11,18 @@ export type WorkspaceView = "hub" | "reports" | "contentBriefs" | "actionQueue" 
 export function AIWorkspaceTab() {
   const location = useLocation()
   const navigate = useNavigate()
+  
   const routeView: WorkspaceView =
     location.pathname === "/ai-workspace/content-briefs"
       ? "contentBriefs"
       : location.pathname === "/ai-workspace/actions"
         ? "actionQueue"
-        : "hub"
+        : location.pathname === "/ai-workspace/reports"
+          ? "reports"
+          : location.pathname === "/ai-workspace/reddit"
+            ? "reddit"
+            : "hub"
+
   const [view, setView] = useState<WorkspaceView>(routeView)
 
   useEffect(() => {
@@ -24,7 +30,7 @@ export function AIWorkspaceTab() {
   }, [routeView])
 
   if (view === "reports") {
-    return <ReportsPage onBack={() => setView("hub")} />
+    return <ReportsPage onBack={() => navigate("/ai-workspace")} />
   }
 
   if (view === "actionQueue") {
@@ -32,13 +38,13 @@ export function AIWorkspaceTab() {
   }
 
   if (view === "reddit") {
-    return <RedditIntelligencePage onBack={() => setView("hub")} />
+    return <RedditIntelligencePage onBack={() => navigate("/ai-workspace")} />
   }
 
   if (view === "contentBriefs") {
     return (
       <div data-product-tour-id="ai-workspace-content-briefs" className="min-h-full bg-zinc-50/40">
-        <GeoArticlesTab />
+        <GeoArticlesTab onBack={() => navigate("/ai-workspace")} />
       </div>
     )
   }
@@ -46,9 +52,9 @@ export function AIWorkspaceTab() {
   return (
     <div data-product-tour-id="ai-workspace-shell" className="min-h-full bg-zinc-50/40 p-1">
       <AgentHub
-        onOpenReports={() => setView("reports")}
-        onOpenActionQueue={() => setView("actionQueue")}
-        onOpenReddit={() => setView("reddit")}
+        onOpenReports={() => navigate("/ai-workspace/reports")}
+        onOpenActionQueue={() => navigate("/ai-workspace/actions")}
+        onOpenReddit={() => navigate("/ai-workspace/reddit")}
         onOpenContentBriefs={() => navigate("/ai-workspace/content-briefs")}
       />
     </div>

@@ -194,7 +194,7 @@ export function ClientPortalLivePage() {
             <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-8 py-3.5 shadow-sm">
                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
                     <div className="flex items-center gap-2.5">
-                        {branding.logo_url ? (
+                        {branding.logo_url ? (     
                             <img src={branding.logo_url} alt={branding.brand_name || "Agency"} className="h-7 w-7 object-contain rounded-md" />
                         ) : (
                             <div
