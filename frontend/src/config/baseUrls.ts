@@ -1,4 +1,4 @@
-const DEPLOYED_BACKEND_BASE_URL = "https://promptpulse-backend-892724717411.asia-south1.run.app"
+const DEPLOYED_BACKEND_BASE_URL = "https://promptpulse-backend-892724717411.asia-northeast3.run.app"
 const DEPLOYED_AGENTS_BASE_URL = "https://promptpulse-agents-api-892724717411.asia-south1.run.app"
 const DEFAULT_BACKEND_BASE_URL = DEPLOYED_BACKEND_BASE_URL
 const DEFAULT_AGENTS_BASE_URL = DEPLOYED_AGENTS_BASE_URL
