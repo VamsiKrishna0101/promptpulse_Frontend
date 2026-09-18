@@ -51,6 +51,7 @@ export function OnboardingSetupPage() {
   const [customBrief, setCustomBrief] = useState("")
   const [customPromptText, setCustomPromptText] = useState("")
   const [customPromptTopic, setCustomPromptTopic] = useState("Custom")
+  const [fieldErrors, setFieldErrors] = useState<{ brandName?: string; brandUrl?: string }>({})
   const promptLimit = 10
   const engineLimit = "all" as const
   const canCreateProject = true
@@ -62,8 +63,17 @@ export function OnboardingSetupPage() {
 
   async function handleResearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!brandName.trim() || !brandUrl.trim()) return
 
+    const errors: { brandName?: string; brandUrl?: string } = {}
+    if (!brandName.trim()) errors.brandName = isAgency ? "Client brand name is required" : "Brand name is required"
+    if (!brandUrl.trim()) errors.brandUrl = isAgency ? "Client website URL is required" : "Brand URL is required"
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+
+    setFieldErrors({})
     setIsWorking(true)
 
     try {
@@ -291,15 +301,17 @@ export function OnboardingSetupPage() {
               <Field
                 label={isAgency ? "Client brand name" : "Brand name"}
                 value={brandName}
-                onChange={setBrandName}
+                onChange={(v) => { setBrandName(v); if (fieldErrors.brandName) setFieldErrors(e => ({ ...e, brandName: undefined })) }}
                 placeholder={isAgency ? "Client Corp / Healthcare" : "Acme AI"}
+                error={fieldErrors.brandName}
               />
 
               <Field
                 label={isAgency ? "Client website URL" : "Brand URL"}
                 value={brandUrl}
-                onChange={setBrandUrl}
+                onChange={(v) => { setBrandUrl(v); if (fieldErrors.brandUrl) setFieldErrors(e => ({ ...e, brandUrl: undefined })) }}
                 placeholder="https://example.com"
+                error={fieldErrors.brandUrl}
               />
 
               <CountrySelect
@@ -631,11 +643,13 @@ function Field({
   value,
   onChange,
   placeholder,
+  error,
 }: {
   label: string
   value: string
   onChange: (value: string) => void
   placeholder: string
+  error?: string
 }) {
   return (
     <label>
@@ -647,8 +661,19 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-xl border border-[#e4e4e7] bg-white px-3 text-[13px] font-medium text-[#18181b] outline-none transition placeholder:text-[#a1a1aa] focus:border-[#09090b]"
+        className={[
+          "h-10 w-full rounded-xl border bg-white px-3 text-[13px] font-medium text-[#18181b] outline-none transition placeholder:text-[#a1a1aa]",
+          error
+            ? "border-red-400 focus:border-red-500"
+            : "border-[#e4e4e7] focus:border-[#09090b]",
+        ].join(" ")}
       />
+
+      {error && (
+        <span className="mt-1 block text-[11px] font-medium text-red-500">
+          {error}
+        </span>
+      )}
     </label>
   )
 }
